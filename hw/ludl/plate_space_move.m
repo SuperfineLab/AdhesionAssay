@@ -1,4 +1,4 @@
-function plate_space_move(centers, wellcor)
+function plate_space_move(ludl, centers, wellcor)
 
 % centers - location of center of fiducial marks
 %
@@ -9,12 +9,12 @@ function plate_space_move(centers, wellcor)
 origin = centers(1,1:2);
 
 % Defining distances in mm
-% Note: x and y are reversed and both negative
+% Note: x and y are reversed and both negative -> written in Ludl
+% coordinates
 well_one_cent_x = 6.037;
 well_one_cent_y = 11.216;
 interwell_dist_x = 16.2;
 interwell_dist_y = 11.79; 
-
 
 % Convert mm to ticks
 well_one_x_tick = mm_to_tick(well_one_cent_x);
@@ -26,9 +26,16 @@ interwell_y_tick = mm_to_tick(interwell_dist_y);
 dist_x = -(well_one_x_tick + (wellcor(1) - 1) * interwell_x_tick);
 dist_y = -(well_one_y_tick + (wellcor(2) - 1) * interwell_y_tick);
 
-% TODO: Find correction factor
+% Correction factor in x direction
+theta = atan(abs(centers(3,1)-centers(4,1))/abs(centers(3,2)-centers(4,2)));
+xcor = abs(dist_y) * sin(theta);
+ycor = abs(dist_x) * sin(theta);
+
+
+% Find moving distance
+dist_x_final = dist_x + xcor;
+dist_y_final = dist_y - ycor;
 
 % Move the stage accordingly
 % Note: x and y are reversed
-ludl = stage_open_Ludl();
-stage_move_Ludl(ludl,[(origin(1) + dist_x) (origin(2) + dist_y)]);
+stage_move_Ludl(ludl,[(origin(1) + dist_x_final) (origin(2) + dist_y_final)]);

@@ -1,10 +1,8 @@
-function fiderror = calibrate_check(centers)
+function fiderror = calibrate_check(ludl, centers)
 
 % Finds fiducial positions
 fiderror = zeros(4,2);
 pos = zeros(4,2);
-
-ludl = stage_open_Ludl();
 
 % Get positions of the images after 'Enter' is hit
 for i = 1:4

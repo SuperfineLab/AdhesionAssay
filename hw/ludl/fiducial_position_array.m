@@ -1,9 +1,7 @@
-function [fiducialpos, points] = fiducial_position_array
+function [fiducialpos, points] = fiducial_position_array(ludl)
 % Note: Images must be taken before hitting 'Enter' and named accordingly
 
 fiducialpos = zeros(4,2);
-
-ludl = stage_open_Ludl();
 
 % Get positions of the images after 'Enter' is hit
 for i = 1:4
