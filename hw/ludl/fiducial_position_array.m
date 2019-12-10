@@ -1,19 +1,36 @@
 function [fiducialpos, points] = fiducial_position_array(ludl)
 % Note: Images must be taken before hitting 'Enter' and named accordingly
 
+% WARNING: Adjust 'points' according to image size!
 fiducialpos = zeros(4,2);
+points = zeros(488,648,4);
+length = mm_to_tick(69.6);
+width = mm_to_tick(44.476);
 
-% Get positions of the images after 'Enter' is hit
+vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+
+% Get positions and images after 'Enter' is hit
 for i = 1:4
-    disp('Locate point')
+    switch i
+        case 1
+            disp('Starting...')
+        case 2
+            stage_move_Ludl(ludl,[fiducialpos(1,1) fiducialpos(1,2)-length]);
+        case 3
+            stage_move_Ludl(ludl,[fiducialpos(1,1)-width fiducialpos(1,2)-length]);
+        case 4
+            stage_move_Ludl(ludl,[fiducialpos(1,1)-width fiducialpos(1,2)]);
+    end
+    disp(strcat('Locate Point',num2str(i)))
+    preview(vid);
     pause;
+    stoppreview(vid);
+    frame = getsnapshot(vid);
+    imwrite(frame,strcat('im',num2str(i),'.tif'));
+    points(1:end,1:end,i) = frame;
     fiducialpos(i,1) = stage_get_pos_Ludl(ludl).Pos(1);
     fiducialpos(i,2) = stage_get_pos_Ludl(ludl).Pos(2);
 end
 
-% Read in images and put them into a matrix
-im1 = imread("im1.tif");
-im2 = imread("im2.tif");
-im3 = imread("im3.tif");
-im4 = imread("im4.tif");
-points = cat(3,im1,im2,im3,im4);
+% Convert points into uint8
+points = uint8(points);
