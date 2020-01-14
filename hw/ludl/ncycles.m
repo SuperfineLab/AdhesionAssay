@@ -8,8 +8,8 @@ while i <= number
    for row = 1:3
        for column = 1:5
            well = (row - 1)*5 + column;
-           x_drift_array(well,i) = x_offset{row,column};
-           y_drift_array(well,i) = y_offset{row,column};
+           x_drift_array(well,i) = x_offset{row,column} * 0.05;
+           y_drift_array(well,i) = y_offset{row,column} * 0.05;
        end
    end
    i = i+1;

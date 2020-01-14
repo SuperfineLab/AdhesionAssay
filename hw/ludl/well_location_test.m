@@ -16,7 +16,7 @@ for row = 1:3
 %             row = j;
         disp(['row=' num2str(row), ', column=' num2str(column)]);
         plate_space_move(ludl, centers, [row column])
-%             pause(2);
+        pause(2);
         frame = getsnapshot(vid);
 %         imwrite(frame,strcat('imC',num2str(i),'.tif'));
         imout{row,column} = frame;
@@ -30,7 +30,7 @@ for row = 1:3
     end
 end
 
-% %h = figure(555); clf;
+% h = figure(555); clf;
 % imtmp = imout';
 % for k = 1:numel(imtmp)
 %     figure(h); 

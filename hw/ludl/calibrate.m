@@ -13,7 +13,7 @@ for im = 1:size(points,3)
 end
 
 % Find the angle of tilt in radians
-theta = atan(abs(centers(3,1)-centers(4,1))/abs(centers(3,2)-centers(4,2)));
+theta = atan(abs(centers(2,1)-centers(1,1))/abs(centers(2,2)-centers(1,2)));
 
 % Creat error matrix of side lengths, order sides as NSEW, with top length as "North"
 length = mm_to_tick(69.6);

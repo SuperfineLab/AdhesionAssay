@@ -1,7 +1,7 @@
 %  ##########################################################################
 % %###################### MOVE STAGE SEQUENCE ###############################
 %  ##########################################################################
-function stage=stage_move_Ludl(stage, target_pos, h_stage)
+function stage=stage_move_Ludl(stage, target_pos)
 %--------------------------------------------------------------------------
 % Move_Stage_Seq starts a []sequence that moves the stage from position A
 % to position B. THe function displays a waitbar and also adjusts
@@ -61,10 +61,10 @@ try
 %     % Display the waitbar
 %     wtb=waitbar(0,'Moving the stage...', 'WindowStyle', 'modal');
 %     % Keep updating the waitbar
-%     while stage_check_busy_Ludl(stage.handle)
-%         stage=stage_get_pos_Ludl(stage,stage.handle) ;
-%         current_pos=stage.Pos;
-%         pause(.5)
+    while stage_check_busy_Ludl(stage.handle)
+        stage=stage_get_pos_Ludl(stage,stage.handle) ;
+        current_pos=stage.Pos;
+        pause(.5)
 % %         distance_traveled = pdist2(...
 % %             double(Initial_Pos),...
 % %             double(current_pos),'euclidean');
@@ -75,7 +75,7 @@ try
 %         distance_total = sqrt((double(Initial_Pos(1))-double(target_pos(1)))^2 + (double(Initial_Pos(2))-double(target_pos(2)))^2);
 %         waitbar(distance_traveled / distance_total);
 %         drawnow;
-%     end    
+    end    
 %     % Close the waitbar
 %     close(wtb);
 %     
