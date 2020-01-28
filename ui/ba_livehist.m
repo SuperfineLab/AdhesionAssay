@@ -33,7 +33,14 @@ minD = num2str(minD, '%u');
 imhist(event.Data, 32768);
 
 set(gca,'YScale','log');
-xlim([0 66500]);
+switch class(event.Data)
+    case 'uint8'
+        xlim([0 260]);        
+    case 'uint16'
+        xlim([0 66500]);
+end
+
+
 title([avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], ', zpos_str]);
 
 % Modify the following numbers to reflect the actual limits of the data returned by the camera.
