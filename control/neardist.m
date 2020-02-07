@@ -1,7 +1,7 @@
 function out = neardist(c)
 
 if isempty(c)
-    out = [];
+    out = NaN;
     return
 end
 
@@ -18,4 +18,5 @@ dist = sqrt(Xdist.^2 + Ydist.^2);
 
 dist( dist == 0 ) = NaN;
 
-out(:,1) = min(dist, [], 'omitnan');
+
+out(:,1) = min(dist, [],'omitnan');
