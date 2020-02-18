@@ -48,7 +48,7 @@ hnd.StartCtrl;
 
 % The serial number for the motor is 83829797. Must set it here and
 % register/identify our connection to the motor.
-set(hnd,'HWSerialNum', 83829797);
+set(hnd,'HWSerialNum', 83829573);
 hnd.Identify; 
 drawnow;
 

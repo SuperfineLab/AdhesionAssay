@@ -1,4 +1,4 @@
-function ba_pulloff_auto(zhand, filename, exptime)
+function ba_pulloff_auto(zhand, filename, exptime, metafile)
 % Prior to starting experiment, make sure the magnet is centered.  Lower
 % the magnet to 0 and use the vertical micrometer to ensure the tips of the
 % magnet will touch the top of a glass slide (to apply maximum force to
@@ -14,6 +14,8 @@ function ba_pulloff_auto(zhand, filename, exptime)
 % Find a region that has 20-40 beads.  Beads within a diameter from
 % each other or an edge will probably not work well when tracking. Focus the region, then
 % close image acquisition again.  Run the script.
+
+%% Checking for empty inputs
 
 if nargin < 1 || isempty(zhand)
     disp('No z-controller object. Connecting to z-motor now...');
@@ -33,6 +35,33 @@ if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
+%% Import metadata
+
+metadata = matfile(metafile,'Writable',true);
+zmotor = metadata.Zmotor;
+video = metadata.Video;
+
+% Zmotor Parameters
+starting_height = zmotor.StartingHeight;
+motor_velocity = zmotor.Velocity; % [mm/sec]
+abstime{1,1} = [];
+framenumber{1,1} = [];
+TotalFrames = 0;
+znow = starting_height;
+
+% Following code found in apps -> image acquisition
+% More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
+src = getselectedsource(vid); 
+src.ExposureMode = video.ExposureMode; 
+src.FrameRateMode = video.FrameRateMode;
+src.ShutterMode = video.ShutterMode;
+src.Gain = video.Gain;
+src.Gamma = video.Gamma;
+src.Brightness = video.Brightness;
+src.Shutter = exptime;
+
+%% Old code
+
 PSF_filename = 'D:\pramoj23\src\AdhesionAssay\calib\psf\mag_10x_bead_24umdiaYG_stepsize_1um.psf.tif';
 impsf = imread(PSF_filename);
 
@@ -48,12 +77,12 @@ ConcUnits = {'mass fraction'}';
 NoInt = table(Name, Conc, ConcUnits);
 clear Name Conc ConcUnits
 
-starting_height = 12;
-abstime{1,1} = [];
-framenumber{1,1} = [];
-TotalFrames = 0;
-motor_velocity = 0.2; % [mm/sec]
-znow = starting_height;
+% % % starting_height = 12;
+% % % abstime{1,1} = [];
+% % % framenumber{1,1} = [];
+% % % TotalFrames = 0;
+% % % motor_velocity = 0.2; % [mm/sec]
+% % % znow = starting_height;
 
 
 Nsec = starting_height/motor_velocity + 1;
@@ -68,16 +97,16 @@ vid.ReturnedColorspace = 'grayscale';
 triggerconfig(vid, 'manual');
 vid.FramesPerTrigger = NFrames;
 
-% Following code found in apps -> image acquisition
-% More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
-src = getselectedsource(vid); 
-src.ExposureMode = 'off'; 
-src.FrameRateMode = 'off';
-src.ShutterMode = 'manual';
-src.Gain = 10;
-src.Gamma = 1.15;
-src.Brightness = 5.8594;
-src.Shutter = exptime;
+% % % % Following code found in apps -> image acquisition
+% % % % More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
+% % % src = getselectedsource(vid); 
+% % % src.ExposureMode = 'off'; 
+% % % src.FrameRateMode = 'off';
+% % % src.ShutterMode = 'manual';
+% % % src.Gain = 10;
+% % % src.Gamma = 1.15;
+% % % src.Brightness = 5.8594;
+% % % src.Shutter = exptime;
 
 vidRes = vid.VideoResolution;
 frame = getsnapshot(vid);
