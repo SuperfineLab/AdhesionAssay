@@ -1,5 +1,5 @@
-
 function stage = stage_open_Ludl()
+% STAGE_OPEN_LUDL creates a new ludl stage object
 try
     
     % instrfind returns the instrument object array

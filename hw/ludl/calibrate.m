@@ -1,4 +1,7 @@
-function [centers, errormatrix, theta] = calibrate(ludl)
+function [centers, theta, errormatrix] = calibrate(ludl)
+% CALIBRATE uses the fiducial marking images taken by the camera and the
+% location of the stage in ludl coordinates at that location to calculate
+% the location of the sample on the ludl stage
 
 % Finds fiducial positions
 centers = zeros(4,2);

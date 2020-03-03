@@ -1,9 +1,10 @@
 function plate_space_move(ludl, centers, wellcor)
+% PLATE_SPACE_MOVE moves to the center of a given well
 
 % centers - location of center of fiducial marks
 %
-% wellcor - well location on the well location grid (ex. [1 1] for the top
-% left well nearest to fiducial mark 1)
+% wellcor - well location on the well location grid in the format [row_num 
+% column_num] (ex. [1 1] for the top left well nearest to fiducial mark 1)
 
 % Define origin as the location of fiducial mark 1 (top leftmost) in ludl coordinates
 origin = centers(1,1:2);
@@ -27,7 +28,7 @@ dist_x = -(well_one_x_tick + (wellcor(1) - 1) * interwell_x_tick);
 dist_y = -(well_one_y_tick + (wellcor(2) - 1) * interwell_y_tick);
 
 % Correction factor in x direction
-theta = atan(abs(centers(3,1)-centers(4,1))/abs(centers(3,2)-centers(4,2)));
+theta = atan(abs(centers(2,1)-centers(1,1))/abs(centers(2,2)-centers(1,2)));
 xcor = abs(dist_y) * sin(theta);
 ycor = abs(dist_x) * sin(theta);
 
