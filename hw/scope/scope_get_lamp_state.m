@@ -1,4 +1,6 @@
 function state = scope_get_lamp_state(obj1)
+% SCOPE_GET_LAMP_STATE determines if the lamp is on (state = 1) or off 
+% (state = 0)
 
 % Flush data in input buffer
 flushinput(obj1)

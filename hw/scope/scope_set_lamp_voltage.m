@@ -1,4 +1,6 @@
 function scope_set_lamp_voltage(obj1, voltage)
+% SCOPE_SET_LAMP_VOLTAGE sets the lamp voltage to the indicated value.
+% Additionally, voltage MUST be in the range [3,12]
 
 % Flush data in input buffer
 flushinput(obj1)

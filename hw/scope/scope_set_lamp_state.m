@@ -1,4 +1,5 @@
 function scope_set_lamp_state(obj1, state)
+% SCOPE_SET_LAMP_STATE sets the lamp to on (state = 1) or off (state = 0)
 
 % Flush data in input buffer
 flushinput(obj1)

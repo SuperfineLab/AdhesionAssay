@@ -1,4 +1,5 @@
 function voltage = scope_get_lamp_voltage(obj1)
+% SCOPE_GET_LAMP_VOLTAGE returns the voltage of the lamp
 
 % Flush data in input buffer
 flushinput(obj1)
