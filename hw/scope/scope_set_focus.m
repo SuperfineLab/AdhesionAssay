@@ -11,9 +11,11 @@ tol = 50;
 recieved = false;
 tic
 
+% build the command
+command = strcat('cSMV', num2str(pos));
+
 % Reads the input
 while ~recieved    
-    command = strcat('cSMV', num2str(pos));
     data = query(obj1, command, '%s\n' ,'%s');
     disp(data)
     if strcmp(data,'oSMV')

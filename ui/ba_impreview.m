@@ -49,13 +49,13 @@ function ba_impreview(zhand)
     edit_exptime.Position
     btn_grabframe.Position
     
-    hImage.UserData = zhand;
+    hImage.UserData{1} = zhand;
     
     setappdata(hImage, 'UpdatePreviewWindowFcn', @ba_livehist);
 %     hImage.CData = log10(double(hImage.CData));
     h = preview(vid, hImage);
     set(h, 'CDataMapping', 'scaled');
-
+get(h)
     function change_exptime(source,event)
 
         exptime = str2num(source.String);
