@@ -6,9 +6,11 @@ flushinput(obj1)
 % Set the 'recieved' variable to false 
 recieved = false;
 
+% build the command
+command = strcat('cSMV', num2str(pos));
+
 % Reads the input
 while ~recieved    
-    command = strcat('cSMV', num2str(pos));
     data = query(obj1, command, '%s\n' ,'%s');
     if strcmp(data,'oSMV')
         disp('Focus has been set')
