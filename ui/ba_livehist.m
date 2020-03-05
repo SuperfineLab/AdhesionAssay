@@ -2,20 +2,22 @@ function ba_livehist(obj,event,hImage)
 % BA_LIVEHIST is a callback function for ba_impreview.
 %
 
+persistent q
 
 % Display the current image frame.
 set(hImage, 'CData', event.Data);
 
-zhand = hImage.UserData;
-
-zpos_str = ['z = ' num2str(ba_getz(zhand)) ' [mm]'];
+zhand = hImage.UserData{1};
+im = event.Data;
+% class(im)
 
 % Select the second subplot on the figure for the histogram.
 ax = subplot(2,1,2);
 set(ax, 'Units', 'normalized');
 set(ax, 'Position', [0.28, 0.05, 0.4, 0.17]);
 
-D = double(event.Data(:));
+D = double(im(:));
+
 avgD = round(mean(D));
 stdD = round(std(D));
 maxD = num2str(max(D));
@@ -27,21 +29,31 @@ stdD = num2str(stdD, '%u');
 maxD = num2str(maxD, '%u');
 minD = num2str(minD, '%u');
 
+focus_score = fmeasure(im, 'GDER');
 
+
+    q = [q focus_score];
+
+assignin('base', 'focus_measure', q);
 
 % Plot the histogram. Choose 128 bins for faster update of the display.
-imhist(event.Data, 32768);
-
-set(gca,'YScale','log');
+% imhist(event.Data, 32768);
+set(gca,'YScale','log')
 switch class(event.Data)
     case 'uint8'
         xlim([0 260]);        
+        imhist(event.Data, 128);
     case 'uint16'
         xlim([0 66500]);
+        imhist(event.Data, 32768);
 end
 
+image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], '];
+focus_str = ['focus score= ', num2str(focus_score), ', '];
+zpos_str = ['z = ' num2str(ba_getz(zhand)) ' [mm]'];
 
-title([avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], ', zpos_str]);
+title([image_str, focus_str, zpos_str]);
+
 
 % Modify the following numbers to reflect the actual limits of the data returned by the camera.
 
@@ -53,6 +65,7 @@ cmin = min(double(hImage.CData(:)));
 cmax = max(double(hImage.CData(:)));
 set(a, 'CLim', [uint16(cmin) uint16(cmax)]);
 % set(a, 'CLim', [0 65535]);
+
 
 % Refresh the display.
 drawnow
