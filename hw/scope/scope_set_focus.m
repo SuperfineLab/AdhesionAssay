@@ -9,15 +9,15 @@ tol = 50;
 
 % Set the 'recieved' variable to false 
 recieved = false;
-tic
+tic;
 
 % build the command
 command = strcat('cSMV', num2str(pos));
-
+fprintf('\n');
 % Reads the input
 while ~recieved    
     data = query(obj1, command, '%s\n' ,'%s');
-    disp(data)
+    fprintf(' %s, ', data);
     if strcmp(data,'oSMV')
         if abs(scope_get_focus(obj1) - pos) <= tol
             disp('Focus has been set')
@@ -25,8 +25,10 @@ while ~recieved
         end
     else
         flushinput(obj1)
-        disp('Resending command...')
+%         disp('Resending command...')
     end
 end
 
-toc
+elapsed_time = toc;
+fprintf('\nElapsed time: %g [s]. \n\n', elapsed_time);
+
