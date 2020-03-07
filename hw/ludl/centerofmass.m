@@ -1,4 +1,6 @@
 function [cx,cy,sx,sy] = centerofmass(m)
+% CENTEROFMASS calculates the "center of mass" of each image based on the
+% value of each pixel
 
 % PURPOSE: find c of m of distribution
 

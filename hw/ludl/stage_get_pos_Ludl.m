@@ -1,4 +1,6 @@
 function stage=stage_get_pos_Ludl(stage,h_stage)
+% STAGE_GET_POS_LUDL returns the position of the stage in Ludl coordinates
+
 % instrfind returns the instrument object array
 % objects = instrfind
 % each entry includes the type, status, and name as follows

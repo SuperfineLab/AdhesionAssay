@@ -1,5 +1,6 @@
-function scope_set_lamp_state(obj1, state)
-% SCOPE_SET_LAMP_STATE sets the lamp to on (state = 1) or off (state = 0)
+function scope_set_op_path(obj1, path)
+% SCOPE_SET_OP_PATH gets the optical path position of the device. The
+% variable 'path' is an integer.
 
 % Flush data in input buffer
 flushinput(obj1)
@@ -12,10 +13,10 @@ recieved = false;
 
 % Reads the input
 while ~recieved    
-    command = strcat('cLMS', num2str(state));
+    command = strcat('cPDM', num2str(path));
     data = query(obj1, command, '%s\n' ,'%s');
-    if strcmp(data,'oLMS') && (scope_get_lamp_state(obj1) == state)
-        disp('Lamp state has been set')
+    if strcmp(data,'oPDM') && (scope_get_op_path(obj1) == path)
+        disp('Optical path has been set')
         recieved = true;
     else
         flushinput(obj1)

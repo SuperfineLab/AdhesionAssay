@@ -1,20 +1,34 @@
 function scope_set_focus(obj1, pos)
+% SCOPE_SET_FOCUS sets the focus of the microscope
 
 % Flush data in input buffer
 flushinput(obj1)
 
+% Set the tolerance value to which the final position should be within
+tol = 50;
+
 % Set the 'recieved' variable to false 
 recieved = false;
+tic;
 
+% build the command
+command = strcat('cSMV', num2str(pos));
+fprintf('\n');
 % Reads the input
 while ~recieved    
-    command = strcat('cSMV', num2str(pos));
     data = query(obj1, command, '%s\n' ,'%s');
+    fprintf(' %s, ', data);
     if strcmp(data,'oSMV')
-        disp('Focus has been set')
-        recieved = true;
+        if abs(scope_get_focus(obj1) - pos) <= tol
+            disp('Focus has been set')
+            recieved = true;
+        end
     else
         flushinput(obj1)
-        disp('Resending command...')
+%         disp('Resending command...')
     end
 end
+
+elapsed_time = toc;
+fprintf('\nElapsed time: %g [s]. \n\n', elapsed_time);
+

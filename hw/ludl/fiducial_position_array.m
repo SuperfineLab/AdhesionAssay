@@ -1,5 +1,7 @@
 function [fiducialpos, points] = fiducial_position_array(ludl)
-% Note: Images must be taken before hitting 'Enter' and named accordingly
+% FIDUCIAL_POSITION_ARRAY opens a viewing window for the user to manually
+% locate the fiducial marks, then stores the images and the positions in 
+% ludl coordinates at which each image was taken.
 
 % WARNING: Adjust 'points' according to image size!
 fiducialpos = zeros(4,2);

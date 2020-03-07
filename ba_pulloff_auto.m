@@ -1,4 +1,4 @@
-function ba_pulloff_auto(zhand, filename, exptime, metafile)
+function ba_pulloff_auto(zhand, filename,exptime, metafile)
 % Prior to starting experiment, make sure the magnet is centered.  Lower
 % the magnet to 0 and use the vertical micrometer to ensure the tips of the
 % magnet will touch the top of a glass slide (to apply maximum force to
@@ -15,6 +15,10 @@ function ba_pulloff_auto(zhand, filename, exptime, metafile)
 % each other or an edge will probably not work well when tracking. Focus the region, then
 % close image acquisition again.  Run the script.
 
+%% Import metadata
+
+m = load(metafile);
+
 %% Checking for empty inputs
 
 if nargin < 1 || isempty(zhand)
@@ -28,22 +32,22 @@ if nargin < 1 || isempty(zhand)
 end
 
 if nargin < 2 || isempty(filename)
-    error('Need filename.');
+    error('Need file name.')
+end
+
+if nargin < 4 || isempty(metafile)
+    error('Need metafile.');
 end
 
 if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
-%% Import metadata
-
-metadata = matfile(metafile,'Writable',true);
-zmotor = metadata.Zmotor;
-video = metadata.Video;
+%% Setting Parameters
 
 % Zmotor Parameters
-starting_height = zmotor.StartingHeight;
-motor_velocity = zmotor.Velocity; % [mm/sec]
+starting_height = m.Zmotor.StartingHeight;
+motor_velocity = m.Zmotor.Velocity; % [mm/sec]
 abstime{1,1} = [];
 framenumber{1,1} = [];
 TotalFrames = 0;
@@ -51,18 +55,19 @@ znow = starting_height;
 
 % Following code found in apps -> image acquisition
 % More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
+vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
 src = getselectedsource(vid); 
-src.ExposureMode = video.ExposureMode; 
-src.FrameRateMode = video.FrameRateMode;
-src.ShutterMode = video.ShutterMode;
-src.Gain = video.Gain;
-src.Gamma = video.Gamma;
-src.Brightness = video.Brightness;
+src.ExposureMode = m.Video.ExposureMode; 
+src.FrameRateMode = m.Video.FrameRateMode;
+src.ShutterMode = m.Video.ShutterMode;
+src.Gain = m.Video.Gain;
+src.Gamma = m.Video.Gamma;
+src.Brightness = m.Video.Brightness;
 src.Shutter = exptime;
 
 %% Old code
 
-PSF_filename = 'D:\pramoj23\src\AdhesionAssay\calib\psf\mag_10x_bead_24umdiaYG_stepsize_1um.psf.tif';
+PSF_filename = m.Bead.PointSpreadFunctionFilename;
 impsf = imread(PSF_filename);
 
 Name = {'Lactose', 'Galactose', 'GalNAc', 'GlcNac', 'Sialic Acid', 'PEG20k'}';
@@ -77,36 +82,16 @@ ConcUnits = {'mass fraction'}';
 NoInt = table(Name, Conc, ConcUnits);
 clear Name Conc ConcUnits
 
-% % % starting_height = 12;
-% % % abstime{1,1} = [];
-% % % framenumber{1,1} = [];
-% % % TotalFrames = 0;
-% % % motor_velocity = 0.2; % [mm/sec]
-% % % znow = starting_height;
-
-
 Nsec = starting_height/motor_velocity + 1;
 Fps = 1 / (exptime/1000);
 % NFrames = ceil(Fps * Nsec);
 % NFrames = 7625;
-NFrames = 1800;
+NFrames = 40; % Originally 1800
 
 imaqmex('feature', '-previewFullBitDepth', true);
-vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
 vid.ReturnedColorspace = 'grayscale';
 triggerconfig(vid, 'manual');
 vid.FramesPerTrigger = NFrames;
-
-% % % % Following code found in apps -> image acquisition
-% % % % More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
-% % % src = getselectedsource(vid); 
-% % % src.ExposureMode = 'off'; 
-% % % src.FrameRateMode = 'off';
-% % % src.ShutterMode = 'manual';
-% % % src.Gain = 10;
-% % % src.Gamma = 1.15;
-% % % src.Brightness = 5.8594;
-% % % src.Shutter = exptime;
 
 vidRes = vid.VideoResolution;
 frame = getsnapshot(vid);
@@ -114,7 +99,7 @@ imagetype = class(frame);
 
 imageRes = fliplr(vidRes);
 
-filename = [filename, '_', num2str(vidRes(1)), 'x', ...
+filename_vid = [filename, '_', num2str(vidRes(1)), 'x', ...
                            num2str(vidRes(2)), 'x', ...
                            num2str(NFrames), '_', imagetype];
 
@@ -133,9 +118,7 @@ setappdata(pImage, 'UpdatePreviewWindowFcn', @ba_pulloffview)
 p = preview(vid, pImage);
 set(p, 'CDataMapping', 'scaled');
 
-
-% ----------------
-% Controlling the Hardware and running the experiment
+%% Controlling the Hardware and running the experiment
 %
 
 pause(2);
@@ -146,7 +129,7 @@ pause(2);
 NFramesAvailable = 0;
 
 % XXX TODO: Change bin filename to include frame width, height, depth, Nframes
-binfilename = [filename,'.bin'];
+binfilename = [filename_vid,'.bin'];
 if ~isempty(dir(binfilename))
     delete(vid);
     clear vid
@@ -254,113 +237,34 @@ ZHeight(1:AbsFrameNumber(1),1) = zheight(1);
 % StDev = vertcat(stdval{:});
 % Min = vertcat(minval{:});
 
-Fid = ba_makeFid;
-[~,host] = system('hostname');
+%% Compile Remaining Metadata
 
-[a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_M-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
-% [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
-% [a,b] = regexpi(filename,'(\d*)_C-([a-zA-Z0-9]*)_L-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
-b = b{1};
-SampleInstance = b{1};
-BeadChemistry = b{2};
-SubstrateChemistry = b{3};
-MediumName = b{4};
-SubstrateLot = b{5};
-MagnetGeometry = b{6};
+Fid = ba_makeFid;
 
 m.File.Fid = Fid;
-m.File.SampleName = filename;
-m.File.SampleInstance = SampleInstance;
-m.File.Binfile = binfilename; 
-m.File.Binpath = pwd;
-m.File.Hostname = strip(host);
-% switch MediumName
-%     case 'NoInt'
-%         m.File.IncubationStartTime = '10/03/2019 3:15 pm';
+
+% m.Medium.Name = MediumName;
+% switch m.Medium.Name
 %     case 'Int'
-%         m.File.IncubationStartTime = '';
-% end
+%         % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
+%         m.Medium.Viscosity = 0.0605;  
+%         m.Medium.Components = Int25k;
+%         m.Medium.ManufactureDate = '09-25-2019';   
+%     case 'NoInt'
+%         % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
+%         m.Medium.Viscosity = 0.0527;  
+%         m.Medium.Components = NoInt;
+%         m.Medium.ManufactureDate = '07-10-2019';   
+%     otherwise
+%         logentry('Unknown Case for Medium.');
+% end    
+% m.Medium.Buffer = 'PBS';
 
-switch lower(MagnetGeometry)
-    case 'cone'
-        m.File.IncubationStartTime = '10/17/2019 12:40 pm';
-    case 'softironcone'
-        m.File.IncubationStartTime = '10/17/2019 1:40 pm';
-end
-
-m.Bead.Diameter = 24;
-m.Bead.SurfaceChemistry = BeadChemistry;
-m.Bead.PointSpreadFunction = impsf;
-m.Bead.PointSpreadFunctionFilename = PSF_filename;
-
-m.Substrate.SurfaceChemistry = SubstrateChemistry;
-m.Substrate.Size = '50x75x1 mm';
-m.Substrate.LotNumber = SubstrateLot;
-
-m.Medium.Name = MediumName;
-switch m.Medium.Name
-    case 'Int'
-        % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
-        m.Medium.Viscosity = 0.0605;  
-        m.Medium.Components = Int25k;
-        m.Medium.ManufactureDate = '09-25-2019';   
-    case 'NoInt'
-        % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
-        m.Medium.Viscosity = 0.0527;  
-        m.Medium.Components = NoInt;
-        m.Medium.ManufactureDate = '07-10-2019';   
-    otherwise
-        logentry('Unknown Case for Medium.');
-end    
-m.Medium.Buffer = 'PBS';
-
-
-m.Zmotor.StartingHeight = starting_height;
-m.Zmotor.Velocity = motor_velocity;
-
-switch lower(MagnetGeometry)
-    case 'cone'
-        m.Magnet.Geometry = 'cone';
-        m.Magnet.Size = '0.25 inch radius';
-        m.Magnet.Material = 'rare-earth magnet (neodymium)';
-        m.Magnet.PartNumber = 'Cone0050N';
-        m.Magnet.Supplier = 'www.supermagnetman.com';
-        m.Magnet.Notes = 'Right-angle cone, radius 0.25 inch, north-pole at tip';
-    case 'softironcone'
-        m.Magnet.Geometry = 'softironcone';
-        m.Magnet.Size = '0.25 inch radius';
-        m.Magnet.Material = 'softiron';
-        m.Magnet.PartNumber = 'N/A';
-        m.Magnet.Supplier = 'UNC physics shop';
-        m.Magnet.Notes = 'Right-angle cone, radius 0.25 inch, softiron';        
-    case 'pincer'
-        m.Magnet.Geometry = 'orig';
-        m.Magnet.Size = 'gap is approx 2 mm';
-        m.Magnet.Material = 'soft-iron';
-        m.Magnet.PartNumber = 'N/A';
-        m.Magnet.Supplier = 'UNC physics shop';
-        m.Magnet.Notes = 'Original magnet design by Max DeJong with softiron pincer-stylt tips and rare-earth magnet (neodymium) rectangular prism magnets on the back end.';
-end        
-
-
-
-m.Scope.Name = 'Olympus IX-71';
-m.Scope.CodeName = 'Ixion';
-m.Scope.Magnification = 10;
-m.Scope.Magnifier = 1;
-m.Scope.Calibum = 0.346;
-
-m.Video.ExposureMode = src.ExposureMode; 
-m.Video.FrameRateMode = src.FrameRateMode;
-m.Video.ShutterMode = src.ShutterMode;
-m.Video.Gain = src.Gain;
-m.Video.Gamma = src.Gamma;
-m.Video.Brightness = src.Brightness;
 m.Video.Format = vid.VideoFormat;
-m.Video.Height = 768;
-m.Video.Width = 1024;
-m.Video.Depth = 16;
 m.Video.ExposureTime = src.Shutter;
+m.Video.Resolution = vid.VideoResolution;
+m.Video.NFrames = NFrames;
+m.Video.ImageType = imagetype;
 
 m.Results.ElapsedTime = elapsed_time;
 % m.Results.TimeHeightVidStatsTable = table(Time, ZHeight, Max, Mean, StDev, Min);
