@@ -1,12 +1,5 @@
-%  ##########################################################################
-%% ######################## CLOSE SERIAL PORT ###############################
-%  ##########################################################################
 function status=scope_close(S)
-
-    %--------------------------------------------------------------------------
-    % This function closes the serial port of the stage. Reference to the serial 
-    % port is passed to it as the argument S.
-    %--------------------------------------------------------------------------
+% SCOPE_CLOSE closes the connection to the microscope
     fclose(S);
     delete(S);
     clear S;

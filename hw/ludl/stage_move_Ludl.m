@@ -1,7 +1,6 @@
-%  ##########################################################################
-% %###################### MOVE STAGE SEQUENCE ###############################
-%  ##########################################################################
 function stage=stage_move_Ludl(stage, target_pos)
+% STAGE_MOVE_LUDL moves the stage to target Ludl coordinate
+
 %--------------------------------------------------------------------------
 % Move_Stage_Seq starts a []sequence that moves the stage from position A
 % to position B. THe function displays a waitbar and also adjusts

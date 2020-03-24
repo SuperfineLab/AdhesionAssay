@@ -1,4 +1,7 @@
 function [x_center y_center x_disp y_disp] = image_center_find(test, x_start, y_start)
+% IMAGE_CENTER_FIND locates the center of each fiducial mark and determines 
+% the ludl coordinates that the stage would need to be in such that the 
+% center of each fiducial mark would be at the center of the image
 
 % Define structuring element
 SE = strel('disk', 14);

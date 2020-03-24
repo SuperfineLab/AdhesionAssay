@@ -1,4 +1,7 @@
 function success = SerialPortSetUp()
+% SERIALPORTSETUP prompts the user to select what COM port the stage is
+% connected to and saves the appropriate data in 'PortNames.mat' inside the
+% same folder that SerialPortSetUp is located in
 try
     
     success = 0;

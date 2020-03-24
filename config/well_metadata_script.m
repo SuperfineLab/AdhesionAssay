@@ -44,13 +44,12 @@ BeadChemistry = 'BeadChemistry_test'; % CHANGE DUMMY VARIABLE!
 [~,host] = system('hostname');
 
 % Creating 'File' category
-m.File.Fid = '';   % Populate within ba_pulloff_auto
-m.File.SampleName = filename;   % Variable!
-m.File.SampleInstance = SampleInstance;   % Variable!
-m.File.Binfile = binfilename;   % Variable!
+m.File.SampleName = filename;   
+m.File.SampleInstance = SampleInstance;   
+m.File.Binfile = binfilename;  
 m.File.Binpath = pwd;
 m.File.Hostname = strip(host);
-m.File.IncubationStartTime = incubationstarttime;   % Variable!
+m.File.IncubationStartTime = incubationstarttime;   
    
 % Creating 'Scope' category
 m.Scope.Name = 'Olympus IX-71';
@@ -66,11 +65,9 @@ m.Video.ShutterMode = 'manual';
 m.Video.Gain = 10;
 m.Video.Gamma = 1.15;
 m.Video.Brightness = 5.8594;
-m.Video.Format = '';    % Populate within ba_pulloff_auto
 m.Video.Height = 768;
 m.Video.Width = 1024;
 m.Video.Depth = 16;
-m.Video.ExposureTime = [];  % Populate within ba_pulloff_auto
 
 % Creating 'Zmotor' category
 m.Zmotor.StartingHeight = 12;

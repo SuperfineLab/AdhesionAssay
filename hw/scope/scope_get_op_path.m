@@ -1,5 +1,6 @@
-function voltage = scope_get_lamp_voltage(obj1)
-% SCOPE_GET_LAMP_VOLTAGE returns the voltage of the lamp
+function path = scope_get_op_path(obj1)
+% SCOPE_GET_OP_PATH gets the optical path position of the device as an
+% integer
 
 % Flush data in input buffer
 flushinput(obj1)
@@ -9,9 +10,9 @@ recieved = false;
 
 % Reads the input
 while ~recieved    
-    data = query(obj1, 'rLVR', '%s\n' ,'%s');
-    if strcmp(data(1:4),'aLVR')
-        voltage = str2double(data(5:end));
+    data = query(obj1, 'rPAR', '%s\n' ,'%s');
+    if strcmp(data(1:4),'aPAR')
+        path = str2double(data(5:end));
         recieved = true;
     else
         flushinput(obj1)
