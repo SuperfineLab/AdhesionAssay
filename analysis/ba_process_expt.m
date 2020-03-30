@@ -1,4 +1,4 @@
-function outs = ba_process_expt(filepath)
+function outs = ba_process_expt(filepath, aggregating_variables)
 % BA_PROCESS_EXPT analzes the output of a bead adhesion experiment.
 %
 
@@ -29,6 +29,7 @@ for k = 1:length(evtfilelist)
    calibum = metadata.Scope.Calibum;   
    bead_diameter_um = metadata.Bead.Diameter;   
    Ztable = metadata.Results.TimeHeightVidStatsTable;
+   Ztable.Time = Ztable.Time * (60 *60 * 24); % convert from days to seconds
    Ztable.Time = (Ztable.Time - Ztable.Time(1));
    firstframe = metadata.Results.FirstFrame;
    lastframe = metadata.Results.LastFrame;
@@ -53,14 +54,14 @@ ForceTable = vertcat(ForceTable{:});
 FileTable = vertcat(FileTable{:});
 BeadInfoTable = vertcat(BeadInfoTable{:});
 
-[g, grpT] = findgroups(FileTable(:,{'BeadChemistry', 'Media'}));
+[g, grpT] = findgroups(FileTable(:,aggregating_variables));
 NStartingBeads(:,1) = splitapply(@sum, FileTable.FirstCount, g);
 NStartingBeadsT = [grpT, table(NStartingBeads)];
 
-T = join(ForceTable, FileTable(:,{'Fid', 'BeadChemistry', 'Media'}));
+T = join(ForceTable, FileTable(:,{'Fid', aggregating_variables{:}}));
 T = join(T, NStartingBeadsT);
 
-[g, grpT] = findgroups(T(:,{'BeadChemistry', 'Media'}));
+[g, grpT] = findgroups(T(:,aggregating_variables));
 
 fracleft = splitapply(@(x1,x2){sa_fracleft(x1,x2)},T.Force,T.NStartingBeads,g);
 fracleft = cell2mat(fracleft);
@@ -87,6 +88,7 @@ function sm = shorten_metadata(metadata)
     sm.SampleName = string(metadata.File.SampleName);
     sm.BeadChemistry = string(metadata.Bead.SurfaceChemistry);
     sm.SubstrateChemistry = string(metadata.Substrate.SurfaceChemistry);
+    sm.MagnetGeometry = string(metadata.Magnet.Geometry);
     sm.Media = string(metadata.Medium.Name);
     sm.MediumViscosity = metadata.Medium.Viscosity;
     sm.Calibum = metadata.Scope.Calibum;    
@@ -99,6 +101,7 @@ function sm = shorten_metadata(metadata)
     
     sm.BeadChemistry = categorical(sm.BeadChemistry);
     sm.SubstrateChemistry = categorical(sm.SubstrateChemistry);
+    sm.MagnetGeometry = categorical(sm.MagnetGeometry);    
     sm.Media = categorical(sm.Media);
 end
 

@@ -4,26 +4,29 @@ function m = ba_get_linefits(evtfile, calibum, visc_Pas, bead_diameter_um, Fid)
 
 d = load_evtfile(evtfile);
 
-t = d.FrameNumber ./ d.Fps;
-
-[g, ID] = findgroups(d.SpotID);
-
-if isempty(g)
-    m = struct;
+if isempty(d)
+    m = table('Size', [0 8], ...
+              'VariableTypes', {'double', 'double', 'string', 'double', ...
+                                'double', 'double', 'double', 'double'},...
+              'VariableNames', {'Fid', 'Filename', 'SpotID', 'StartPosition', ...
+                                'Pulloff_time', 'Mean_time', 'Mean_vel', 'Force'});
     return
+else 
+    t = d.FrameNumber ./ d.Fps;
+    [g, ID] = findgroups(d.SpotID);
 end
 
-foo = splitapply(@(x,y)mylinfit(x,y,1), t, d.Z, g);
+myfits = splitapply(@(x,y)mylinfit(x,y,1), t, d.Z, g);
 sp = splitapply(@(x,y)get_startpos(x,y), d.X, d.Y, g);
 
-mb = cell2mat(foo(:,3));
+mb = cell2mat(myfits(:,3));
 
-m.Fid = repmat(Fid, size(foo,1), 1);
-m.Filename = repmat(string(evtfile), size(foo,1), 1);
+m.Fid = repmat(Fid, size(myfits,1), 1);
+m.Filename = repmat(string(evtfile), size(myfits,1), 1);
 m.SpotID = ID;
 m.StartPosition = cell2mat(sp);
-m.Pulloff_time = cell2mat(foo(:,1));
-m.Mean_time = cell2mat(foo(:,2));
+m.Pulloff_time = cell2mat(myfits(:,1));
+m.Mean_time = cell2mat(myfits(:,2));
 m.Mean_vel = mb(:,1) * calibum * 1e-6;
 m.Force = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.Mean_vel;
 
@@ -36,9 +39,9 @@ function outs = get_startpos(x,y)
     outs{1,2} = y(1);
 return
 
-function outs = mylinfit(x,y,order)
-    mb = polyfit(x,y,order);
-    outs{1,1} = x(1);
-    outs{1,2} = mean(x);
+function outs = mylinfit(t,z,order)
+    mb = polyfit(t,z,order);
+    outs{1,1} = t(1);
+    outs{1,2} = mean(t);
     outs{1,3} = mb;
 return
