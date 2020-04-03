@@ -27,42 +27,50 @@ exptdir = filelist(1).folder;
 startdir = pwd;
 cd(exptdir);
 
+    
 binfilelist = dir('**/*.bin');
-
-if isempty(binfilelist)
-    %error('No bin files found.');
+    
+if ~isempty(binfilelist)
+    B = length(binfilelist);
+    for b = 1 : B
+        binfile = binfilelist(b).name;
+        
+        logentry('Converting bin file to stack of pgms...')
+        ba_bin2stack(binfile, [], true);
+        
+        logentry('Deleting original bin file...');
+        delete(binfile);
+    end
+else
+%     error('No data found.');
 end
 
-B = length(binfilelist);
+stackdirlist = dir('**/frame00001.pgm');
 
-% For every .bin file in my experiment directory
-for b = 1:B
-    
-    binfile = binfilelist(b).name;
-    binpath = binfilelist(b).folder;    
-    binbase = strrep(binfile, '.bin', '');
-    
-    stackdir = [binpath, filesep, binbase];
-    
-    cd(binpath);
-    
-    logentry('Converting bin file to stack of pgms...')
-    ba_bin2stack(binfile, [], true);
+S = length(stackdirlist);
 
-    logentry('Loading frame extraction times and motor z-positions');
+% For every file-stack in my experiment directory
+for s = 1:S
+    
+    stackdir = stackdirlist(s).folder;
+    
+% %     cd(binpath);
+    
+
+
+%     logentry('Loading frame extraction times and motor z-positions');
     tz = load([stackdir '.meta.mat']);
     
-    logentry('Retrieving first & last frames (used for first locating beads).');
+%     logentry('Retrieving first & last frames (used for first locating beads).');
     ba_extract_keyframes(stackdir);
     
-    logentry('Creating mini-video of stack using MP4 format');
+%     logentry('Creating mini-video of stack using MP4 format');
     ba_minivideo(stackdir);
     
     logentry('Tracking beads in this stack...');
     ba_trackstack(stackdir);
 
-    logentry('Deleting original bin file...');
-    delete(binfile);
+
 
 %     logentry('Finding beads in first and last frames.');
 %     ba_discoverbeads(
@@ -78,6 +86,7 @@ for b = 1:B
     cd(exptdir);
         
 end
+% rm('*_tmp.*');
 
 cd(startdir);
 
