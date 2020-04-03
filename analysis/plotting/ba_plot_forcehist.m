@@ -18,8 +18,11 @@ function ba_plot_forcehist(ba_process_data, aggregating_variables, plotorder)
     [gF, grpF] = findgroups(FTable(:,aggVars));
     
     grpFstr = string(table2array(grpF));
-    ystrings = join(grpFstr, '_');
-
+    if size(grpFstr,2) > 1
+        ystrings = join(grpFstr, '_');
+    else
+        ystrings = grpFstr;
+    end
     maxforce = 90e-9;
 
     grpF.Force = splitapply(@(x1,x2){sa_attach_stuck_beads(x1,x2,maxforce)}, FTable.Force, ...
