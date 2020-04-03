@@ -8,8 +8,13 @@ function ba_impreview(zhand)
     
     imaqmex('feature', '-previewFullBitDepth', true);
     
-%     vid = videoinput('pointgrey', 1, 'F7_Raw16_1024x768_Mode2');
-    vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+    Camera.Name = 'Grasshopper 3';
+    Camera.Model = 'GS3-U3-32S4M-C';
+    Camera.Type = 'pointgrey';
+    Camera.Number = 2; % This is equivalent to the Light Path, left of ocular on Artemis (Chapman Hall B42)
+    Camera.Mode = 'F7_Raw16_1024x768_Mode2';
+    vid = videoinput(Camera.Type, Camera.Number, Camera.Mode);
+    
     vid.ReturnedColorspace = 'grayscale';
     
     src = getselectedsource(vid);
@@ -46,8 +51,8 @@ function ba_impreview(zhand)
                                  'Style', 'pushbutton', ...
                                  'String', 'Grab Frame', ...
                                  'Callback', @grab_frame);
-    edit_exptime.Position
-    btn_grabframe.Position
+%     edit_exptime.Position
+%     btn_grabframe.Position
     
     hImage.UserData{1} = zhand;
     
@@ -55,7 +60,7 @@ function ba_impreview(zhand)
 %     hImage.CData = log10(double(hImage.CData));
     h = preview(vid, hImage);
     set(h, 'CDataMapping', 'scaled');
-get(h)
+
     function change_exptime(source,event)
 
         exptime = str2num(source.String);
