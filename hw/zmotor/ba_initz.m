@@ -1,4 +1,4 @@
-function hnd = ba_initz(visibleUI_TF)
+function hnd = ba_initz(scopecodename, visibleUI_TF)
 % BA_INITZ initializes the handle to the Thorlabs z-motor
 % 
 
@@ -18,7 +18,11 @@ function hnd = ba_initz(visibleUI_TF)
 % each other or an edge will probably not work well when tracking. Focus the region, then
 % close image acquisition again.  Run the script.
 
-if nargin < 1 || isempty(visibleUI_TF)
+if nargin < 1 || isempty(scopecodename)
+    error('Need scope code name, Ixion or Artemis');
+end
+
+if nargin < 2 || isempty(visibleUI_TF)
     visibleUI_TF = false;
 end
 
@@ -48,7 +52,16 @@ hnd.StartCtrl;
 
 % The serial number for the motor is 83829797. Must set it here and
 % register/identify our connection to the motor.
-set(hnd,'HWSerialNum', 83829573);
+switch scopecodename
+    case 'Artemis'
+        set(hnd,'HWSerialNum', 83829573);
+    case 'Ixion'
+        set(hnd,'HWSerialNum', 83829797);
+    otherwise
+        error('Unrecognizable Scope.');
+end
+        
+
 hnd.Identify; 
 drawnow;
 
