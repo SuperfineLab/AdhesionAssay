@@ -22,7 +22,7 @@ function ba_impreview(zhand)
     src.Brightness = 5.8594;   
     src.ExposureMode = 'off';    
     src.GainMode = 'manual';
-    src.Gain       = 10;
+    src.Gain       = 14;
     src.GammaMode = 'manual';
     src.Gamma      = 1.15;
     src.FrameRateMode  = 'off';

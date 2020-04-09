@@ -54,9 +54,9 @@ hnd.StartCtrl;
 % register/identify our connection to the motor.
 switch scopecodename
     case 'Artemis'
-        set(hnd,'HWSerialNum', 83829573);
-    case 'Ixion'
         set(hnd,'HWSerialNum', 83829797);
+    case 'Ixion'
+        set(hnd,'HWSerialNum', 83829573);
     otherwise
         error('Unrecognizable Scope.');
 end
