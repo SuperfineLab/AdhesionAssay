@@ -33,7 +33,7 @@ if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
-PSF_filename = 'D:\jcribb\src\3dfmAnalysis\specific\adhesion\psf\mag_10x_bead_24umdiaYG_stepsize_1um.psf.tif';
+PSF_filename = 'D:\jcribb\src\AdhesionAssay\calib\psf\mag_10x_bead_24umdiaYG_stepsize_1um.psf.tif';
 impsf = imread(PSF_filename);
 
 Name = {'Lactose', 'Galactose', 'GalNAc', 'GlcNac', 'Sialic Acid', 'PEG20k'}';
@@ -61,8 +61,9 @@ Fps = 1 / (exptime/1000);
 % NFrames = ceil(Fps * Nsec);
 NFrames = 7625;
 
+
 imaqmex('feature', '-previewFullBitDepth', true);
-vid = videoinput('pointgrey', 1,'F7_Raw16_1024x768_Mode2');
+vid = videoinput('pointgrey', 2,'F7_Raw16_1024x768_Mode2');
 vid.ReturnedColorspace = 'grayscale';
 triggerconfig(vid, 'manual');
 vid.FramesPerTrigger = NFrames;
@@ -73,7 +74,7 @@ src = getselectedsource(vid);
 src.ExposureMode = 'off'; 
 src.FrameRateMode = 'off';
 src.ShutterMode = 'manual';
-src.Gain = 10;
+src.Gain = 14;
 src.Gamma = 1.15;
 src.Brightness = 5.8594;
 src.Shutter = exptime;
@@ -213,16 +214,18 @@ ZHeight(1:AbsFrameNumber(1),1) = zheight(1);
 Fid = ba_makeFid;
 [~,host] = system('hostname');
 
-[a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_M-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
+[a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
+% [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_M-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 % [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 % [a,b] = regexpi(filename,'(\d*)_C-([a-zA-Z0-9]*)_L-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 b = b{1};
 SampleInstance = b{1};
 BeadChemistry = b{2};
 SubstrateChemistry = b{3};
-MediumName = b{4};
-SubstrateLot = b{5};
-MagnetGeometry = b{6};
+InterferencePercent = b{4};
+MediumName = b{5};
+SubstrateLot = 0;
+MagnetGeometry ='softironcone';
 
 m.File.Fid = Fid;
 m.File.SampleName = filename;
@@ -230,19 +233,14 @@ m.File.SampleInstance = SampleInstance;
 m.File.Binfile = binfilename; 
 m.File.Binpath = pwd;
 m.File.Hostname = strip(host);
-% switch MediumName
-%     case 'NoInt'
-%         m.File.IncubationStartTime = '10/03/2019 3:15 pm';
-%     case 'Int'
-%         m.File.IncubationStartTime = '';
-% end
-
-switch lower(MagnetGeometry)
-    case 'cone'
-        m.File.IncubationStartTime = '10/17/2019 12:40 pm';
-    case 'softironcone'
-        m.File.IncubationStartTime = '10/17/2019 1:40 pm';
+switch MediumName
+    case 'NoInt'
+        m.File.IncubationStartTime = '03/12/2020 9:30 am';
+    case 'Int'
+        m.File.IncubationStartTime = '';
 end
+
+% m.File.IncubationStartTime = '01/10/2020 12:30 pm';
 
 m.Bead.Diameter = 24;
 m.Bead.SurfaceChemistry = BeadChemistry;
@@ -264,7 +262,7 @@ switch m.Medium.Name
         % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
         m.Medium.Viscosity = 0.0527;  
         m.Medium.Components = NoInt;
-        m.Medium.ManufactureDate = '07-10-2019';   
+        m.Medium.ManufactureDate = '10-16-2019';   
     otherwise
         logentry('Unknown Case for Medium.');
 end    

@@ -1,4 +1,7 @@
 function ba_pulloff_auto(zhand, filename,exptime, metafile)
+% BA_PULLOFF_AUTO(zhand,filename,exptime,metafile) lowers the magnet at a
+% given location and records a video as a .bin file for a specific duration
+
 % Prior to starting experiment, make sure the magnet is centered.  Lower
 % the magnet to 0 and use the vertical micrometer to ensure the tips of the
 % magnet will touch the top of a glass slide (to apply maximum force to
@@ -14,10 +17,6 @@ function ba_pulloff_auto(zhand, filename,exptime, metafile)
 % Find a region that has 20-40 beads.  Beads within a diameter from
 % each other or an edge will probably not work well when tracking. Focus the region, then
 % close image acquisition again.  Run the script.
-
-%% Import metadata
-
-m = load(metafile);
 
 %% Checking for empty inputs
 
@@ -42,6 +41,13 @@ end
 if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
 end
+
+%% Import metadata
+% Note: metafile should be a .m file generated using the
+% WELL_METADATA_SCRIPT function
+
+m = load(metafile);
+
 
 %% Setting Parameters
 

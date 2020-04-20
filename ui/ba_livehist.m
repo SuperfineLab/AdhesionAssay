@@ -16,6 +16,7 @@ ax = subplot(2,1,2);
 set(ax, 'Units', 'normalized');
 set(ax, 'Position', [0.28, 0.05, 0.4, 0.17]);
 
+
 D = double(im(:));
 
 avgD = round(mean(D));
@@ -29,27 +30,34 @@ stdD = num2str(stdD, '%u');
 maxD = num2str(maxD, '%u');
 minD = num2str(minD, '%u');
 
-focus_score = fmeasure(im, 'GDER');
 
-
-    q = [q focus_score];
 
 assignin('base', 'focus_measure', q);
 
 % Plot the histogram. Choose 128 bins for faster update of the display.
 % imhist(event.Data, 32768);
-set(gca,'YScale','log')
+
 switch class(event.Data)
     case 'uint8'
         xlim([0 260]);        
         imhist(event.Data, 128);
-    case 'uint16'
-        xlim([0 66500]);
-        imhist(event.Data, 32768);
+    case 'uint16'        
+        imhist(event.Data, 32768);        
+        xlim([0 66000]);
 end
+set(gca,'YScale','log')
 
 image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], '];
-focus_str = ['focus score= ', num2str(focus_score), ', '];
+
+focus = false;
+if focus
+    focus_score = fmeasure(im, 'GDER');
+    % q = [q focus_score];
+    focus_str = ['focus score= ', num2str(focus_score), ', '];
+else
+    focus_str = '';
+end
+
 zpos_str = ['z = ' num2str(ba_getz(zhand)) ' [mm]'];
 
 title([image_str, focus_str, zpos_str]);

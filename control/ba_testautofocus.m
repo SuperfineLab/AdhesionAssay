@@ -27,8 +27,8 @@ end
 
 % Camera Setup
 imaqmex('feature', '-previewFullBitDepth', true);
-vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
-% vid = videoinput('pointgrey', 1,'F7_Raw16_1024x768_Mode2');
+%vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+vid = videoinput('pointgrey', 2,'F7_Raw16_1024x768_Mode2');
 vid.ReturnedColorspace = 'grayscale';
 % triggerconfig(vid, 'manual');
 % vid.FramesPerTrigger = NFrames;
@@ -84,7 +84,7 @@ for k = 1:N
     figure(f); 
     drawnow;
 
-    logentry(['Moving scope to step' num2str(k) 'located at ' this_focus '. ']);
+    logentry(['Moving scope to step' num2str(k) ' located at ' num2str(this_focus) '. ']);
     scope_set_focus(scope, this_focus);    
     arrived_locs(k,1) = scope_get_focus(scope);
     logentry(['Focus location: ' num2str(arrived_locs(k,1))]);

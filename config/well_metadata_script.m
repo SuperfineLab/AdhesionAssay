@@ -1,5 +1,8 @@
-function well_metadata_script(row,col)
-% row - refers to the row value of the well, takes values ['A', 'B', 'C']
+function m = well_metadata_script(row,col)
+% WELL_METADATA_SCRIPT(row,col) takes an input file generated using the
+% well layout software and turns it into a .m file
+
+% row - refers to the row value of the well, takes values [1, 2, 3]
 % col - refers to the column value of the well, takes values [1, 2, 3, 4,
 % 5]
 
@@ -9,12 +12,24 @@ function well_metadata_script(row,col)
 ivarfile = 'D:\data\test.csv'; % For test purposes only! Replace with real file name! :)
 ivar = welllayout_metadata_read(ivarfile);
 
+% Rename rows to letters
+switch row
+    case 1
+        row_letter = 'A';
+    case 2
+        row_letter = 'B';
+    case 3
+        row_letter = 'C';
+    otherwise
+        disp('Error: Invalid row')
+end
+
 % Keep only data for given well
 rows = [];
 i = 1;
 
 while i <= height(ivar)
-   if ~((categorical(ivar{i,'PlateRow'}) == row) && (ivar{i,'PlateColumn'} == col))
+   if ~((categorical(ivar{i,'PlateRow'}) == row_letter) && (ivar{i,'PlateColumn'} == col))
         rows = [rows, i];
    end
    i = i + 1;
