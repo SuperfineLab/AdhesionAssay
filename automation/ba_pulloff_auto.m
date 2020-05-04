@@ -1,6 +1,11 @@
-function ba_pulloff_auto(zhand, filename,exptime, metafile)
-% BA_PULLOFF_AUTO(zhand,filename,exptime,metafile) lowers the magnet at a
-% given location and records a video as a .bin file for a specific duration
+function ba_pulloff_auto(zhand, filename, exptime, metafile)
+% BA_PULLOFF_AUTO runs automated version of AdhesionAssay experiment
+%
+% ba_pulloff_auto(zhand,filename,exptime,metafile) lowers the magnet at a
+% given location and records video as .bin files for locations specified by
+% a metadata file.
+
+
 
 % Prior to starting experiment, make sure the magnet is centered.  Lower
 % the magnet to 0 and use the vertical micrometer to ensure the tips of the
