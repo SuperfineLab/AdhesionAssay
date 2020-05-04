@@ -1,13 +1,12 @@
 function value = ivar_extract(ivarTable,var)
 
-i = 1;
+k = 1;
 
-while i <= height(ivarTable)
-    if ivarTable{i,'Field_name'} == var
-       value = convertStringsToChars(ivarTable{i,'Value'});
+while k <= height(ivarTable)
+    if ivarTable{k,'Field_name'} == var
+       value = convertStringsToChars(ivarTable{k,'Value'});
        break
     end
-    i = i + 1;
+    k = k + 1;
 end
 
-clear i

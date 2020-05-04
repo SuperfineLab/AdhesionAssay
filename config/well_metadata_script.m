@@ -26,18 +26,18 @@ end
 
 % Keep only data for given well
 rows = [];
-i = 1;
+k = 1;
 
-while i <= height(ivar)
-   if ~((categorical(ivar{i,'PlateRow'}) == row_letter) && (ivar{i,'PlateColumn'} == col))
-        rows = [rows, i];
+while k <= height(ivar)
+   if ~((categorical(ivar{k,'PlateRow'}) == row_letter) && (ivar{k,'PlateColumn'} == col))
+        rows = [rows, k];
    end
-   i = i + 1;
+   k = k + 1;
 end
 
 ivar(rows,:) = [];
 
-clear i rows
+clear k rows
 
 % Pull independent variables for 'File' for given well
 filename = ivar_extract(ivar,'SampleName');
