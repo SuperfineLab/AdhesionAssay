@@ -21,7 +21,7 @@ if nargin<=2
 end
 
 %% Format for each line of text:
-formatSpec = '%C%f%f%s%s%s%s%[^\n\r]';
+formatSpec = '%C%C%f%f%s%s%s%[^\n\r]';
 
 %% Open the text file.
 fileID = fopen(filename,'r');
@@ -43,47 +43,70 @@ end
 fclose(fileID);
 
 %% Create output variable
-platedef = table(dataArray{1:end-1}, 'VariableNames', {'PlateRow','PlateColumn','Well_ID','Object_ID','Object_name','Field_name','Value'});
+platedef = table(dataArray{1:end-1}, 'VariableNames', {'PlateRow','PlateColumn','Well_ID','ObjectID','ObjectName','FieldName','Value'});
+platedef.ObjectName = cellstr(platedef.ObjectName);
+platedef.FieldName = cellstr(platedef.FieldName);
+platedef.Value = cellstr(platedef.Value);
 
-%% Loop to delete unnecessary rows (row values greater than C)
+%% Convert old 96-well IDs to new 15-well IDs (rows > C, columns > 5)
 
-i = 1;
-rows = [];
-check = true;   % Checks to see if the row is greater than C
-rowcheck = ['A','B','C'];   % Row letter values to keep
+% Compativle 96-well IDs for the new 15-well plate definition
+compat96well_IDs(:,1) = [1:5,13:17,25:29];
 
-while i <= height(platedef)
-    for v = rowcheck
-       if categorical(platedef{i,1}) == v
-           check = false;
-       end
-    end
-    if check
-        rows = [rows, i];
-    end
-    i = i + 1;
-    check = true;
+% Pull out the good 96-well IDs that apply to the 15-well Adhesion
+% platedef. The second output returns the index location, which is,
+% conveniently, equal to our new Well_IDs for the 15-well plate. Any Well_ID
+% under the old 96-well spec is zeroed out and is removed simply by
+% filtering for where the new Well_IDs are greater than zero.
+[~, newWell_IDs] = ismember(platedef.Well_ID, compat96well_IDs);
+platedef.Well_ID = newWell_IDs;
+platedef = platedef( platedef.Well_ID > 0, :);
+
+
+% how many different objects do we have
+objids(:,1) = unique(platedef.ObjectID);
+objnamelist(:,1) = unique(platedef.ObjectName);
+
+% bind objID to objName
+for k = 1:length(objids)
+    idx = find( platedef.ObjectID == objids(k) );
+    objname(k,1) = unique( platedef.ObjectName(idx) );
 end
 
-platedef(rows,:) = [];
 
-clear i rows
 
-%% Loop to delete unnecessary rows (column values greater than 5)
+vidx = ~cellfun('isempty', platedef.Value);
+welllist = unique(platedef.Well_ID(vidx));
 
-i = 1;
-rows = [];
+q.well_map(welllist) = cellstr(num2str(welllist));
 
-while i <= height(platedef)
-    x = platedef{i,2};
-    if x > 5.0
-        rows = [rows, i];
+% A limited number of object names (or object types) exist in the
+% WELL_LAYOUT csv file. More than one instance of each object name can
+% exist in a file (e.g. more than one celltype or additive solution could
+% exist in a well). We have to separate the name/type of the object from
+% the instance of the object. In other words, one object type might have
+% more than one object id in the file.
+for k = 1:length(objids)
+    myobj_name = objname{k};
+    
+    if isfield(q, myobj_name)        
+        index = length(getfield(q,myobj_name))+1;
+    else
+        index = 1;
     end
-    i = i + 1;
-    clear x
+    
+    kidx = find(platedef.ObjectID == objids(k));
+    fnames = unique( platedef.FieldName(kidx) )';
+    
+    for m = 1:length(fnames)
+
+        foo = strcmp(platedef.FieldName, fnames(m));
+        midx = find( str2double(platedef.ObjectID) == objids(k) && foo);
+        
+        tmp = platedef.Value(midx);
+        q.(objname{k})(index).(fnames{m}) = tmp(:);
+    end        
 end
 
-platedef(rows,:) = [];
-
-clear i rows
+outs = q;
 
