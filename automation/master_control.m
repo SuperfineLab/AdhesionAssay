@@ -1,25 +1,35 @@
 function master_control
 % MASTER_CONTROL runs an experiment for a given plate once
 
-%% Setup
+%-- Setup
+
+% Constants
+ON = 1; OFF = 0;
+
 % Open the stage, scope, zhand connections
 stage = stage_open_Ludl(); % TODO: Check connections are actually open!
 scope = scope_open();
 h = ba_initz('Artemis');
 
 % Turn on brightfield lamp
-if scope_get_lamp_state(scope) == 0
-    scope_set_lamp_state(scope,1);
+if scope_get_lamp_state(scope) == OFF
+    scope_set_lamp_state(scope, ON);
+end
+
+% Calibrate stage
+centers = calibrate(stage);
+
+% Turn off lights
+if scope_get_lamp_state(scope) == ON
+    scope_set_lamp_state(scope, OFF);
 end
 
 % Check that LED lamp is on
 disp('Confirm that the LED lamp on, then press Enter to continue');
 pause;
 
-% Calibrate stage
-centers = calibrate(stage);
 
-%% Data Collection
+%-- Data Collection
 % Loop that runs ba_pulloff_auto for each well (assuming one test per well)
 for k = 1:num
     
@@ -40,11 +50,8 @@ for k = 1:num
     ba_pulloff_auto(h, filename,exptime, metafile);
 end
 
-%% Cleaning Up
-% Turn off lights
-if scope_get_lamp_state(scope) == 1:
-    scope_set_lamp_state(scope,0);
-end
+%-- Cleaning Up
+
 
 % Prompt to turn LED lamp off
 disp('Turn LED lamp off, then press Enter to continue');
