@@ -4,27 +4,14 @@ function ba_pulloff_auto(zhand, filename, exptime, metafile)
 % ba_pulloff_auto(zhand,filename,exptime,metafile) lowers the magnet at a
 % given location and records video as .bin files for locations specified by
 % a metadata file.
-
-
-
+% 
 % Prior to starting experiment, make sure the magnet is centered.  Lower
 % the magnet to 0 and use the vertical micrometer to ensure the tips of the
 % magnet will touch the top of a glass slide (to apply maximum force to
-% bead).  Click on the apps tab and open image acquisition.  Use the
-% horizontal micrometers to line up the magnet gap with the field of view.
-% If done correctly, you will not see the tips of the magnets show up.  You
-% may have to adjust the focus and increase the gain to see the gap with
-% fluorescence.  Close image acquisition, then run the first two sections
-% of this script.  Raise the motor back to 12mm by clicking the height box
-% in the gui and typing the desired height.  Carefully place the sample
-% under the magnet, making sure the magnet will not contact and edge of the
-% chamber when it is lowered.  Close the gui, then reopen image acqusition.
-% Find a region that has 20-40 beads.  Beads within a diameter from
-% each other or an edge will probably not work well when tracking. Focus the region, then
-% close image acquisition again.  Run the script.
+% bead).  
+
 
 %% Checking for empty inputs
-
 if nargin < 1 || isempty(zhand)
     disp('No z-controller object. Connecting to z-motor now...');
     try
@@ -39,12 +26,12 @@ if nargin < 2 || isempty(filename)
     error('Need file name.')
 end
 
-if nargin < 4 || isempty(metafile)
-    error('Need metafile.');
-end
-
 if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
+end
+
+if nargin < 4 || isempty(metafile)
+    error('Need metafile.');
 end
 
 %% Import metadata
@@ -61,7 +48,7 @@ starting_height = m.Zmotor.StartingHeight;
 motor_velocity = m.Zmotor.Velocity; % [mm/sec]
 abstime{1,1} = [];
 framenumber{1,1} = [];
-TotalFrames = 0;
+% TotalFrames = 0;
 znow = starting_height;
 
 % Following code found in apps -> image acquisition

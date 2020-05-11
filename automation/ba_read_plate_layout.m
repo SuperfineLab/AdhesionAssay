@@ -1,4 +1,4 @@
-function platedef = welllayout_metadata_read(filename, startRow, endRow)
+function platedef = ba_read_plate_layout(filename)
 %IMPORTFILE Import numeric data from a text file as a matrix.
 %   HBE4PCTHETCHECKWELLLAYOUT = IMPORTFILE(FILENAME) Reads data from text
 %   file FILENAME for the default selection.
@@ -15,10 +15,8 @@ function platedef = welllayout_metadata_read(filename, startRow, endRow)
 
 %% Initialize variables.
 delimiter = ',';
-if nargin<=2
-    startRow = 2;
-    endRow = inf;
-end
+startRow = 2;
+endRow = inf;
 
 %% Format for each line of text:
 formatSpec = '%C%C%f%f%s%s%s%[^\n\r]';
@@ -47,66 +45,76 @@ platedef = table(dataArray{1:end-1}, 'VariableNames', {'PlateRow','PlateColumn',
 platedef.ObjectName = cellstr(platedef.ObjectName);
 platedef.FieldName = cellstr(platedef.FieldName);
 platedef.Value = cellstr(platedef.Value);
+platedef = movevars(platedef, {'PlateRow','PlateColumn','ObjectID','ObjectName','FieldName','Value'}, 'after', 'Well_ID');
 
-%% Convert old 96-well IDs to new 15-well IDs (rows > C, columns > 5)
+%% Convert old 96-well IDs to new 15-well IDs (delete rows > C, columns > 5)
 
-% Compativle 96-well IDs for the new 15-well plate definition
+% Compatible 96-well IDs for the new 15-well plate definition
 compat96well_IDs(:,1) = [1:5,13:17,25:29];
 
-% Pull out the good 96-well IDs that apply to the 15-well Adhesion
+% Pull out the good 96-well IDs that apply to the 15-well Adhesion Assay
 % platedef. The second output returns the index location, which is,
 % conveniently, equal to our new Well_IDs for the 15-well plate. Any Well_ID
-% under the old 96-well spec is zeroed out and is removed simply by
-% filtering for where the new Well_IDs are greater than zero.
+% under the old 96-well spec that doesn't work for the 15-well spec is 
+% zeroed out and is removed simply by filtering for where the new 
+% Well_IDs are greater than zero.
 [~, newWell_IDs] = ismember(platedef.Well_ID, compat96well_IDs);
 platedef.Well_ID = newWell_IDs;
 platedef = platedef( platedef.Well_ID > 0, :);
 
-
-% how many different objects do we have
-objids(:,1) = unique(platedef.ObjectID);
-objnamelist(:,1) = unique(platedef.ObjectName);
-
-% bind objID to objName
-for k = 1:length(objids)
-    idx = find( platedef.ObjectID == objids(k) );
-    objname(k,1) = unique( platedef.ObjectName(idx) );
-end
-
-
-
-vidx = ~cellfun('isempty', platedef.Value);
-welllist = unique(platedef.Well_ID(vidx));
-
-q.well_map(welllist) = cellstr(num2str(welllist));
-
-% A limited number of object names (or object types) exist in the
-% WELL_LAYOUT csv file. More than one instance of each object name can
-% exist in a file (e.g. more than one celltype or additive solution could
-% exist in a well). We have to separate the name/type of the object from
-% the instance of the object. In other words, one object type might have
-% more than one object id in the file.
-for k = 1:length(objids)
-    myobj_name = objname{k};
-    
-    if isfield(q, myobj_name)        
-        index = length(getfield(q,myobj_name))+1;
-    else
-        index = 1;
-    end
-    
-    kidx = find(platedef.ObjectID == objids(k));
-    fnames = unique( platedef.FieldName(kidx) )';
-    
-    for m = 1:length(fnames)
-
-        foo = strcmp(platedef.FieldName, fnames(m));
-        midx = find( str2double(platedef.ObjectID) == objids(k) && foo);
-        
-        tmp = platedef.Value(midx);
-        q.(objname{k})(index).(fnames{m}) = tmp(:);
-    end        
-end
-
-outs = q;
-
+% % % % % % 
+% % % % % % % List the different objects we have
+% % % % % % objids(:,1) = unique(platedef.ObjectID);
+% % % % % % objnamelist(:,1) = unique(platedef.ObjectName);
+% % % % % % 
+% % % % % % % bind objID to objName since results from unique don't have to be lined up.
+% % % % % % for k = 1:length(objids)
+% % % % % %     idx = find( platedef.ObjectID == objids(k) );
+% % % % % %     objname(k,1) = platedef.ObjectName(idx(1));
+% % % % % % end
+% % % % % % 
+% % % % % % 
+% % % % % % 
+% % % % % % vidx = ~cellfun('isempty', platedef.Value);
+% % % % % % welllist = unique(platedef.Well_ID(vidx));
+% % % % % % 
+% % % % % % q.well_map(welllist) = cellstr(num2str(welllist));
+% % % % % % % q = struct;
+% % % % % % % A limited number of object names (or object types) exist in the
+% % % % % % % WELL_LAYOUT csv file. More than one instance of each object name can
+% % % % % % % exist in a file (e.g. more than one celltype or additive solution could
+% % % % % % % exist in a well). We have to separate the name/type of the object from
+% % % % % % % the instance of the object. In other words, one object type might have
+% % % % % % % more than one object id in the file.
+% % % % % % 
+% % % % % % Well_ID_list = unique(platedef.Well_ID);
+% % % % % % 
+% % % % % % for w = 1:numel(Well_ID_list)
+% % % % % %     for k = 1:numel(objids)
+% % % % % %         myobj_name = objname{k}
+% % % % % % 
+% % % % % %         if isfield(q, myobj_name)        
+% % % % % %             index = length(getfield(q,myobj_name))+1;
+% % % % % %         else
+% % % % % %             index = 1;
+% % % % % %         end
+% % % % % % 
+% % % % % %         kidx = find(platedef.ObjectID == objids(k));
+% % % % % %         fnames = unique( platedef.FieldName(kidx) )'
+% % % % % % 
+% % % % % %         for m = 1:length(fnames)
+% % % % % % 
+% % % % % %             foo = strcmp(platedef.FieldName, fnames(m));
+% % % % % %             midx = find( str2double(platedef.ObjectID) == objids(k) && foo);
+% % % % % % 
+% % % % % %             tmp = platedef.Value(midx);
+% % % % % %             q(w,1).(objname{k})(index).(fnames{m}) = tmp;
+% % % % % %         end        
+% % % % % %     end
+% % % % % % 
+% % % % % %     mywell = Well_ID_list(w);
+% % % % % %     
+% % % % % % end
+% % % % % % 
+% % % % % % platedef = q;
+% % % % % % 

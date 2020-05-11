@@ -10,7 +10,7 @@ function m = well_metadata_script(row,col)
 
 % Import the file and prune out data not pertaining to given well
 ivarfile = 'D:\data\test.csv'; % For test purposes only! Replace with real file name! :)
-ivar = welllayout_metadata_read(ivarfile);
+ivar = ba_read_plate_layout(ivarfile);
 
 % Rename rows to letters
 switch row
