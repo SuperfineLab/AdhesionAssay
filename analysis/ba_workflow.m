@@ -1,7 +1,6 @@
 function ba_workflow(filemask)
 % BA_WORKFLOW analyzes a suite of bead-adhesion videos in the experiment path.
 %
-
 % 
 %
 % Given an experiment directory of bin files, perform automated analysis
@@ -62,10 +61,10 @@ for s = 1:S
     tz = load([stackdir '.meta.mat']);
     
 %     logentry('Retrieving first & last frames (used for first locating beads).');
-    ba_extract_keyframes(stackdir);
+%     ba_extract_keyframes(stackdir);
     
 %     logentry('Creating mini-video of stack using MP4 format');
-    ba_minivideo(stackdir);
+%     ba_minivideo(stackdir);
     
     logentry('Tracking beads in this stack...');
     ba_trackstack(stackdir);
