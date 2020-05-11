@@ -6,8 +6,8 @@ function [fiducialpos, points] = fiducial_position_array(ludl)
 % WARNING: Adjust 'points' according to image size!
 fiducialpos = zeros(4,2);
 points = zeros(488,648,4);
-length = mm_to_tick(69.6);
-width = mm_to_tick(44.476);
+length = mm2tick(69.6);
+width = mm2tick(44.476);
 
 vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
 

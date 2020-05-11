@@ -18,10 +18,10 @@ interwell_dist_x = 16.2;
 interwell_dist_y = 11.79; 
 
 % Convert mm to ticks
-well_one_x_tick = mm_to_tick(well_one_cent_x);
-well_one_y_tick = mm_to_tick(well_one_cent_y);
-interwell_x_tick = mm_to_tick(interwell_dist_x);
-interwell_y_tick = mm_to_tick(interwell_dist_y);
+well_one_x_tick = mm2tick(well_one_cent_x);
+well_one_y_tick = mm2tick(well_one_cent_y);
+interwell_x_tick = mm2tick(interwell_dist_x);
+interwell_y_tick = mm2tick(interwell_dist_y);
 
 % Find moving distance
 dist_x = -(well_one_x_tick + (wellcor(1) - 1) * interwell_x_tick);

@@ -19,8 +19,8 @@ end
 theta = atan(abs(centers(2,1)-centers(1,1))/abs(centers(2,2)-centers(1,2)));
 
 % Creat error matrix of side lengths, order sides as NSEW, with top length as "North"
-length = mm_to_tick(69.6);
-width = mm_to_tick(44.476);
+length = mm2tick(69.6);
+width = mm2tick(44.476);
 errormatrix = zeros(4,2);
 
 % Finds error in tick marks (col 1)
