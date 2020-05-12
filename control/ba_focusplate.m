@@ -25,7 +25,7 @@ if nargin < 4 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
-% [centers, errormatrix, theta] = calibrate(ludl);
+% [centers, errormatrix, theta] = ba_calibrate_plate(ludl);
 
 
 % Camera Setup
