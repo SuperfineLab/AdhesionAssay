@@ -1,4 +1,4 @@
-function good_image = classify_image(im);
+function good_image = classify_image(im)
 
 readimage = imread(im);
 [centers] = imfindcircles(readimage,[5 30]);
