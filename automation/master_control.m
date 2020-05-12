@@ -19,7 +19,7 @@ N = numel(visit_list);
 
 % Initialize hardware by opening the stage, scope, and z-motor connections
 logentry('Connecting to Ludl stage...');
-stage = stage_open_Ludl(); % TODO: Check connections are actually open!
+Ludl = stage_open_Ludl(); % TODO: Check connections are actually open!
 
 logentry('Connecting to Nikon scope...');
 scope = scope_open();
@@ -35,7 +35,7 @@ end
 
 % Calibrate stage
 logentry('Calibrating Ludl Stage...');
-centers = ba_calibrate_plate(stage);
+Plate.calibration = ba_calibrate_plate(Ludl);
 
 % Turn off lights
 if scope_get_lamp_state(scope) == ON
@@ -50,7 +50,7 @@ pause;
 
 % Focus whole plate at one time by focusing the corners
 logentry('Focusing Plate. This may take a few minutes.')
-focus_metric = ba_focusplate(Scope, Stage, centers, 500, 8);
+focus_metric = ba_focusplate(Scope, Ludl, Plate, 500, 8);
 if max(focus_metric) > 5 * (min(focus_metric))
 end
 
@@ -65,12 +65,10 @@ for k = 1:N
     % Setup rows/columns for given well
     row = 1+floor((mywell-1)/5);
     col = 1+mod((mywell-1),5);
-    wellcor = [row col];
-    
-
+    wellcor = [row col];    
 
     logentry('Moving Stage to center of well (1,1) ...');
-    plate_space_move(stage, centers, [1 1]);
+    plate_space_move(Ludl, plate, [1 1]);
     
     % JON'S ALGORITHM SEARCHING CODE GOES HERE!
     % 

@@ -1,4 +1,4 @@
-function fiderror = calibrate_check(ludl, centers)
+function fiderror = calibrate_check(ludl, plate)
 
 % CALIBRATE_CHECK checks the calibration of the stage by moving to each fiducial 
 % mark and calculating how far away they are from their calibration-determined
@@ -10,6 +10,8 @@ fiderror = zeros(4,2);
 pos = zeros(4,2);
 points = zeros(488,648,4);
 vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+
+centers = plate.calib.centers;
 
 % Takes images of each of the four fiducial marks and finds their centers
 % in ludl tickmarks

@@ -4,7 +4,7 @@ xwells =  5;
 ywells = 3;
 vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
 
-
+centers = plate.calib.centers;
 %Assigns numbers to individual wells; convention is that across first row
 %are wells 1,2,3,4,5 respectively, then row 2 starts with well 6, and so on
 well_matrix = [1 2 3 4 5; 6 7 8 9 10; 11 12 13 14 15];

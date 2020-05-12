@@ -16,6 +16,7 @@ test = imerode(test,SE); imshow(test)
 
 % Find/plot center of mass
 [x, y] = centerofmass(test);
+
 hold on
 plot(x, y, 'or');
 hold off

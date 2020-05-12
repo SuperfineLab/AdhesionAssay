@@ -1,10 +1,12 @@
-function plate_space_move(ludl, centers, wellcor)
+function plate_space_move(ludl, plate, wellcor)
 % PLATE_SPACE_MOVE moves to the center of a given well
 
 % centers - location of center of fiducial marks
 %
 % wellcor - well location on the well location grid in the format [row_num 
 % column_num] (ex. [1 1] for the top left well nearest to fiducial mark 1)
+
+centers = plate.calib.centers;
 
 % Define origin as the location of fiducial mark 1 (top leftmost) in ludl coordinates
 origin = centers(1,1:2);

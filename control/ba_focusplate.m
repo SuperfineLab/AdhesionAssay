@@ -1,4 +1,4 @@
-function outs = ba_focusplate(scope, ludl, centers, stepsize, exptime)
+function outs = ba_focusplate(scope, ludl, plate, stepsize, exptime)
 % BA_FOCUSPLATE
 %
 
@@ -17,16 +17,16 @@ end
 %     error('Need [low,high] locations for focus. Try [20000 40000].');
 % end
 
-if nargin < 3 || isempty(stepsize)
+if nargin < 4 || isempty(stepsize)
     error('Need distance between frames. Try 500.');
 end
 
-if nargin < 4 || isempty(exptime)
+if nargin < 5 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
 % [centers, errormatrix, theta] = ba_calibrate_plate(ludl);
-
+centers = plate.calib.centers;
 
 % Camera Setup
 imaqmex('feature', '-previewFullBitDepth', true);
@@ -80,7 +80,7 @@ im = cell(N, 1);
 arrived_locs = zeros(N,4);
 focus_score = zeros(N,4);
 
-corners = [1 1; 1 5; 3 1; 3 5];
+corners = [1 1; 1 5; 3 1; 3 5]; % well coordinates for the plate corners
 for c = 1:4
     plate_space_move(ludl, centers, corners(c,:));
     pause(5);

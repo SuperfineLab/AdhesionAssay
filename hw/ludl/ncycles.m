@@ -1,8 +1,10 @@
-function ncycles(ludl,centers,number)
+function ncycles(ludl,plate,number)
 
 i = 1;
 x_drift_array = zeros(15,10);
 y_drift_array = zeros(15,10);
+centers = plate.calib.centers;
+
 while i <= number
    [x_offset,y_offset] = well_location_test(ludl,centers);
    for row = 1:3
