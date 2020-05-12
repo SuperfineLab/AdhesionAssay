@@ -8,5 +8,5 @@ function dist_tick = mm2tick(dist_mm)
 
 dist_tick = dist_mm * 20000;
 
-dist_mm = dist_tick / 20000;
+
 
