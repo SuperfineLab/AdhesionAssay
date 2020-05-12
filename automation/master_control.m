@@ -35,7 +35,7 @@ end
 
 % Calibrate stage
 logentry('Calibrating Ludl Stage...');
-centers = calibrate(stage);
+centers = ba_calibrate_plate(stage);
 
 % Turn off lights
 if scope_get_lamp_state(scope) == ON
