@@ -4,12 +4,16 @@ function ba_livehist(obj,event,hImage)
 
 persistent q
 
-% Display the current image frame.
-set(hImage, 'CData', event.Data);
-
-zhand = hImage.UserData{1};
 im = event.Data;
 % class(im)
+
+% Display the current image frame.
+set(hImage, 'CData', im);
+
+zhand = hImage.UserData{1};
+focusTF = hImage.UserData{2};
+
+
 
 % Select the second subplot on the figure for the histogram.
 ax = subplot(2,1,2);
@@ -49,8 +53,7 @@ set(gca,'YScale','log')
 
 image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], '];
 
-focus = false;
-if focus
+if focusTF
     focus_score = fmeasure(im, 'GDER');
     % q = [q focus_score];
     focus_str = ['focus score= ', num2str(focus_score), ', '];

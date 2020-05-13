@@ -1,17 +1,24 @@
-function ba_impreview(zhand)
+function ba_impreview(zhand, focusTF)
 % BA_IMPREVIEW UI for previewing the microscope's camera image.
 %
+
+    if nargin < 2 || isempty(focusTF)
+        focusTF = false;
+    end
+
     if nargin < 1 || isempty(zhand)
         zhand = ba_initz;
         pause(3);
     end
     
-    imaqmex('feature', '-previewFullBitDepth', true);
-    
+    imaqmex('feature', '-previewFullBitDepth', true);    
     Camera.Name = 'Grasshopper 3';
     Camera.Model = 'GS3-U3-32S4M-C';
     Camera.Type = 'pointgrey';
-    Camera.Number = 2; % This is equivalent to the Light Path, left of ocular on Artemis (Chapman Hall B42)
+    % The Camera "number" identifies which point-grey camera to use. 
+    % Currently, the 2nd point-grey camera is the Grasshopper3, which is 
+    % left of the ocular on Artemis (Chapman Hall B42)
+    Camera.Number = 2; 
     Camera.Mode = 'F7_Raw16_1024x768_Mode2';
     vid = videoinput(Camera.Type, Camera.Number, Camera.Mode);
     
@@ -32,8 +39,8 @@ function ba_impreview(zhand)
 
     pause(0.1);
     
-    vidRes = vid.VideoResolution;
-    imageRes = fliplr(vidRes);   
+    
+    imageRes = fliplr(vid.VideoResolution);   
     
     f = figure('Visible', 'off', 'Units', 'normalized');
     ax = subplot(2, 1, 1);
@@ -55,6 +62,7 @@ function ba_impreview(zhand)
 %     btn_grabframe.Position
     
     hImage.UserData{1} = zhand;
+    hImage.UserData{2} = focusTF;
     
     setappdata(hImage, 'UpdatePreviewWindowFcn', @ba_livehist);
 %     hImage.CData = log10(double(hImage.CData));
