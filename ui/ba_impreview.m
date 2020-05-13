@@ -1,4 +1,4 @@
-function ba_impreview(zhand, focusTF)
+function varargout = ba_impreview(zhand, focusTF)
 % BA_IMPREVIEW UI for previewing the microscope's camera image.
 %
 
@@ -70,6 +70,13 @@ function ba_impreview(zhand, focusTF)
     h = preview(vid, hImage);
     set(h, 'CDataMapping', 'scaled');
 
+    switch nargout
+        case 1
+            varargout{1} = f;
+    end
+    
+    
+    
     function change_exptime(source,event)
 
         exptime = str2num(source.String);
