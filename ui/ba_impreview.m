@@ -7,8 +7,9 @@ function ba_impreview(zhand, focusTF)
     end
 
     if nargin < 1 || isempty(zhand)
-        zhand = ba_initz;
-        pause(3);
+%         zhand = ba_initz;
+%         pause(3);
+        zhand = false;
     end
     
     imaqmex('feature', '-previewFullBitDepth', true);    

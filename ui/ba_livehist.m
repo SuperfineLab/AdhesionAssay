@@ -38,9 +38,7 @@ minD = num2str(minD, '%u');
 
 assignin('base', 'focus_measure', q);
 
-% Plot the histogram. Choose 128 bins for faster update of the display.
-% imhist(event.Data, 32768);
-
+% Plot the histogram. Choose less bins for faster update of the display.
 switch class(event.Data)
     case 'uint8'
         xlim([0 260]);        
@@ -51,17 +49,21 @@ switch class(event.Data)
 end
 set(gca,'YScale','log')
 
-image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], '];
+image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, ']'];
 
 if focusTF
     focus_score = fmeasure(im, 'GDER');
     % q = [q focus_score];
-    focus_str = ['focus score= ', num2str(focus_score), ', '];
+    focus_str = [', focus score= ', num2str(focus_score)];
 else
     focus_str = '';
 end
 
-zpos_str = ['z = ' num2str(ba_getz(zhand)) ' [mm]'];
+if strcmp(class(zhand), 'COM.MGMOTOR_MGMotorCtrl_1')
+    zpos_str = [', z = ' num2str(ba_getz(zhand)) ' [mm]'];
+else 
+    zpos_str = '';
+end
 
 title([image_str, focus_str, zpos_str]);
 
