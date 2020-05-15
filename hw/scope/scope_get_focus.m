@@ -6,11 +6,11 @@ flushinput(obj1)
 
 % Set the 'recieved' variable to false 
 recieved = false;
-fprintf('\n');
+% fprintf('\n');
 % Reads the input
 while ~recieved    
     data = query(obj1, 'rSPR', '%s\n' ,'%s');
-    fprintf(' %s, ', data);
+%     fprintf(' %s, ', data);
     if strcmp(data(1:4),'aSPR')
         focus = str2double(data(5:end));
         recieved = true;

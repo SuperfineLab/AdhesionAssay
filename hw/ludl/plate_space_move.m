@@ -7,9 +7,10 @@ function plate_space_move(ludl, plate, wellcor)
 % column_num] (ex. [1 1] for the top left well nearest to fiducial mark 1)
 
 centers = plate.calib.centers;
+theta = plate.calib.theta;
 
 % Define origin as the location of fiducial mark 1 (top leftmost) in ludl coordinates
-origin = centers(1,1:2);
+origin = centers(1,:);
 
 % Defining distances in mm
 % Note: x and y are reversed and both negative -> written in Ludl
@@ -30,7 +31,7 @@ dist_x = -(well_one_x_tick + (wellcor(1) - 1) * interwell_x_tick);
 dist_y = -(well_one_y_tick + (wellcor(2) - 1) * interwell_y_tick);
 
 % Correction factor in x direction
-theta = atan(abs(centers(2,1)-centers(1,1))/abs(centers(2,2)-centers(1,2)));
+
 xcor = abs(dist_y) * sin(theta);
 ycor = abs(dist_x) * sin(theta);
 

@@ -13,14 +13,16 @@ tic;
 
 % build the command
 command = strcat('cSMV', num2str(pos));
-fprintf('\n');
+
 % Reads the input
 while ~recieved    
+%     fprintf('FOO');
     data = query(obj1, command, '%s\n' ,'%s');
-    fprintf(' %s, ', data);
+%     fprintf('BAR');
+%     fprintf(' %s, ', data);
     if strcmp(data,'oSMV')
         if abs(scope_get_focus(obj1) - pos) <= tol
-            disp('Focus has been set')
+            logentry('Focus has been set.')
             recieved = true;
         end
     else
@@ -30,5 +32,9 @@ while ~recieved
 end
 
 elapsed_time = toc;
-fprintf('\nElapsed time: %g [s]. \n\n', elapsed_time);
+logentry(['Elapsed time focusing: ' num2str(elapsed_time), ' [s].']);
+
+
+
+
 
