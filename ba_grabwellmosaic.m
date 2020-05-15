@@ -27,8 +27,8 @@ end
 
 % Camera Setup
 imaqmex('feature', '-previewFullBitDepth', true);
-vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
-% vid = videoinput('pointgrey', 1,'F7_Raw16_1024x768_Mode2');
+% vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+vid = videoinput('pointgrey', 2, 'F7_Raw16_1024x768_Mode2');
 vid.ReturnedColorspace = 'grayscale';
 % triggerconfig(vid, 'manual');
 % vid.FramesPerTrigger = NFrames;
