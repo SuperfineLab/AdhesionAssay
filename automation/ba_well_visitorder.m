@@ -1,4 +1,4 @@
-function vo = ba_well_visitorder(platedef, sampling)
+function vo = ba_well_visitorder(Plate, sampling)
 % BA_WELL_VISITORDER outputs the order in which to visit wells in the Adhesion Assay
 %
 % vo = ba_well_visitorder(platedef, sampling)
@@ -11,8 +11,9 @@ if nargin < 2 || isempty(sampling)
     sampling = 'sorted';
 end
 
-    vidx = ~cellfun('isempty', platedef.Value);
-    well_list = unique(platedef.Well_ID(vidx));
+
+    vidx = ~cellfun('isempty', Plate.Layout.Value);
+    well_list = unique(Plate.Layout.Well_ID(vidx));
     N = length(well_list);
     
     switch sampling

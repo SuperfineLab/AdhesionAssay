@@ -30,15 +30,24 @@ if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
-if nargin < 4 || isempty(metafile)
-    error('Need metafile.');
-end
+% if nargin < 4 || isempty(metafile)
+%     error('Need metafile.');
+% end
 
 %% Import metadata
 % Note: metafile should be a .m file generated using the
 % WELL_METADATA_SCRIPT function
+% m = load(metafile);
 
-m = load(metafile);
+m.Zmotor.StartingHeight = 12;
+m.Zmotor.Velocity = 0.2; % [mm/sec]
+m.Video.ExposureMode = 'off';
+m.Video.FrameRateMode = 'off';
+m.Video.ShutterMode = 'manual';
+m.Video.Gain = 14;
+m.Video.Gamma = 1.15;
+m.Video.Brightness = 5.8594;
+
 
 
 %% Setting Parameters
@@ -53,7 +62,8 @@ znow = starting_height;
 
 % Following code found in apps -> image acquisition
 % More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
-vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+% vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+vid = videoinput('pointgrey', 2, 'F7_Raw16_1024x768_Mode2');
 src = getselectedsource(vid); 
 src.ExposureMode = m.Video.ExposureMode; 
 src.FrameRateMode = m.Video.FrameRateMode;
@@ -65,26 +75,12 @@ src.Shutter = exptime;
 
 %% Old code
 
-PSF_filename = m.Bead.PointSpreadFunctionFilename;
-impsf = imread(PSF_filename);
-
-Name = {'Lactose', 'Galactose', 'GalNAc', 'GlcNac', 'Sialic Acid', 'PEG20k'}';
-Conc = {0.0365, 0.0365, 0.0365, 0.0365, 0.0365, 0.2}';
-ConcUnits = {'mol/L', 'mol/L', 'mol/L', 'mol/L', 'mol/L', 'mass fraction'}';
-Int25k = table(Name, Conc, ConcUnits);
-clear Name Conc ConcUnits
-
-Name = {'PEG20k'}';
-Conc = {0.2}';
-ConcUnits = {'mass fraction'}';
-NoInt = table(Name, Conc, ConcUnits);
-clear Name Conc ConcUnits
 
 Nsec = starting_height/motor_velocity + 1;
 Fps = 1 / (exptime/1000);
 % NFrames = ceil(Fps * Nsec);
-% NFrames = 7625;
-NFrames = 40; % Originally 1800
+% NFrames = 7625; % 1 minute at 125 fps
+NFrames = 1270; % Originally 1800
 
 imaqmex('feature', '-previewFullBitDepth', true);
 vid.ReturnedColorspace = 'grayscale';
@@ -240,23 +236,6 @@ ZHeight(1:AbsFrameNumber(1),1) = zheight(1);
 Fid = ba_makeFid;
 
 m.File.Fid = Fid;
-
-% m.Medium.Name = MediumName;
-% switch m.Medium.Name
-%     case 'Int'
-%         % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
-%         m.Medium.Viscosity = 0.0605;  
-%         m.Medium.Components = Int25k;
-%         m.Medium.ManufactureDate = '09-25-2019';   
-%     case 'NoInt'
-%         % 07.11.2019 Data (SNA, WGA, PEG beads on BSM-slides)
-%         m.Medium.Viscosity = 0.0527;  
-%         m.Medium.Components = NoInt;
-%         m.Medium.ManufactureDate = '07-10-2019';   
-%     otherwise
-%         logentry('Unknown Case for Medium.');
-% end    
-% m.Medium.Buffer = 'PBS';
 
 m.Video.Format = vid.VideoFormat;
 m.Video.ExposureTime = src.Shutter;

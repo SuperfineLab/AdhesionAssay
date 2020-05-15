@@ -10,6 +10,7 @@ im = event.Data;
 % Display the current image frame.
 set(hImage, 'CData', im);
 
+
 zhand = hImage.UserData{1};
 focusTF = hImage.UserData{2};
 
@@ -59,7 +60,7 @@ else
     focus_str = '';
 end
 
-if strcmp(class(zhand), 'COM.MGMOTOR_MGMotorCtrl_1')
+if isa(zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
     zpos_str = [', z = ' num2str(ba_getz(zhand)) ' [mm]'];
 else 
     zpos_str = '';
@@ -69,14 +70,12 @@ title([image_str, focus_str, zpos_str]);
 
 
 % Modify the following numbers to reflect the actual limits of the data returned by the camera.
-
 % For example the limit a 16-bit camera would be [0 65535].
-
 a = ancestor(hImage, 'axes');
-
 cmin = min(double(hImage.CData(:)));
 cmax = max(double(hImage.CData(:)));
 set(a, 'CLim', [uint16(cmin) uint16(cmax)]);
+
 % set(a, 'CLim', [0 65535]);
 
 

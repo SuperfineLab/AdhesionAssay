@@ -15,10 +15,10 @@ plate_width_ticks = mm2tick(plate_width_mm);
 
 % Finds the ludl coordinates that would place the fiducial center in the
 % center of the image
-for im = 1:size(imstack,3)
-    [x,y] = image_center_find(imstack(:,:,im), pos(im,1), pos(im,2));
-    outs.centers(im,1) = x;
-    outs.centers(im,2) = y;
+for k = 1:size(imstack,3)
+    [x,y] = image_center_find(imstack(:,:,k), pos(k,1), pos(k,2));
+    outs.centers(k,1) = x;
+    outs.centers(k,2) = y;
 end
 
 % Find the angle of tilt in radians
@@ -29,7 +29,7 @@ Fbottom_leftXY = outs.centers(4,:);
 
 outs.theta = atan(abs(Ftop_rightXY(1) - Ftop_leftXY(1))/abs(Ftop_rightXY(2) - Ftop_leftXY(2)));
 
-% Creat error matrix of side lengths, order sides as NSEW, with top length as "North"
+% Create error matrix of side lengths, order sides as NSEW, with top length as "North"
 errormatrix = zeros(4,2);
 
 % Finds error in tick marks (col 1)
@@ -45,3 +45,4 @@ errormatrix(3,2) = errormatrix(3,1)/plate_width_ticks * 100;
 errormatrix(4,2) = errormatrix(4,1)/plate_width_ticks * 100;
 
 outs.errormatrix = errormatrix;
+

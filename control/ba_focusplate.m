@@ -1,4 +1,4 @@
-function outs = ba_focusplate(scope, ludl, plate, stepsize, exptime)
+function [avgfocus, dataout] = ba_focusplate(scope, ludl, plate, stepsize, exptime)
 % BA_FOCUSPLATE
 %
 
@@ -30,7 +30,8 @@ centers = plate.calib.centers;
 
 % Camera Setup
 imaqmex('feature', '-previewFullBitDepth', true);
-vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+% vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
+vid = videoinput('pointgrey', 2,'F7_Raw16_1024x768_Mode2');
 vid.ReturnedColorspace = 'grayscale';
 
 src = getselectedsource(vid); 
@@ -59,7 +60,9 @@ set(p, 'CDataMapping', 'scaled');
 % ----------------
 % Controlling the Hardware and running the experiment
 %
-plate_space_move(ludl, centers, [1 1]);
+plate_space_move(ludl, plate, [1 1]);
+startingFocus = scope_get_focus(scope);
+logentry(['Microscope is currently at ' num2str(startingFocus)]);
 disp('Optimize focus manually and press any key to continue.');
 pause;
 
@@ -82,7 +85,7 @@ focus_score = zeros(N,4);
 
 corners = [1 1; 1 5; 3 1; 3 5]; % well coordinates for the plate corners
 for c = 1:4
-    plate_space_move(ludl, centers, corners(c,:));
+    plate_space_move(ludl, plate, corners(c,:));
     pause(5);
     for k = 1:N
         this_focus = focus_locations(k);
@@ -98,19 +101,25 @@ for c = 1:4
 
         im{k,c} = p.CData;
         outfile = ['corner-' num2str(c) 'focus-', num2str(k, '%03i'), '.png'];
-        imwrite(im{k,c}, outfile);
-        logentry(['Frame grabbed to ' outfile '.']);
+%         imwrite(im{k,c}, outfile);
+%         logentry(['Frame grabbed to ' outfile '.']);
 
         focus_score(k,c) = fmeasure(im{k,c}, 'GDER');
     end
+    
+%     [pk, loc] = findpeaks(focus_score(:,c));
+    [m,I] = max(focus_score(:,c), [], 'omitnan');
+    
+    PlateFocus(:,c) = focus_locations(I(1));
 end
 
 close(f);
 
-outs = table(im, arrived_locs, focus_score);
+avgfocus = mean(PlateFocus(:), 'omitnan');
+dataout = table(im, arrived_locs, focus_score);
 
 figure; 
-plot(outs.arrived_locs, outs.focus_score);
+plot(dataout.arrived_locs, dataout.focus_score);
 legend('TL', 'TR', 'BL', 'BR');
 xlabel('Focus location');
 ylabel('Focus measure');

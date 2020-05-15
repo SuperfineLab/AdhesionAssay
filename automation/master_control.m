@@ -10,7 +10,7 @@ ON = 1; OFF = 0;
 Scope  = ba_config_scope('Artemis');
 Video  = ba_config_video('Grasshopper3');
 Zmotor = ba_config_zmotor('Z25B');
-Plate  = ba_read_plate_layout(plate_filename);
+Plate.Layout  = ba_read_plate_layout(plate_filename);
 
 
 % (2) Create experiment manifest
@@ -35,7 +35,7 @@ end
 
 % Calibrate stage
 logentry('Calibrating Ludl Stage...');
-Plate.calibration = ba_calibrate_plate(Ludl);
+Plate.calib = ba_calibrate_plate(Ludl);
 
 % Turn off lights
 if scope_get_lamp_state(scope) == ON
@@ -50,9 +50,10 @@ pause;
 
 % Focus whole plate at one time by focusing the corners
 logentry('Focusing Plate. This may take a few minutes.')
-focus_metric = ba_focusplate(Scope, Ludl, Plate, 500, 8);
-if max(focus_metric) > 5 * (min(focus_metric))
-end
+avgfocus = ba_focusplate(scope, Ludl, Plate, 400, 8);
+
+scope_set_focus(scope, avgfocus);
+
 
 %
 % % --*** Data Collection ***---
@@ -67,8 +68,8 @@ for k = 1:N
     col = 1+mod((mywell-1),5);
     wellcor = [row col];    
 
-    logentry('Moving Stage to center of well (1,1) ...');
-    plate_space_move(Ludl, plate, [1 1]);
+    logentry(['Moving Stage to center of well (' num2str(row) ', ' num2str(col) ') ...']);
+    plate_space_move(Ludl, Plate, wellcor);
     
     % JON'S ALGORITHM SEARCHING CODE GOES HERE!
     % 
@@ -77,13 +78,14 @@ for k = 1:N
     
     
     % Setup inputs for ba_pulloff_auto
-    filename = strcat('w', num2str(k)); % Rename as appropriate
+    filename = strcat('well', num2str(k, '%02i')); % Rename as appropriate
     exptime = 8;
 %     metafile = well_metadata_script(row,col); % 'filename' should be the same between well_metadata_script and here
     
     % Run ba_pulloff_auto
     logentry('Collecting data for well XXX');
-%     ba_pulloff_auto(h, filename,exptime, metafile);
+    metafile = '';
+    ba_pulloff_auto(h, filename,exptime, metafile);
 end
 
 %-- Cleaning Up
@@ -95,7 +97,7 @@ pause;
 
 % Close the stage and scope connections
 logentry('Closing connection to Ludl stage...');
-% stage_close(stage);
+% stage_close(Ludl);
 logentry('Closing connectino to Nikon scope...');
 % scope_close(scope);
 
