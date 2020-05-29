@@ -3,7 +3,7 @@
 %readimage = imread(im);
 [centers] = imfindcircles(im,[5 30]);
 BeadNumber = numel(centers);
-% NearestNeighborDist = cellfun(@neardist,num2cell(centers),'UniformOutput',false);
+% NearestNeighborDist = cellfun(@nndist,num2cell(centers),'UniformOutput',false);
 % MeanDist = cell2mat(cellfun(@(x1)mean(x1,'omitnan'),NearestNeighborDist,'UniformOutput',false));
 nearest_neighbor_dist = [];
 if numel(centers) == 0
@@ -21,9 +21,9 @@ else
 %         end
 %         nearest_neighbor_dist = [nearest_neighbor_dist mindist]; 
 %     end
-    nd = neardist(centers);
+    nd = nndist(centers);
     md = min(nd);
     sigma_f = sqrt((log10((BeadNumber)))^2*(0.00131769));
     f = (-0.5126*log10(BeadNumber)+2.747);
-    logavgdist = log10(md)
+    logavgdist = log10(md);
 end
