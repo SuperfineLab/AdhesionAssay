@@ -1,0 +1,3 @@
+[submodule "hw/NikonScope"]
+	path = hw/NikonScope
+	url = git@github.com:cribb/NikonScope.git
