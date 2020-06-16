@@ -1,11 +1,11 @@
-function s = tenegrad( im )
-% TENEGRAD calculates a focus score for an image using Sobel filter.
+function s = tenengrad( im )
+% TENENGRAD calculates a focus score for an image using Sobel filter.
 %
 % Tenegrad score = 1/n sum (sx.^2 + sy.^2), where
 %  n is the pixel-count, im is a 2D intensity image, and
 %  gx and gy are the 5x5 horizontal and vertical Sobel filter responses.
 %
-% s = tenegrad(im);
+% s = tenengrad(im);
 %
 % Reference: https://en.wikipedia.org/wiki/Sobel_operator
 % 

@@ -1,4 +1,4 @@
-function [table] = createstable(filelist)
+function [table] = createtable(filelist)
 
 for k = 1:numel(filelist)
     Frames(k,1) = imread(filelist(k).name); 
@@ -8,24 +8,23 @@ end
 for k = 1:numel(Frames)
     
     %Declaring variables for single integer value categories later
-    number = 0;
     avgval = 0;
     medval = 0;
     minval = 0;
     maxval = 0;
     
-    [centers radii] = imfindcircles(Frames(k),[15 40]);
+    [centers, radii] = imfindcircles(Frames(k),[15 40]);
     
-    size = numel(centers);
-    %Storing size as number of circles detected
-    number = size;
+    % Storing Ncircles as number of circles detected
+    Ncircles = numel(centers);
+
     
     
-    %Creating distances array category via finding distances between lth circle and each of the other circles
-    for l = 1:size
-       distances = zeros(1,size);
+    % Creating distances array category via finding distances between lth circle and each of the other circles
+    for l = 1:Ncircles
+       distances = zeros(1,Ncircles);
        m = 0;
-       while m <= size
+       while m <= Ncircles
            if m ~= l
                distances(l) = sqrt(((centers{l,1}-centers{m,1})^2)+((centers{l,2}-centers{m,2})^2));
            end
@@ -34,9 +33,9 @@ for k = 1:numel(Frames)
        
     %Looping through each of l distance arrays per image to find max, min,
     %average, and median distances
-    statsarray = zeros(4,size);
+    statsarray = zeros(4,Ncircles);
     
-    for l = 1:size
+    for l = 1:Ncircles
         
         statsarray{1,l} = mean(currentarray);
         statsarray{2,l} = median(currentarray);

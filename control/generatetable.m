@@ -8,11 +8,11 @@ function [GeneratedTable] = generatetable(folder,name,frames,images)
 
 [centers, radii] = cellfun(@(x1)imfindcircles(x1,[8 30]),images,'UniformOutput',false);
 BeadNumber = cell2mat(cellfun(@numel,radii,'UniformOutput',false));
-NearestNeighborDist = cellfun(@neardist,centers,'UniformOutput',false);
+NearestNeighborDist = cellfun(@nndist,centers,'UniformOutput',false);
 MeanDist = cell2mat(cellfun(@(x1)mean(x1,'omitnan'),NearestNeighborDist,'UniformOutput',false));
 MinimumDist = cellfun(@(x1)min(x1,[],'omitnan'),NearestNeighborDist,'UniformOutput',false);
 MedianDist = cell2mat(cellfun(@(x1)median(x1,[],'omitnan'),NearestNeighborDist,'UniformOutput',false));
-%NearestNeighborDist = cell2mat(cellfun(@neardist,centers,'UniformOutput',false));
+%NearestNeighborDist = cell2mat(cellfun(@nndist,centers,'UniformOutput',false));
 
 
 GeneratedTable = table(folder,name,frames,images,centers,radii,BeadNumber,NearestNeighborDist,MinimumDist,MeanDist,MedianDist);
