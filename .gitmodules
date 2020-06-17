@@ -1,3 +1,6 @@
 [submodule "hw/NikonScope"]
 	path = hw/NikonScope
 	url = git@github.com:cribb/NikonScope.git
+[submodule "hw/LudlStage"]
+	path = hw/LudlStage
+	url = git@github.com:cribb/LudlStage.git
