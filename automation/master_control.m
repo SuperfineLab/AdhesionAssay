@@ -19,7 +19,7 @@ N = numel(visit_list);
 
 % Initialize hardware by opening the stage, scope, and z-motor connections
 logentry('Connecting to Ludl stage...');
-Ludl = stage_open_Ludl(); % TODO: Check connections are actually open!
+Ludl = stage_open_Ludl(); % XXX TODO: Check connections are actually open!
 
 logentry('Connecting to Nikon scope...');
 scope = scope_open();
@@ -50,7 +50,7 @@ pause;
 
 % Focus whole plate at one time by focusing the corners
 logentry('Focusing Plate. This may take a few minutes.')
-avgfocus = ba_focusplate(scope, Ludl, Plate, 400, 8);
+avgfocus = ba_focusplate(scope, Ludl, Plate, 400, Video.ExposureTime);
 
 scope_set_focus(scope, avgfocus);
 
@@ -74,7 +74,7 @@ for k = 1:N
     % JON'S ALGORITHM SEARCHING CODE GOES HERE!
     % 
     % 
-
+    mosaic = ba_grabwellmosaic(ludl, Xlocs, Ylocs, Video.ExposureTime);
     
     
     % Setup inputs for ba_pulloff_auto
