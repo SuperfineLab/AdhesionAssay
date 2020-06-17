@@ -1,24 +1,35 @@
 function mosaic = ba_grabwellmosaic(stage, Xpos, Ypos, exptime, fileout)
-% ba_grabwellmosaic 
+% BA_GRABWELLMOSAIC grabs a series of images to send to bead identification
+%
+% Usage: 
+% mosaic = ba_grabwellmosaic(stage, Xpos, Ypos, exptime, fileout)
+% 
+% This function is responsible for acquiring a series of images located at
+% Xpos & Ypos for an exposure time, exptime, in milliseconds. The images
+% are stored in a matlab table object along with their prescibed and
+% measured XY locations.
+%
+% Inputs
+%    stage: pointer to ludl stage object
+%    Xpos,Ypos: x and y locations in ludl stage coordinates
+%    exptime: camera exposure time
+%    fileout: output filename
+%
+% Output
+%    mosaic: matlab table containing the fields PrescribedXY, ArrivedXY, 
+%            and Image.
 %
 
-% if nargin < 1 || isempty(scope)
-%     logentry('No scope object. Connecting to scope now...');
-%     try
-%         scope = scope_open;
-%         pause(3);
-%     catch
-%         error('No connection established. Is scope running?');
-%     end
-% 
-% end
+if nargin < 1 || isempty(scope)
+    error('No scope object. Check to see if scope is running and/or use scope_open to connect first.');
+end
 
 if nargin < 2 || isempty(Xpos)
     error('Need X locations for frames.');
-end
-
-if nargin < 3 || isempty(Ypos)
+elseif nargin < 3 || isempty(Ypos)
     error('Need Y locations for frames.');
+elseif size(Xpos) ~= size(Ypos)
+    error('Size mismatch for X and Y position vectors.');
 end
 
 if nargin < 4 || isempty(exptime)
@@ -74,7 +85,7 @@ logentry(['Microscope is collecting mosaic.']);
 pause(2);
 logentry('Starting collection...');
 
-im = cell(N, 1);
+Image = cell(N, 1);
 ArrivedXY = zeros(N,2);
 
 
@@ -92,7 +103,7 @@ for k = 1:N
     ArrivedXY(k,:) = stout.Pos;
     logentry(['Arrived at position X: ' num2str(ArrivedXY(k,1)), ', Y: ' num2str(ArrivedXY(k,2)) '. ']);
     
-    im{k,1} = p.CData;
+    Image{k,1} = p.CData;
 
 %     imwrite(im{k,1}, outfile);
 %     logentry(['Frame grabbed to ' outfile '.']);
@@ -102,7 +113,7 @@ end
 
 close(f);
 
-mosaic = table(PrescribedXY, ArrivedXY, im);
+mosaic = table(PrescribedXY, ArrivedXY, Image);
 save(fileout, 'mosaic')
 logentry('Done!');
 
