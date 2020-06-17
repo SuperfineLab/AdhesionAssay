@@ -15,7 +15,7 @@ function Video = ba_config_video(CameraName)
             Video.Height = 768;
             Video.Width = 1024;
             Video.Depth = 16;
-            Video.ExposureTime = 0.008;
+            Video.ExposureTime = 8; % [ms]
         case 'Dragonfly2'
             Video.CameraName = CameraName;
             Video.ExposureMode = 'off';
@@ -28,7 +28,7 @@ function Video = ba_config_video(CameraName)
             Video.Height = 768;
             Video.Width = 1024;
             Video.Depth = 16;
-            Video.ExposureTime = 0.016;
+            Video.ExposureTime = 16; % [ms]
             error('This needs developing because we moved away from Ixion.');
         otherwise
             error('Scope codename not recognized.');
