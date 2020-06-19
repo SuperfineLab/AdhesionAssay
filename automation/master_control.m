@@ -84,8 +84,7 @@ for k = 1:N
     
     % Run ba_pulloff_auto
     logentry('Collecting data for well XXX');
-    metafile = '';
-    ba_pulloff_auto(h, filename,exptime, metafile);
+    ba_pulloff_auto(h, filename,exptime, Scope, Video, Zmotor);
 end
 
 %-- Cleaning Up

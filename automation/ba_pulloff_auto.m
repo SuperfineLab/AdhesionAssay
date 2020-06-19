@@ -1,4 +1,4 @@
-function ba_pulloff_auto(zhand, filename, exptime, metafile)
+function ba_pulloff_auto(zhand, filename, exptime, Scope, Video, Zmotor)
 % BA_PULLOFF_AUTO runs automated version of AdhesionAssay experiment
 %
 % ba_pulloff_auto(zhand,filename,exptime,metafile) lowers the magnet at a
@@ -30,31 +30,16 @@ if nargin < 3 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
-% if nargin < 4 || isempty(metafile)
-%     error('Need metafile.');
-% end
-
 %% Import metadata
 % Note: metafile should be a .m file generated using the
 % WELL_METADATA_SCRIPT function
 % m = load(metafile);
 
-m.Zmotor.StartingHeight = 12;
-m.Zmotor.Velocity = 0.2; % [mm/sec]
-m.Video.ExposureMode = 'off';
-m.Video.FrameRateMode = 'off';
-m.Video.ShutterMode = 'manual';
-m.Video.Gain = 14;
-m.Video.Gamma = 1.15;
-m.Video.Brightness = 5.8594;
-
-
-
 %% Setting Parameters
 
 % Zmotor Parameters
-starting_height = m.Zmotor.StartingHeight;
-motor_velocity = m.Zmotor.Velocity; % [mm/sec]
+starting_height = Zmotor.StartingHeight;
+motor_velocity = Zmotor.Velocity; % [mm/sec]
 abstime{1,1} = [];
 framenumber{1,1} = [];
 % TotalFrames = 0;
@@ -65,12 +50,12 @@ znow = starting_height;
 % vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
 vid = videoinput('pointgrey', 2, 'F7_Raw16_1024x768_Mode2');
 src = getselectedsource(vid); 
-src.ExposureMode = m.Video.ExposureMode; 
-src.FrameRateMode = m.Video.FrameRateMode;
-src.ShutterMode = m.Video.ShutterMode;
-src.Gain = m.Video.Gain;
-src.Gamma = m.Video.Gamma;
-src.Brightness = m.Video.Brightness;
+src.ExposureMode = Video.ExposureMode; 
+src.FrameRateMode = Video.FrameRateMode;
+src.ShutterMode = Video.ShutterMode;
+src.Gain = Video.Gain;
+src.Gamma = Video.Gamma;
+src.Brightness = Video.Brightness;
 src.Shutter = exptime;
 
 %% Old code
@@ -232,6 +217,13 @@ ZHeight(1:AbsFrameNumber(1),1) = zheight(1);
 % Min = vertcat(minval{:});
 
 %% Compile Remaining Metadata
+
+% Transfering Existing Metadata from Video, Scope, Zmotor
+m.Video = Video;
+m.Scope = Scope;
+m.Zmotor = Zmotor;
+
+% Adding New Metadata
 
 Fid = ba_makeFid;
 

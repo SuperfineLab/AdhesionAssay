@@ -1,10 +1,13 @@
-function plate_space_move(ludl, plate, wellcor)
+function plate_space_move(ludl, plate, wellcor, movegrid)
 % PLATE_SPACE_MOVE moves to the center of a given well
 
 % centers - location of center of fiducial marks
 %
 % wellcor - well location on the well location grid in the format [row_num 
 % column_num] (ex. [1 1] for the top left well nearest to fiducial mark 1)
+%
+% movegrid - an optional parameter which indicates where the view should
+% be moved relative to the center of the well in units of millimeters
 
 centers = plate.calib.centers;
 theta = plate.calib.theta;
@@ -42,4 +45,9 @@ dist_y_final = dist_y - ycor;
 
 % Move the stage accordingly
 % Note: x and y are reversed
-stage_move_Ludl(ludl,[(origin(1) + dist_x_final) (origin(2) + dist_y_final)]);
+
+if nargin < 4 || isempty(movegrid)
+    movegrid = [0 0];
+end
+
+stage_move_Ludl(ludl,[(origin(1) + dist_x_final + mm2tick(movegrid(1))) (origin(2) + dist_y_final) + mm2tick(movegrid(2))]);
