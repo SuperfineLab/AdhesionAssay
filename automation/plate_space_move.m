@@ -1,4 +1,4 @@
-function plate_space_move(ludl, plate, wellcor, movegrid)
+function plate_space_move(ludl, plate, wellcor, movegrid_plate)
 % PLATE_SPACE_MOVE moves to the center of a given well
 
 % centers - location of center of fiducial marks
@@ -46,8 +46,10 @@ dist_y_final = dist_y - ycor;
 % Move the stage accordingly
 % Note: x and y are reversed
 
-if nargin < 4 || isempty(movegrid)
-    movegrid = [0 0];
+if nargin < 4 || isempty(movegrid_plate)
+    movegrid_plate = [0 0];
 end
 
-stage_move_Ludl(ludl,[(origin(1) + dist_x_final + mm2tick(movegrid(1))) (origin(2) + dist_y_final) + mm2tick(movegrid(2))]);
+movegrid_ludl = plate2ludl(movegrid_plate);
+
+stage_move_Ludl(ludl,[(origin(1) + dist_x_final + movegrid_ludl(1)) (origin(2) + dist_y_final) + movegrid_ludl(2)]);
