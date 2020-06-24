@@ -1,0 +1,13 @@
+** Phase 1 **
+Layout: 3 x 5
+Well Diameter: 8.8 mm
+X-Disp (Interwell): 11.79 mm
+Y-Disp (Interwell): 16.2 mm
+Well 1 Center Relative to Fid Mark: [11.216 6.037] (in mm)
+
+** Phase 2 **
+Layout: 5 x 7
+Well Diameter: 6.45 mm
+X-Disp (Interwell): 9.0 mm
+Y-Disp (Interwell): 9.0 mm
+Well 1 Center Relative to Fid Mark: [7.8 4.24] (in mm)
