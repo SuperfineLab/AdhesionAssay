@@ -7,10 +7,10 @@ if nargin < 1 || isempty(stack_folder)
 end
 
 sftmp = dir(stack_folder);
-slashpos = regexp(stack_folder, filesep);
 
 if ~isempty(sftmp)
-    stack_folder = sftmp.folder;
+    stack_folder = sftmp(1).folder;
+    slashpos = regexp(stack_folder, filesep);
 else
     error('Stack not found. Incorrect filename?');
 end
