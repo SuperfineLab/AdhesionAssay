@@ -26,9 +26,8 @@ Bead.Volume_mL = 0.06;
 % bead.activegroup.areaper_m2 = bead.surfacearea_m2 / bead.activegroup.conc_Nperbead;
 
 
-
 % IgG info
-IgG.Molwt_gmol = 150000; % average molecular weight for IgG [g/mol]
+IgG.MolWt_gmol = 150000; % average molecular weight for IgG [g/mol]
 IgG.Dimensions_nm = [14.5 8.5 4]; % assume shape is rectangular prism
 IgG.Area_hi =  14.5 * 8.5; % largest cross-section [nm^2]
 IgG.Area_lo =   8.5 * 4;   % smallest cross-section [nm^2]
@@ -37,7 +36,7 @@ IgG.WellConcentration_ugmL = calc_concentration(Well, IgG);
 IgG.BeadConcentration_ugmL = calc_concentration(Bead, IgG);
 
 % BSA info
-BSA.Molwt_gmol = 65000; % average molecular weight for BSA [g/mol]
+BSA.MolWt_gmol = 65000; % average molecular weight for BSA [g/mol]
 BSA.Dimensions_nm = [4 4 14]; % assume shape is prolate spheroid % [nm]
 BSA.Area_hi = pi * 4/2 * 14/2;
 BSA.Area_lo = pi * (4/2) .^ 2;
@@ -45,7 +44,7 @@ BSA.Area = [BSA.Area_lo mean([BSA.Area_lo BSA.Area_hi]) BSA.Area_hi]; % [nm^2]
 BSA.Concentration_ugmL = calc_concentration(Well, BSA);
 
 % Protein G info
-ProtG.Molwt_gmol = 66000; % average molecular weight for BSA [g/mol]
+ProtG.MolWt_gmol = 66000; % average molecular weight for BSA [g/mol]
 ProtG.Dimensions_nm = [4 4 14]; % assume shape is prolate spheroid % [nm]
 ProtG.Area_hi = pi * 4/2 * 14/2;
 ProtG.Area_lo = pi * (4/2) .^ 2;
@@ -53,11 +52,13 @@ ProtG.Area = [ProtG.Area_lo mean([ProtG.Area_lo ProtG.Area_hi]) ProtG.Area_hi]; 
 ProtG.Concentration_ugmL = calc_concentration(Well, ProtG);
 
 % PEG info
-Peg2k.Molwt_gmol = 2000;
+Peg2k.MolWt_gmol = 2000;
+Peg2k.MonomerWt_gmol = 16 + (12 + 1 + 1)*2; % [g/mol] PEG monomer is H-[-OCH2CH2-]n-OH
 Peg2k.Lp = 0.37; % [nm] https://www.sciencedirect.com/science/article/pii/S0006349508701255
-Peg2k.N = 45;
-Peg2k.Ro = 1/2 * (Peg2k.Lp*2) * Peg2k.N^0.5; % Ro = 1/2*b*N^0.5 [Rubi ]
-Peg2k.Area = pi * Peg2k.Ro .^ 2;
+Peg2k.N = Peg2k.MolWt_gmol / Peg2k.MonomerWt_gmol;
+Peg2k.Ro = 1/2 * (Peg2k.Lp*2) * Peg2k.N^0.5; % [nm], Ro = 1/2*b*N^0.5 [Rubi 54]
+Peg2k.Rg = Peg2k.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
+Peg2k.Area = pi * Peg2k.Rg .^ 2; % [nm^2]
 Peg2k.Concentration_ugmL = calc_concentration(Well, Peg2k);
 
 function Concentration_ugmL = calc_concentration(Well, Molecule)
@@ -73,7 +74,7 @@ function Concentration_ugmL = calc_concentration(Well, Molecule)
     Molecule.Moles = Molecule.Nmolecules ./ NA;
 
     % convert to grams
-    Molecule.Mass = Molecule.Moles .* Molecule.Molwt_gmol .* 1e6;
+    Molecule.Mass = Molecule.Moles .* Molecule.MolWt_gmol .* 1e6;
 
     % Concentrations matching area requirements 1:1
     Concentration_ugmL = Molecule.Mass ./ Well.Volume_mL; % [ug/mL]
