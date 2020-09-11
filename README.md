@@ -8,7 +8,9 @@ To clone the full repository: `git clone --recursive git@github.com:cribb/Adhesi
 
 To update all submodules to their latest states: `git submodule foreach git pull origin master`
 
-I'm still not clear on whether making changes to code in a submodule is adivsable or whether such changes should be made in the submodule's base repository and then pulled using the above command. --Jeremy
+Note: Don't forget you have to commit the updated positions of the submodules to the super-repository, i.e. `git commit -m "Updated to newer commits for submodules." *`
+
+I'm still not clear on whether making changes to code in a submodule is advisable or whether such changes should be made in the submodule's base repository and then pulled using the above command. --Jeremy
 
 ## A Note on Hardware
 
