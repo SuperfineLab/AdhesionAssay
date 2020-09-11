@@ -4,3 +4,6 @@
 [submodule "hw/LudlStage"]
 	path = hw/LudlStage
 	url = git@github.com:cribb/LudlStage.git
+[submodule "hw/ThorZmotor"]
+	path = hw/ThorZmotor
+	url = git@github.com:cribb/ThorZmotor.git
