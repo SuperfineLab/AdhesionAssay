@@ -61,7 +61,7 @@ else
 end
 
 if isa(zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
-    zpos_str = [', z = ' num2str(ba_getz(zhand)) ' [mm]'];
+    zpos_str = [', z = ' num2str(tm_getz(zhand)) ' [mm]'];
 else 
     zpos_str = '';
 end
