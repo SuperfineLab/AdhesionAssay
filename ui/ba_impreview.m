@@ -7,7 +7,7 @@ function varargout = ba_impreview(zhand, focusTF)
     end
 
     if nargin < 1 || isempty(zhand)
-%         zhand = ba_initz;
+%         zhand = tz_initz;
 %         pause(3);
         zhand = false;
     end

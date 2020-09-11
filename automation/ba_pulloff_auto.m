@@ -15,7 +15,7 @@ function ba_pulloff_auto(zhand, filename, exptime, Scope, Video, Zmotor)
 if nargin < 1 || isempty(zhand)
     disp('No z-controller object. Connecting to z-motor now...');
     try
-        zhand = ba_initz;
+        zhand = tm_initz;
     catch
         error('No connection. Is motor connected and running?');
     end
@@ -190,7 +190,7 @@ stop(vid);
 pause(1);
     
 % Quickly move the ThorLabs z-motor to the starting height
-ba_movez(zhand, starting_height, 'fast')
+tm_movez(zhand, starting_height, 'fast')
 
 % Close the video .bin file
 fclose(fid);

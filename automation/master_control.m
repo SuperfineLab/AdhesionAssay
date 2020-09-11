@@ -25,7 +25,7 @@ logentry('Connecting to Nikon scope...');
 scope = scope_open();
 
 logentry('Connecting to Thorlabs Z-motor...')
-h = ba_initz('Artemis');
+h = tm_initz('Artemis');
 
 % Turn on brightfield lamp
 if scope_get_lamp_state(scope) == OFF
