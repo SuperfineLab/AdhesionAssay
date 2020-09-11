@@ -1,4 +1,14 @@
-# Running an Automated Experiment (Last Updated 7/7/2020)
+# Superfine Lab Adhesion Assay
+Running an Automated Experiment (Last Updated 9/11/2020)
+
+## Cloning, commiting, and pulling updates
+The AdhesionAssay project uses submodules for the assay's hardware, which includes the Thorlabs Zmotor, Nikon Scope, Ludl Stage, and eventually the camera. This requires cloning and pulling updates in a slightly different way.
+
+To clone the full repository: `git clone --recursive git@github.com:cribb/AdhesionAssay.git`
+
+To update submodules to their latest states: `git submodule foreach git pull origin master` or `git pull origin master --recurse-submodules`
+
+I'm still not clear on whether making changes to code in a submodule is adivsable or whether such changes should be made in the submodule's base repository and then pulled using the above command. --Jeremy
 
 ## A Note on Hardware
 
