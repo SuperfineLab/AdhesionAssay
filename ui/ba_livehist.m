@@ -11,7 +11,7 @@ im = event.Data;
 set(hImage, 'CData', im);
 
 
-zhand = hImage.UserData{1};
+hwhandle.zhand = hImage.UserData{1};
 focusTF = hImage.UserData{2};
 
 
@@ -60,8 +60,8 @@ else
     focus_str = '';
 end
 
-if isa(zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
-    zpos_str = [', z = ' num2str(tm_getz(zhand)) ' [mm]'];
+if isa(hwhandle.zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
+    zpos_str = [', z = ' num2str(tm_getz(hwhandle.zhand)) ' [mm]'];
 else 
     zpos_str = '';
 end
