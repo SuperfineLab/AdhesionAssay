@@ -10,9 +10,10 @@ im = event.Data;
 % Display the current image frame.
 set(hImage, 'CData', im);
 
-
-zhand = hImage.UserData{1};
-focusTF = hImage.UserData{2};
+hwhandle = getappdata(hImage, 'hwhandle');
+viewOps = getappdata(hImage, 'viewOps');
+%hwhandle.zhand = hImage.UserData{1};
+%focusTF = hImage.UserData{2};
 
 
 
@@ -52,7 +53,7 @@ set(gca,'YScale','log')
 
 image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, ']'];
 
-if focusTF
+if viewOps.focusTF
     focus_score = fmeasure(im, 'GDER');
     % q = [q focus_score];
     focus_str = [', focus score= ', num2str(focus_score)];
@@ -60,13 +61,13 @@ else
     focus_str = '';
 end
 
-if isa(zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
-    zpos_str = [', z = ' num2str(tm_getz(zhand)) ' [mm]'];
-else 
-    zpos_str = '';
-end
+%if isa(hwhandle.zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
+%    zpos_str = [', z = ' num2str(tm_getz(hwhandle.zhand)) ' [mm]'];
+%else 
+%    zpos_str = '';
+%end
 
-title([image_str, focus_str, zpos_str]);
+title([image_str, focus_str]);%, zpos_str]);
 
 
 % Modify the following numbers to reflect the actual limits of the data returned by the camera.
