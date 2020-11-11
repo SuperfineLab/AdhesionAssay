@@ -1,27 +1,24 @@
-function varargout = ba_impreview(zhand, focusTF)
+function varargout = ba_impreview(hwhandle, viewOps)
 % BA_IMPREVIEW UI for previewing the microscope's camera image.
 %
 
-    if nargin < 2 || isempty(focusTF)
+    if nargin < 2 || isempty(viewOps)
+        ExposureTime = 1000/60;
         focusTF = false;
+        viewOps=struct('exptime', ExposureTime, ...
+        'focusTF', focusTF);
     end
 
-    if nargin < 1 || isempty(zhand)
+    if nargin < 1 || isempty(hwhandle)
         zhand = tm_initz('Artemis');
         pause(3);
         %zhand = false;
+        hwhandle=struct('zhand', zhand);
     end
-    
-    ExposureTime = 1000/60;
-    
-    hwhandle=struct('zhand', zhand, ...
-    'exptime', ExposureTime, ...
-    'focusTF', focusTF);
-    %disp(hwhandle)
     
     callback_function = @ba_livehist;
     
-    vid_impreview(hwhandle, callback_function, focusTF)
+    vid_impreview(hwhandle, viewOps, callback_function)
 
 
 end

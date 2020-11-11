@@ -11,6 +11,7 @@ im = event.Data;
 set(hImage, 'CData', im);
 
 hwhandle = getappdata(hImage, 'hwhandle');
+viewOps = getappdata(hImage, 'viewOps');
 %hwhandle.zhand = hImage.UserData{1};
 %focusTF = hImage.UserData{2};
 
@@ -52,7 +53,7 @@ set(gca,'YScale','log')
 
 image_str = [avgD, ' \pm ', stdD, ' [', minD ', ', maxD, ']'];
 
-if focusTF
+if viewOps.focusTF
     focus_score = fmeasure(im, 'GDER');
     % q = [q focus_score];
     focus_str = [', focus score= ', num2str(focus_score)];
