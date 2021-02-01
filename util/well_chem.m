@@ -61,6 +61,16 @@ Peg2k.Rg = Peg2k.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
 Peg2k.Area = pi * Peg2k.Rg .^ 2; % [nm^2]
 Peg2k.Concentration_ugmL = calc_concentration(Well, Peg2k);
 
+% WGA info
+WGA.MolWt_gmol = 38000;
+WGA.MonomerWt_gmol = 120; % [g/mol] WGA monomer is H-[-OCH2CH2-]n-OH
+WGA.Lp = 0.39; % [nm] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3593838/
+WGA.N = WGA.MolWt_gmol / WGA.MonomerWt_gmol;
+WGA.Ro = 1/2 * (WGA.Lp*2) * WGA.N^0.5; % [nm], Ro = 1/2*b*N^0.5 [Rubi 54]
+WGA.Rg = WGA.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
+WGA.Area = pi * WGA.Rg .^ 2; % [nm^2]
+WGA.Concentration_ugmL = calc_concentration(Well, WGA);
+
 function Concentration_ugmL = calc_concentration(Well, Molecule)
 
     % Constants
