@@ -1,3 +1,4 @@
+NA = 6.023e23;
 
 % Well info
 Well.Diameter_mm = 9; % [mm]
@@ -25,13 +26,19 @@ Bead.Volume_mL = 0.06;
 % bead.activegroup.conc_Nperbead = bead.activegroup.conc_Nperkg * bead.mass_kg; % [activesites/bead]
 % bead.activegroup.areaper_m2 = bead.surfacearea_m2 / bead.activegroup.conc_Nperbead;
 
+% TEPSA needed to coat a single well
+TEPSA.Area = 1.4; % [nm^2]  https://www.google.com/books/edition/Silanes_and_Other_Coupling_Agents_Volume/G7jNBQAAQBAJ?hl=en&gbpv=1&dq=10.1163/ej.9789004165915.i-348.16&pg=PA25&printsec=frontcover
+TEPSA.MolWt_gmol = 13*12 + 24 + 6 * 16 + 28.1; % C13H24O6Si
+TEPSA.NumberPerWell = Well.Area/TEPSA.Area;
+TEPSA.MolesPerWell = TEPSA.NumberPerWell ./ NA; % [moles]
+TEPSA.MassPerWell = TEPSA.MolarConc * TEPSA.MolWt_gmol; % [grams]
 
 % IgG info
 IgG.MolWt_gmol = 150000; % average molecular weight for IgG [g/mol]
 IgG.Dimensions_nm = [14.5 8.5 4]; % assume shape is rectangular prism
 IgG.Area_hi =  14.5 * 8.5; % largest cross-section [nm^2]
 IgG.Area_lo =   8.5 * 4;   % smallest cross-section [nm^2]
-IgG.Area = [IgG.Area_lo mean([IgG.Area_lo IgG.Area_hi]) IgG.Area_hi]; % [nm^2]
+IgG.Area = [IgG.Area_lo mean([IgG.Area_lo IgG.Area_hi]) IgG.Area_hi]; % [nm^2]i
 IgG.WellConcentration_ugmL = calc_concentration(Well, IgG);
 IgG.BeadConcentration_ugmL = calc_concentration(Bead, IgG);
 
@@ -51,7 +58,7 @@ ProtG.Area_lo = pi * (4/2) .^ 2;
 ProtG.Area = [ProtG.Area_lo mean([ProtG.Area_lo ProtG.Area_hi]) ProtG.Area_hi]; % [nm^2]
 ProtG.Concentration_ugmL = calc_concentration(Well, ProtG);
 
-% PEG info
+% PEG-2kD info (XXX TODO Make a PEG function that computes this based on mol wt.)
 Peg2k.MolWt_gmol = 2000;
 Peg2k.MonomerWt_gmol = 16 + (12 + 1 + 1)*2; % [g/mol] PEG monomer is H-[-OCH2CH2-]n-OH
 Peg2k.Lp = 0.37; % [nm] https://www.sciencedirect.com/science/article/pii/S0006349508701255
@@ -61,15 +68,43 @@ Peg2k.Rg = Peg2k.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
 Peg2k.Area = pi * Peg2k.Rg .^ 2; % [nm^2]
 Peg2k.Concentration_ugmL = calc_concentration(Well, Peg2k);
 
+% PEG-5kD info
+Peg5k.MolWt_gmol = 5000;
+Peg5k.MonomerWt_gmol = 16 + (12 + 1 + 1)*2; % [g/mol] PEG monomer is H-[-OCH2CH2-]n-OH
+Peg5k.Lp = 0.37; % [nm] https://www.sciencedirect.com/science/article/pii/S0006349508701255
+Peg5k.N = Peg5k.MolWt_gmol / Peg5k.MonomerWt_gmol;
+Peg5k.Ro = 1/2 * (Peg5k.Lp*2) * Peg5k.N^0.5; % [nm], Ro = 1/2*b*N^0.5 [Rubi 54]
+Peg5k.Rg = Peg5k.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
+Peg5k.Area = pi * Peg5k.Rg .^ 2; % [nm^2]
+Peg5k.Concentration_ugmL = calc_concentration(Well, Peg5k);
+
+
 % WGA info
 WGA.MolWt_gmol = 38000;
-WGA.MonomerWt_gmol = 120; % [g/mol] WGA monomer is H-[-OCH2CH2-]n-OH
+WGA.MonomerWt_gmol = 120; % [g/mol] 
 WGA.Lp = 0.39; % [nm] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3593838/
 WGA.N = WGA.MolWt_gmol / WGA.MonomerWt_gmol;
 WGA.Ro = 1/2 * (WGA.Lp*2) * WGA.N^0.5; % [nm], Ro = 1/2*b*N^0.5 [Rubi 54]
 WGA.Rg = WGA.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
 WGA.Area = pi * WGA.Rg .^ 2; % [nm^2]
 WGA.Concentration_ugmL = calc_concentration(Well, WGA);
+
+
+% PNA info
+PNA.MolWt_gmol = 110000;
+PNA.MonomerWt_gmol = 120; % [g/mol] PNA monomer is H-[-OCH2CH2-]n-OH
+PNA.Lp = 0.39; % [nm] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3593838/
+PNA.N = PNA.MolWt_gmol / PNA.MonomerWt_gmol;
+PNA.Ro = 1/2 * (PNA.Lp*2) * PNA.N^0.5; % [nm], Ro = 1/2*b*N^0.5 [Rubi 54]
+PNA.Rg = PNA.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
+PNA.Area = pi * PNA.Rg .^ 2; % [nm^2]
+PNA.Concentration_ugmL = calc_concentration(Well, PNA);
+
+
+GalNAc_PEG3_Amine.MolWt_gmol = 654.7;
+
+
+
 
 function Concentration_ugmL = calc_concentration(Well, Molecule)
 
