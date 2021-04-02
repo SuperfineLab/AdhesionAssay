@@ -1,4 +1,4 @@
-function mosaic = ba_grabwellmosaic(stage, Xpos, Ypos, exptime, fileout)
+function mosaic = ba_grabwellmosaic(stage, calib, wellrc, exptime, fileout)
 % BA_GRABWELLMOSAIC grabs a series of images to send to bead identification
 %
 % Usage: 
@@ -20,54 +20,51 @@ function mosaic = ba_grabwellmosaic(stage, Xpos, Ypos, exptime, fileout)
 %            and Image.
 %
 
-if nargin < 1 || isempty(scope)
-    error('No scope object. Check to see if scope is running and/or use scope_open to connect first.');
+if nargin < 1 || isempty(stage)
+    error('No stage object. Check to see if scope is running and/or use scope_open to connect first.');
 end
 
-if nargin < 2 || isempty(Xpos)
-    error('Need X locations for frames.');
-elseif nargin < 3 || isempty(Ypos)
-    error('Need Y locations for frames.');
-elseif size(Xpos) ~= size(Ypos)
-    error('Size mismatch for X and Y position vectors.');
+if nargin < 2 || isempty(calib)
+    error('Need stage/plate calibration.');
+end
+
+if nargin < 3 || isempty(wellrc)
+    error('Need Well locations for frames.');
 end
 
 if nargin < 4 || isempty(exptime)
     exptime = 8; % [ms]
 end
 
+% % Artemis, 4x objective, 1x multiplier, ~40% overlap = interval 0.5 mm
+% Xlocs = [-3 : 0.5 : 3];
+% Ylocs = [-3 : 0.5 : 3]';
+%
+
+% Artemis, 10x objective, 1x multiplier, 0.346 um/pix, 1024x768, 10% overlap = interval 0.63 mm
+Xlocs = linspace(-3.15, 3.15, 11);
+Ylocs = transpose(linspace(-3.15, 3.15, 11));
+
+Xmat = repmat(Xlocs, size(Ylocs,1), 1)';
+Ymat = repmat(Ylocs, 1, size(Xlocs,2))';
+Xlocs = Xmat(:);
+Ylocs = Ymat(:);
+
 % Camera Setup
-imaqmex('feature', '-previewFullBitDepth', true);
-% vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
-vid = videoinput('pointgrey', 2, 'F7_Raw16_1024x768_Mode2');
-vid.ReturnedColorspace = 'grayscale';
-% triggerconfig(vid, 'manual');
-% vid.FramesPerTrigger = NFrames;
-
-% Following code found in apps -> image acquisition
-% More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
-src = getselectedsource(vid); 
-src.ExposureMode = 'off'; 
-src.FrameRateMode = 'off';
-src.ShutterMode = 'manual';
-src.Gain = 10;
-src.Gamma = 1.15;
-src.Brightness = 5.8594;
-src.Shutter = exptime;
-
-vidRes = vid.VideoResolution;
-
-
+CameraName = 'Grasshopper3';
+CameraFormat = '';
+ExposureTime = 8;
+Video = flir_config_video(CameraName, CameraFormat, ExposureTime);
+[cam, src] = flir_camera_open(Video);
+vidRes = cam.VideoResolution;
 imageRes = fliplr(vidRes);
 
 
 f = figure;%('Visible', 'off');
 pImage = imshow(uint16(zeros(imageRes)));
-
-
 axis image
 setappdata(pImage, 'UpdatePreviewWindowFcn', @ba_pulloffview)
-p = preview(vid, pImage);
+p = preview(cam, pImage);
 set(p, 'CDataMapping', 'scaled');
 
 
@@ -75,8 +72,8 @@ set(p, 'CDataMapping', 'scaled');
 % Controlling the Hardware and running the experiment
 %
 
-N = numel(Xpos);
-PrescribedXY = [Xpos Ypos];
+N = numel(Xlocs);
+PrescribedXY = [Xlocs Ylocs];
 
 % (1) Move stage to beginning position.
 logentry(['Microscope is collecting mosaic.']);
@@ -90,14 +87,15 @@ ArrivedXY = zeros(N,2);
 
 
 for k = 1:N
-    x = Xpos(k);
-    y = Ypos(k);
+    x = Xlocs(k);
+    y = Ylocs(k);
     
     figure(f); 
     drawnow;
 
     logentry([' Moving to position X: ' num2str(x) ', Y: ' num2str(y) '. ']);
-    stage_move_Ludl(stage, [x, y]);
+%     stage_move_Ludl(stage, [x, y]);
+    plate_space_move(stage, calib, wellrc, [x y]);
     
     stout = stage_get_pos_Ludl(stage);
     ArrivedXY(k,:) = stout.Pos;
