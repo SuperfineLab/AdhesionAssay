@@ -8,7 +8,8 @@ ON = 1; OFF = 0;
 
 % (1) Load metadata 
 Scope  = ba_config_scope('Artemis');
-Video  = ba_config_video('Grasshopper3');
+% Video  = ba_config_video('Grasshopper3');
+Video  = flir_config_video('Grasshopper3', 'F7_Raw8_1024x768_Mode2', 1000/60);
 Zmotor = ba_config_zmotor('Z25B');
 Plate.Layout  = ba_read_plate_layout(plate_filename);
 
@@ -19,7 +20,7 @@ N = numel(visit_list);
 
 % Initialize hardware by opening the stage, scope, and z-motor connections
 logentry('Connecting to Ludl stage...');
-Ludl = stage_open_Ludl(); % XXX TODO: Check connections are actually open!
+Ludl = stage_open_Ludl('COM6'); % XXX TODO: Check connections are actually open!
 
 logentry('Connecting to Nikon scope...');
 scope = scope_open();

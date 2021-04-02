@@ -9,8 +9,14 @@ function [FidLudlLocs, imstack] = fiducial_position_array(ludl)
 image_width_pixels = 1024;
 image_height_pixels = 768;
 
-plate_length_mm = 69.6;
-plate_width_mm = 44.476;
+% Distances between fiducial marks
+% Version 1 (meganp)
+% plate_length_mm = 69.6;
+% plate_width_mm = 44.476;
+
+% Version 2 (david wollensak)
+plate_length_mm = 57.96;
+plate_width_mm = 43.2;
 
 plate_length_ticks = mm2tick(plate_length_mm);
 plate_width_ticks = mm2tick(plate_width_mm);
@@ -48,7 +54,17 @@ for k = 1:size(FiducialOffsets,1)
     % This uses the ba_impreview function and relies on knowing the EXACT
     % configuration of the ba_impreview figure. The code should be changed
     % to something way more robust than this.
-    ax = f.Children(5);
+    sibs = f.Children;    
+    for m = 1:length(sibs)
+        mytag = sibs(m).Tag;        
+        switch mytag
+            case 'Live Image'
+                ax = sibs(m);
+            case 'Image Histogram'
+
+        end
+    end
+
     frame = ax.Children.CData;
     
 %     imwrite(frame,strcat('im',num2str(k),'.tif'));

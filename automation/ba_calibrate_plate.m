@@ -3,9 +3,14 @@ function outs = ba_calibrate_plate(ludl)
 % location of the stage in ludl coordinates at that location to calculate
 % the location of the sample on the ludl stage
 
+% % 15 well plate version 1 (meganp)
+% plate_length_mm = 69.6;
+% plate_width_mm = 44.476;
 
-plate_length_mm = 69.6;
-plate_width_mm = 44.476;
+% 15 well plate version 2 (wollensack)
+plate_length_mm = 57.96;
+plate_width_mm = 43.2;
+
 plate_length_ticks = mm2tick(plate_length_mm);
 plate_width_ticks = mm2tick(plate_width_mm);
 

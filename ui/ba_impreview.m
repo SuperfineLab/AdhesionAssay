@@ -18,7 +18,11 @@ function varargout = ba_impreview(hwhandle, viewOps)
     
     callback_function = @ba_livehist;
     
-    vid_impreview(hwhandle, viewOps, callback_function)
+    ui_handle = vid_impreview(hwhandle, viewOps, callback_function);
+    
+    if nargout > 0
+        varargout{1} = ui_handle;
+    end
 
 
 end
