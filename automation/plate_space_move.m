@@ -24,7 +24,7 @@ if numel(xyWellCoord) == 1
 end
 
 
-xyLudlCoord = ba_plate2ludl(calib, xyWellCoord, xyOffset_mm);
+xyLudlCoord = ba_plate2ludl(ludl, calib, xyWellCoord, xyOffset_mm);
 
 % Move the stage accordingly
 % Note: x and y are reversed
