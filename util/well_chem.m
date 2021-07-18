@@ -2,8 +2,21 @@ NA = 6.023e23;
 
 % Well info
 Well.Diameter_mm = 9; % [mm]
+% Well.Diameter_mm = 8.8; % [mm]
 Well.Volume_mL = 0.060; % [mL]
 Well.Area = pi * (Well.Diameter_mm*1e6/2) .^ 2; % [nm^2]
+Well.OHPerArea = 2; % [-OH/nm^2]
+Well.OHPerWell = Well.Area * Well.OHPerArea;
+Well.MolesOHPerWell = Well.OHPerWell / NA;
+Well.TEPSASites = Well.OHPerWell/3;
+Well.COOHSites = Well.TEPSASites * 2;
+
+% TEPSA needed to coat a single well based on physical size of TEPSA
+TEPSA.Area = 1.4; % [nm^2]  https://www.google.com/books/edition/Silanes_and_Other_Coupling_Agents_Volume/G7jNBQAAQBAJ?hl=en&gbpv=1&dq=10.1163/ej.9789004165915.i-348.16&pg=PA25&printsec=frontcover
+TEPSA.MolWt_gmol = 13*12 + 24 + 6 * 16 + 28.1; % C13H24O6Si
+TEPSA.NumberPerWell = Well.Area/TEPSA.Area;
+TEPSA.MolesPerWell = TEPSA.NumberPerWell ./ NA; % [moles]
+TEPSA.MassPerWell = TEPSA.MolesPerWell * TEPSA.MolWt_gmol; % [grams]
 
 % Bead info
 Bead.Diameter_um = 24;
@@ -12,10 +25,8 @@ Bead.Volume_m3 = (4/3) * pi * (Bead.Diameter_um*1e-6/2) .^ 3;
 Bead.Mass_kg = Bead.Density_kgm3 .* Bead.Volume_m3;
 Bead.StockMassConcentration = 0.01;  % 1% w/v, or also 0.01 kg per L
 Bead.StockNumberConcentration_mL = (Bead.StockMassConcentration ./ Bead.Mass_kg) ./ 1e3; % [kg/L -> count/mL]
-
 Bead.SurfaceArea = 4 * pi * (Bead.Diameter_um*1e3/2).^2; % [nm^2]
 Bead.CrossSection=     pi * (Bead.Diameter_um*1e3/2).^2; % [nm^2]
-
 Bead.Concentration = Bead.StockMassConcentration ./ 100; % I use 1:100 dilution when dropping beads on surface
 Bead.Area = Bead.Concentration .* Bead.SurfaceArea; % Total bead surface area in solution
 Bead.Volume_mL = 0.06;
@@ -26,12 +37,16 @@ Bead.Volume_mL = 0.06;
 % bead.activegroup.conc_Nperbead = bead.activegroup.conc_Nperkg * bead.mass_kg; % [activesites/bead]
 % bead.activegroup.areaper_m2 = bead.surfacearea_m2 / bead.activegroup.conc_Nperbead;
 
-% TEPSA needed to coat a single well
-TEPSA.Area = 1.4; % [nm^2]  https://www.google.com/books/edition/Silanes_and_Other_Coupling_Agents_Volume/G7jNBQAAQBAJ?hl=en&gbpv=1&dq=10.1163/ej.9789004165915.i-348.16&pg=PA25&printsec=frontcover
-TEPSA.MolWt_gmol = 13*12 + 24 + 6 * 16 + 28.1; % C13H24O6Si
-TEPSA.NumberPerWell = Well.Area/TEPSA.Area;
-TEPSA.MolesPerWell = TEPSA.NumberPerWell ./ NA; % [moles]
-TEPSA.MassPerWell = TEPSA.MolarConc * TEPSA.MolWt_gmol; % [grams]
+% GlcNAC-PEG12-Azide (or GalNAc)
+GalNAc_PEG3_Azide.MolWt_gmol = 654.7;
+GalNAc_PEG3_Azide.MolesPerWell = Well.COOHSites / NA;
+GalNAc_PEG3_Azide.MassPerWell = GalNAc_PEG3_Azide.MolesPerWell * GalNAc_PEG3_Azide.MolWt_gmol; % [g]
+
+% DBCO-amine
+DBCO_amine.MolWt_gmol = 276.33;
+DBCO_amine.MolesPerWell = GalNAc_PEG3_Azide.MolesPerWell;
+DBCO_amine.MassPerWell = DBCO_amine.MolesPerWell * DBCO_amine.MolWt_gmol;
+% DBCO_amine.
 
 % IgG info
 IgG.MolWt_gmol = 150000; % average molecular weight for IgG [g/mol]
@@ -78,6 +93,9 @@ Peg5k.Rg = Peg5k.Ro / sqrt(6); % [nm], Rg = Ro/sqrt(6) [Rubi 63]
 Peg5k.Area = pi * Peg5k.Rg .^ 2; % [nm^2]
 Peg5k.Concentration_ugmL = calc_concentration(Well, Peg5k);
 
+% glycine info
+Gly.MolWt_gmol = 75.1;
+Gly.Concentration_ugmL = (Well.COOHSites*Gly.MolWt_gmol)/Well.Volume_mL;
 
 % WGA info
 WGA.MolWt_gmol = 38000;
@@ -101,7 +119,7 @@ PNA.Area = pi * PNA.Rg .^ 2; % [nm^2]
 PNA.Concentration_ugmL = calc_concentration(Well, PNA);
 
 
-GalNAc_PEG3_Amine.MolWt_gmol = 654.7;
+
 
 
 
