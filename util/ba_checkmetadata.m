@@ -1,17 +1,17 @@
-function m = ba_checkmetadata(m)
+function mm = ba_checkmetadata(m)
 % BA_CHECKMETADATA ensures the metadata structure matches the specification.
 %
 
     % Order everything so it can be aggregated later
-    m = orderfields(m, {'File', 'Bead', 'Substrate', 'Medium', 'Zmotor', 'Magnet', 'Scope', 'Video', 'Results'});
-    m.File = orderfields(m.File, {'Fid', 'SampleName', 'SampleInstance', 'Binfile', 'Binpath', 'Hostname', 'IncubationStartTime'});
-    m.Bead = orderfields(m.Bead, {'Diameter', 'SurfaceChemistry', 'LotNumber', 'PointSpreadFunction', 'PointSpreadFunctionFilename'});    
-    m.Substrate = orderfields(m.Substrate, {'Material', 'Size', 'SurfaceChemistry', 'Concentration_mgmL', 'LotNumber'});    
-    m.Medium = orderfields(m.Medium, {'Name', 'ManufactureDate', 'Viscosity', 'Components', 'Buffer'});
-    m.Zmotor = orderfields(m.Zmotor, {'StartingHeight', 'Velocity'});
-    m.Magnet = orderfields(m.Magnet, {'Geometry', 'Size', 'Material', 'PartNumber', 'Supplier', 'Notes'});
-    m.Scope = orderfields(m.Scope, {'Name', 'CodeName', 'Magnification', 'Magnifier', 'Calibum'});    
-    m.Video = orderfields(m.Video, {'ExposureMode', 'FrameRateMode', 'ShutterMode', 'Gain', 'Gamma', 'Brightness', 'Format', 'Height', 'Width', 'Depth', 'ExposureTime'});
-    m.Results = orderfields(m.Results, {'ElapsedTime', 'TimeHeightVidStatsTable', 'FirstFrame', 'LastFrame'});
+    mm = orderfields(m, {'File', 'Bead', 'Substrate', 'Medium', 'Zmotor', 'Magnet', 'Scope', 'Video', 'Results'});
+    mm.File = orderfields(mm.File, {'Fid', 'SampleName', 'SampleInstance', 'Binfile', 'Binpath', 'Hostname', 'IncubationStartTime'});
+    mm.Bead = orderfields(mm.Bead, {'Diameter', 'SurfaceChemistry', 'LotNumber', 'PointSpreadFunction', 'PointSpreadFunctionFilename'});    
+    mm.Substrate = orderfields(mm.Substrate, {'Material', 'Size', 'SurfaceChemistry', 'Concentration_mgmL', 'LotNumber'});    
+    mm.Medium = orderfields(mm.Medium, {'Name', 'ManufactureDate', 'Viscosity', 'Components', 'Buffer'});
+    mm.Zmotor = orderfields(mm.Zmotor, {'StartingHeight', 'Velocity'});
+    mm.Magnet = orderfields(mm.Magnet, {'Geometry', 'Size', 'Material', 'PartNumber', 'Supplier', 'Notes'});
+    mm.Scope = orderfields(mm.Scope, {'Name', 'CodeName', 'Magnification', 'Magnifier', 'Calibum'});    
+    mm.Video = orderfields(mm.Video, {'ExposureMode', 'FrameRateMode', 'ShutterMode', 'Gain', 'Gamma', 'Brightness', 'Format', 'Height', 'Width', 'Depth', 'ExposureTime'});
+    mm.Results = orderfields(mm.Results, {'ElapsedTime', 'TimeHeightVidStatsTable', 'FirstFrame', 'LastFrame'});
 
 end
