@@ -1,5 +1,5 @@
 function ba_zipstack(stack_folder, destination_folder, outfile)
-% BA_ZIPSTACK compresses a stack of images into a zipfile for archiving.
+% UR_ZIPSTACK compresses a stack of images into a zipfile for archiving.
 %
 
 if nargin < 1 || isempty(stack_folder)
@@ -35,7 +35,20 @@ end
 
 filelistcell = {filelist.name};
 
-zip(outfile,filelistcell);
+% Use below to use system zip software
+% XXX TODO implement for below code calling system zip software 
+% XXX TODO Dont forget to check for system zip first
+zip7 = @(d,z) (['"C:\Program Files\7-Zip\7z.exe" a -mmt8 -mx4 -tzip -y -r "' z '" "' d '/*"']);
+
+system(zip7(stack_folder, outfile));
+
+% To do a whole list of directories into zip files.
+% cellfun(@(d,z) system(zip7(d,z)), dirlist, zipnames, 'uniformoutput',false)
+
+
+
+% THIS IS PAINFULLY SLOW. INSTALL 7-ZIP.
+% zip(outfile,filelistcell);
 
 cd(startdir);
 
