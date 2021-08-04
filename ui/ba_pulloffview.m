@@ -30,8 +30,10 @@ title([avgD, ' \pm ', stdD, ' [', minD ', ', maxD, '], ', zpos_str]);
 
 a = ancestor(hImage, 'axes');
 
-cmin = min(double(hImage.CData(:)));
+% cmin = min(double(hImage.CData(:)));
 cmax = max(double(hImage.CData(:)));
+cmin = 3000;
+cmax = 65535;
 set(a, 'CLim', [uint16(cmin) uint16(cmax)]);
 
 return

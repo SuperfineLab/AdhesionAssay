@@ -41,9 +41,30 @@ end
 % Ylocs = [-3 : 0.5 : 3]';
 %
 
-% Artemis, 10x objective, 1x multiplier, 0.346 um/pix, 1024x768, 10% overlap = interval 0.63 mm
-Xlocs = linspace(-3.15, 3.15, 11);
-Ylocs = transpose(linspace(-3.15, 3.15, 11));
+% % % % Artemis calib_4x_2048x1536 = 0.858 [um/pix], 10% overlap = 1.6x1.32 [mm] interval
+% % Xlocs = [-3*1.58 : 1.58 : 3*1.58];
+% % Ylocs = [-3*1.32 : 1.32 : 3*1.32]';
+% Xlocs = [-10*1.58 : 1.58 : 10*1.58]; 
+% Ylocs = [-10*1.32 : 1.32 : 10*1.32]';
+% Xlocs = linspace(-3.15, 3.15, 11);
+% Ylocs = transpose(linspace(-3.15, 3.15, 11));
+
+% % Artemis, 4x objective, 1x multiplier, 1024x768, 0.583 um/pix, 3% overlap = interval 0.579 mm
+% Xlocs = [-6*0.579 : 0.579 : 6*0.579];
+% Ylocs = [-6*0.434  : 0.434  : 6*0.434]';
+
+
+% Artemis, 10x objective, 1x multiplier, 2048x1536, 0.346 um/pix, 3% overlap = interval 0.687 mm
+Xlocs = [-6*0.6873 : 0.6873 : 6*0.6873];
+Ylocs = [-6*0.515  : 0.515  : 6*0.515]';
+
+% % % % Artemis, 10x objective, 1x multiplier, 1024x768, 0.692 um/pix, 3% overlap = interval 0.687 mm
+% % Xlocs = [-25*0.6873 : 0.6873 : 25*0.6873];
+% % Ylocs = [-25*0.515  : 0.515  : 25*0.515]';
+
+
+% Xlocs = linspace(-3.15, 3.15, 11);
+% Ylocs = transpose(linspace(-3.15, 3.15, 11));
 
 Xmat = repmat(Xlocs, size(Ylocs,1), 1)';
 Ymat = repmat(Ylocs, 1, size(Xlocs,2))';
@@ -52,8 +73,9 @@ Ylocs = Ymat(:);
 
 % Camera Setup
 CameraName = 'Grasshopper3';
-CameraFormat = '';
-ExposureTime = 8;
+% CameraFormat = 'F7_Raw16_2048x1536_Mode7';
+CameraFormat = 'F7_Raw16_1024x768_Mode2';
+ExposureTime = exptime;
 Video = flir_config_video(CameraName, CameraFormat, ExposureTime);
 [cam, src] = flir_camera_open(Video);
 vidRes = cam.VideoResolution;

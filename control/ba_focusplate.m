@@ -31,7 +31,7 @@ centers = plate.calib.centers;
 % Camera Setup
 imaqmex('feature', '-previewFullBitDepth', true);
 % vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
-vid = videoinput('pointgrey', 2,'F7_Raw16_1024x768_Mode2');
+vid = videoinput('pointgrey', 1,'F7_Raw16_1024x768_Mode2');
 vid.ReturnedColorspace = 'grayscale';
 
 src = getselectedsource(vid); 
@@ -60,7 +60,7 @@ set(p, 'CDataMapping', 'scaled');
 % ----------------
 % Controlling the Hardware and running the experiment
 %
-plate_space_move(ludl, plate, [1 1]);
+plate_space_move(ludl, plate.calib, [1 1]);
 startingFocus = scope_get_focus(scope);
 logentry(['Microscope is currently at ' num2str(startingFocus)]);
 disp('Optimize focus manually and press any key to continue.');
@@ -85,7 +85,7 @@ focus_score = zeros(N,4);
 
 corners = [1 1; 1 5; 3 1; 3 5]; % well coordinates for the plate corners
 for c = 1:4
-    plate_space_move(ludl, plate, corners(c,:));
+    plate_space_move(ludl, plate.calib, corners(c,:));
     pause(5);
     for k = 1:N
         this_focus = focus_locations(k);

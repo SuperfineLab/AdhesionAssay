@@ -31,7 +31,7 @@ binfilelist = dir('**/*.bin');
     
 if ~isempty(binfilelist)
     B = length(binfilelist);
-    for b = 1 : B
+    parfor b = 1 : B
         binfile = binfilelist(b).name;
         
         logentry('Converting bin file to stack of pgms...')
@@ -58,21 +58,18 @@ for s = 1:S
 
 
 %     logentry('Loading frame extraction times and motor z-positions');
-    tz = load([stackdir '.meta.mat']);
+%     tz = load([stackdir '.meta.mat']);
     
 %     logentry('Retrieving first & last frames (used for first locating beads).');
 %     ba_extract_keyframes(stackdir);
-    
+%     
 %     logentry('Creating mini-video of stack using MP4 format');
 %     ba_minivideo(stackdir);
-    
-    logentry('Tracking beads in this stack...');
+%     
+%     logentry('Tracking beads in this stack...');
     ba_trackstack(stackdir);
 
 
-
-%     logentry('Finding beads in first and last frames.');
-%     ba_discoverbeads(
 %     logentry('Compressing stack into smaller zip file.');
 %     ba_zipstack(stackdir);
     

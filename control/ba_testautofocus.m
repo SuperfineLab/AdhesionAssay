@@ -26,27 +26,12 @@ if nargin < 4 || isempty(exptime)
 end
 
 % Camera Setup
-imaqmex('feature', '-previewFullBitDepth', true);
-%vid = videoinput('pointgrey', 1, 'F7_Mono8_648x488_Mode0');
-vid = videoinput('pointgrey', 2,'F7_Raw16_1024x768_Mode2');
-vid.ReturnedColorspace = 'grayscale';
-% triggerconfig(vid, 'manual');
-% vid.FramesPerTrigger = NFrames;
-
-% Following code found in apps -> image acquisition
-% More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
-src = getselectedsource(vid); 
-src.ExposureMode = 'off'; 
-src.FrameRateMode = 'off';
-src.ShutterMode = 'manual';
-src.Gain = 10;
-src.Gamma = 1.15;
-src.Brightness = 5.8594;
-src.Shutter = exptime;
-
-vidRes = vid.VideoResolution;
-
-
+CameraName = 'Grasshopper3';
+CameraFormat = 'F7_Raw16_2048x1536_Mode7';
+ExposureTime = exptime;
+Video = flir_config_video(CameraName, CameraFormat, ExposureTime);
+[cam, src] = flir_camera_open(Video);
+vidRes = cam.VideoResolution;
 imageRes = fliplr(vidRes);
 
 
@@ -56,7 +41,7 @@ pImage = imshow(uint16(zeros(imageRes)));
 
 axis image
 setappdata(pImage, 'UpdatePreviewWindowFcn', @ba_pulloffview)
-p = preview(vid, pImage);
+p = preview(cam, pImage);
 set(p, 'CDataMapping', 'scaled');
 
 
