@@ -28,10 +28,15 @@ im = event.Data;
 hwhandle = getappdata(hImage, 'hwhandle');
 viewOps = getappdata(hImage, 'viewOps');
 ghandles = getappdata(hImage, 'ghandles');
+manual_cmin = getappdata(hImage, 'cmin');
+manual_cmax = getappdata(hImage, 'cmax');
 
 mypreview = ghandles.preview;
 myhist = ghandles.histogram;
 
+dim = double(im);
+med_ = median(dim, 'all');
+mad_ = mad(dim, [], 'all');
 
 %mypreview
 % Display the current image frame. Modify the min and max scale to reflect 
@@ -39,8 +44,18 @@ myhist = ghandles.histogram;
 % the limit a 16-bit camera would be [0 65535].
 % cmin = min(double(hImage.CData(:)));
 % cmax = max(double(hImage.CData(:)));
-cmin = min(double(im(:)));
-cmax = max(double(im(:)));
+cmin = manual_cmin;
+cmax = manual_cmax;
+% cmin = uint16(med_ - 6*mad_);
+% if cmin < 0
+%     cmin = 0;
+% end
+% 
+% cmax = uint16(med_ + 6*mad_);
+% if cmax > 2^16-1
+%     cmax = 2^16-1;
+% end
+
 % cmin = 4000;
 % cmax = 12000;
 if cmin == cmax
