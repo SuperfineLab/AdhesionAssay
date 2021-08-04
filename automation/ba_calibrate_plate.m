@@ -1,22 +1,31 @@
-function outs = ba_calibrate_plate(ludl)
+function outs = ba_calibrate_plate(ludl, platelayout)
 % BA_CALIBRATE_PLATE uses the fiducial marking images taken by the camera and the
 % location of the stage in ludl coordinates at that location to calculate
 % the location of the sample on the ludl stage
 
-% % 15 well plate version 1 (meganp)
-% plate_length_mm = 69.6;
-% plate_width_mm = 44.476;
+if nargin < 2 || isempty(platelayout)
+    platelayout = '15v2';
+end
 
-% 15 well plate version 2 (wollensack)
-plate_length_mm = 57.96;
-plate_width_mm = 43.2;
+switch platelayout
+    case '15v1'
+        % 15 well plate version 1 (meganp)
+        plate_length_mm = 69.6;
+        plate_width_mm = 44.476;
+    case '15v2'
+        % 15 well plate version 2 (wollensack)
+        plate_length_mm = 57.96;
+        plate_width_mm = 43.2;
+    otherwise
+        error('Unknown plate layout defined.');
+end
 
 plate_length_ticks = mm2tick(plate_length_mm);
 plate_width_ticks = mm2tick(plate_width_mm);
 
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
-[pos, imstack] = fiducial_position_array(ludl);
+[pos, imstack] = fiducial_position_array(ludl, platelayout);
 
 % Finds the ludl coordinates that would place the fiducial center in the
 % center of the image
@@ -115,26 +124,35 @@ function [x_center, y_center, x_disp, y_disp] = image_center_find(im, x_start, y
 return
 
 
-function [FidLudlLocs, imstack] = fiducial_position_array(ludl)
+function [FidLudlLocs, imstack] = fiducial_position_array(ludl, platelayout)
 % FIDUCIAL_POSITION_ARRAY opens a viewing window for the user to manually
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
 
+    if nargin < 2 || isempty(platelayout)
+        platelayout = '15v2';
+    end
+    
     % image_width_pixels = 648;
     % image_height_pixels = 488;
 
     image_width_pixels = 1024;
     image_height_pixels = 768;
 
-    % Distances between fiducial marks
-    % Version 1 (meganp)
-    % plate_length_mm = 69.6;
-    % plate_width_mm = 44.476;
-
-    % Version 2 (david wollensak)
-    plate_length_mm = 57.96;
-    plate_width_mm = 43.2;
-
+    switch platelayout
+        case '15v1'
+            % Distances between fiducial marks
+            % Version 1 (meganp)
+            plate_length_mm = 69.6;
+            plate_width_mm = 44.476;
+        case '15v2'
+            % Version 2 (david wollensak)
+            plate_length_mm = 57.96;
+            plate_width_mm = 43.2;
+        otherwise
+            error('Unknown platelayout.');
+    end
+    
     plate_length_ticks = mm2tick(plate_length_mm);
     plate_width_ticks = mm2tick(plate_width_mm);
 
