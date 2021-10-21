@@ -14,11 +14,11 @@ cd(filepath);
 search_radius_low = 10;
 search_radius_high = 26;
 
-evtfilelist = dir('*.vrpn.evt.mat');
+evtfilelist = dir('*.evt.mat');
 
 for k = 1:length(evtfilelist)
 
-   basename = strrep(evtfilelist(k).name, '.vrpn.evt.mat', '');
+   basename = strrep(evtfilelist(k).name, '.evt.mat', '');
    
    % Load data from metadata file. Ultimately, use this as indexing file 
    % when combining data for an entire experiment
@@ -40,13 +40,21 @@ for k = 1:length(evtfilelist)
    % Need to use original VST tracking file to find how many beads existed 
    % on the first frame.
    origtracks = load_video_tracking([basename '.csv']);
-   FileTable{k}.FirstCount = length(unique(origtracks.id(origtracks.frame == 1)));
+   FirstFrameBeadCount = length(unique(origtracks.id(origtracks.frame == 1)));
+   
    
    BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
-      
+   
+   FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
    ForceTable{k} = ba_get_linefits(evtfilelist(k).name, calibum, visc_Pas, bead_diameter_um, Fid);
    ForceTable{k}.ZmotorPos = interp1(Ztable.Time, Ztable.ZHeight, ForceTable{k}.Mean_time);
+      
+   % Number of stuck beads is equal to the starting number of beads minus
+   % the number of Force approximations we made during our tracking
+   % clean-up for the velocity calculation.
+   FileTable{k}.LastFrameBeadCount = FirstFrameBeadCount - height(ForceTable{k});   
 end
+
 
 ForceTable = vertcat(ForceTable{:});
 % ForceTable.Filename = [];
@@ -55,7 +63,7 @@ FileTable = vertcat(FileTable{:});
 BeadInfoTable = vertcat(BeadInfoTable{:});
 
 [g, grpT] = findgroups(FileTable(:,aggregating_variables));
-NStartingBeads(:,1) = splitapply(@sum, FileTable.FirstCount, g);
+NStartingBeads(:,1) = splitapply(@sum, FileTable.FirstFrameBeadCount, g);
 NStartingBeadsT = [grpT, table(NStartingBeads)];
 
 T = join(ForceTable, FileTable(:,{'Fid', aggregating_variables{:}}));
@@ -90,6 +98,20 @@ function sm = shorten_metadata(metadata)
     sm.SubstrateChemistry = string(metadata.Substrate.SurfaceChemistry);
     sm.MagnetGeometry = string(metadata.Magnet.Geometry);
     sm.Media = string(metadata.Medium.Name);
+    
+    [a,b] = regexpi(sm.Binfile,'_DF(\d*)_', 'match', 'tokens');
+
+    if ~isempty(b) || lower(sm.Media) == "int" || lower(sm.Media) == "intnana"
+%         DF = str2double(b{1});
+        idx = contains(metadata.Medium.Components.Name, "Sialic Acid");
+        sm.MediumNANAConc = metadata.Medium.Components.Conc(idx);
+%     elseif lower(sm.Media) == "int" || lower(sm.Media) == "intnana"
+%         sm.MediumNANAConc
+    else
+        sm.MediumNANAConc = 0;
+    end
+    
+    
     sm.MediumViscosity = metadata.Medium.Viscosity;
     sm.Calibum = metadata.Scope.Calibum;    
     
@@ -97,6 +119,7 @@ function sm = shorten_metadata(metadata)
         sm.SubstrateLotNumber = string(metadata.Substrate.LotNumber);
     end
     
+    jac = sm;
     sm = struct2table(sm);
     
     sm.BeadChemistry = categorical(sm.BeadChemistry);
