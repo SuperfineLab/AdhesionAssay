@@ -6,6 +6,11 @@ Tally = table('Size', [numel(filelist), 4], ...
               'VariableTypes', {'double', 'double', 'double', 'double'}, ...
               'VariableNames', {'WellNumber', 'FrameWidth', 'FrameHeight', 'FrameCount'});
 
+% generate list of handles to mp4 videos
+for file = 1:height(Tally)
+    VidHandles{file} = VideoReader(filelist(file).name);
+end
+
 % Extract the well number from the data filename and populate the video tally table          
 for file = 1:length(filelist)
     
@@ -17,11 +22,6 @@ for file = 1:length(filelist)
     Tally.FrameWidth(file) = VidHandles{file}.Width;
     Tally.FrameHeight(file) = VidHandles{file}.Height;
     Tally.FrameCount(file) = VidHandles{file}.NumFrames;
-end
-
-% generate list of handles to mp4 videos
-for file = 1:height(Tally)
-    VidHandles{file} = VideoReader(filelist(file).name);
 end
 
 frameIn = 1; 
@@ -39,7 +39,9 @@ while hasFrame(VidHandles{1})
     frameIn = frameIn + 1;
 end
 
-Vout = VideoWriter('2021.08.03__HBEslideInterferingGlcNAc_mosaicvideo.mp4', 'MPEG-4');
+
+Vout = VideoWriter('2021.09.15__HBEslideInterferingNANA_DF1000_mosaicvideo', 'MPEG-4');
+% Vout = VideoWriter('2021.09.10__HBEslideNonInterfering_Trial3_mosaicvideo.mp4', 'MPEG-4');
 Vout.FrameRate = 60;
 open(Vout);
 for frameOut = 1:size(im,4)
