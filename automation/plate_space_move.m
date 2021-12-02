@@ -23,7 +23,6 @@ if numel(xyWellCoord) == 1
     xyWellCoord = ba_wellnum2rc(xyWellCoord);
 end
 
-platelayout = '15v1';
 xyLudlCoord = ba_plate2ludl(ludl, calib, xyWellCoord, xyOffset_mm, platelayout);
 
 % Move the stage accordingly
