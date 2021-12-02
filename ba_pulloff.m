@@ -215,6 +215,7 @@ Fid = ba_makeFid;
 [~,host] = system('hostname');
 
 [a,b] = regexpi(filename,'well(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
+% [a,b] = regexpi(filename,'well(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_DF(\d*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 %[a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_I-([0-9]*)pct_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 % [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_M-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 % [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
@@ -236,7 +237,7 @@ m.File.Binpath = pwd;
 m.File.Hostname = strip(host);
 switch MediumName
     case 'NoInt'
-        m.File.IncubationStartTime = '03/12/2020 9:30 am';
+        m.File.IncubationStartTime = '';
     case 'Int'
         m.File.IncubationStartTime = '';
 end
