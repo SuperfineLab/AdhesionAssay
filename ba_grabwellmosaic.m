@@ -54,7 +54,7 @@ end
 % Ylocs = [-6*0.434  : 0.434  : 6*0.434]';
 
 
-% Artemis, 10x objective, 1x multiplier, 2048x1536, 0.346 um/pix, 3% overlap = interval 0.687 mm
+% Artemis, 10x objective, 1x multiplier, 2048x1536, 0.692 um/pix, 3% overlap = interval 0.687 mm
 Xlocs = [-6*0.6873 : 0.6873 : 6*0.6873];
 Ylocs = [-6*0.515  : 0.515  : 6*0.515]';
 
@@ -78,7 +78,11 @@ CameraFormat = 'F7_Raw16_1024x768_Mode2';
 ExposureTime = exptime;
 Video = flir_config_video(CameraName, CameraFormat, ExposureTime);
 [cam, src] = flir_camera_open(Video);
+
+% Video resolution in pixels in typical order (# pixels along X then Y)
 vidRes = cam.VideoResolution;
+
+% Image resolution in size of an image's matrix (Nrows X Mcols)
 imageRes = fliplr(vidRes);
 
 
@@ -94,7 +98,7 @@ set(p, 'CDataMapping', 'scaled');
 % Controlling the Hardware and running the experiment
 %
 
-N = numel(Xlocs);
+Nframes = numel(Xlocs);
 PrescribedXY = [Xlocs Ylocs];
 
 % (1) Move stage to beginning position.
@@ -104,11 +108,13 @@ logentry(['Microscope is collecting mosaic.']);
 pause(2);
 logentry('Starting collection...');
 
-Image = cell(N, 1);
-ArrivedXY = zeros(N,2);
+Image = cell(Nframes, 1);
+ArrivedXY = zeros(Nframes,2);
 
+tmp = stage_get_pos_Ludl(stage);
+tmpxy = tmp.Pos;
 
-for k = 1:N
+for k = 1:Nframes
     x = Xlocs(k);
     y = Ylocs(k);
     
@@ -151,6 +157,6 @@ function logentry(txt)
                    num2str(floor(logtime(6)), '%02i') ') '];
      headertext = [logtimetext 'ba_grabwellmosaic: '];
      
-     fprintf('%s%s\n', headertext, txt);
+     fprintf('%s%s\Nframes', headertext, txt);
      
      return
