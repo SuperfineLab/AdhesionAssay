@@ -8,7 +8,7 @@ function ba_plot_forcehist(ba_process_data, aggregating_variables, plotorder)
     end
     % {'BeadChemistry', 'Media'}
     [g, BeadCountTable] = findgroups(Data.FileTable(:,aggVars));
-    BeadCountTable.TotalBeads = splitapply(@sum, Data.FileTable.FirstCount, g);
+    BeadCountTable.TotalBeads = splitapply(@sum, Data.FileTable.FirstFrameBeadCount, g);
 
     FileVars(1,:) = [{'Fid'}; aggVars];
     FTable = join(Data.ForceTable, Data.FileTable(:,FileVars));
@@ -26,8 +26,8 @@ function ba_plot_forcehist(ba_process_data, aggregating_variables, plotorder)
     maxforce = 90e-9;
 
     grpF.Force = splitapply(@(x1,x2){sa_attach_stuck_beads(x1,x2,maxforce)}, FTable.Force, ...
-                                                                       FTable.TotalBeads, ...
-                                                                       gF);
+                                                                             FTable.TotalBeads, ...
+                                                                             gF);
 
     if nargin < 3 || isempty(plotorder)
         plotorder(:,1) = [2 1 4 3 6 5];
@@ -58,12 +58,13 @@ function h = mysubplot(force, condition_label, subplotn, subplotN)
     
     h = subplot(subplotN,1,subplotn);     
     ax1 = histogram(logforce, 24, 'BinEdges', BinEdges, 'Normalization', 'probability');
+    
     if subplotn ~= subplotN
         h.XTickLabels = [];
     end
     
 %     h.YTick = [0:0.2:1]; %#ok<NBRAK>
-    h.XLim = [-4 2]; 
+    h.XLim = [-1 2]; 
     h.YLim = [0 1];
     
     grid on;
@@ -74,9 +75,11 @@ function h = mysubplot(force, condition_label, subplotn, subplotN)
         h.YTick = [0:0.2:0.8];
     end
     
+    h.FontSize = 14;
+    
     if subplotn == subplotN
-        xlabel('log_{10}(Force) [nN]'); 
+        xlabel('log_{10}(Force) [nN]', 'FontSize', 16); 
     end
-    ylabel(condition_label, 'Interpreter', 'none');
+    ylabel(condition_label, 'Interpreter', 'none', 'FontSize', 16);
 end
 

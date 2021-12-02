@@ -73,27 +73,27 @@ end
 
 N = size(ForceMatrix,2);
 m = 1;  % simple iterator through the pairs (sloppy sloppy)
-% For every pair of datasets (number of columns is > 2)
-if N >=2
-    for k = 1:2:N
-
-        ForceGroup = ForceMatrix(:, [k, k+1]);
-
-        [p(m),hyp(m)] = ranksum(ForceMatrix(:, k), ForceMatrix(:,k+1));
-
-        % if there's significance, put the stars on the plot
-        if p(m)<0.05
-            Hsig = sigstar({[k,k+1]},p(m)); 
-
-            % Increase the size of the stars
-            for k = 1:size(Hsig,1)
-                this_h = Hsig(k,2);
-                set(this_h, 'FontSize', 16);
-            end
-        end    
-        m=m+1;
-    end
-end
+% % % For every pair of datasets (number of columns is > 2)
+% % if N >=2
+% %     for k = 1:2:N
+% % 
+% %         ForceGroup = ForceMatrix(:, [k, k+1]);
+% % 
+% %         [p(m),hyp(m)] = ranksum(ForceMatrix(:, k), ForceMatrix(:,k+1));
+% % 
+% %         % if there's significance, put the stars on the plot
+% %         if p(m)<0.05
+% %             Hsig = sigstar({[k,k+1]},p(m)); 
+% % 
+% %             % Increase the size of the stars
+% %             for k = 1:size(Hsig,1)
+% %                 this_h = Hsig(k,2);
+% %                 set(this_h, 'FontSize', 16);
+% %             end
+% %         end    
+% %         m=m+1;
+% %     end
+% % end
 
 % [gMean, gSEM, gStd, gVar, gMeanCI] = grpstats(RelevantData.Force, g, {'mean', 'sem', 'std', 'var', 'meanci'});
 
@@ -102,5 +102,8 @@ end
 % T = table(N, gMean, gStd, gCov, gSEM, gVar, gMeanCI, 'VariableNames', ...
 %         {'N', 'Mean', 'StDev', 'COV', 'StdErr', 'Var', 'MeanCI'});
 % T = [grpF T];
+if ~exist('p')
+    p=[];
+end
 
 return

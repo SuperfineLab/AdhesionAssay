@@ -4,9 +4,9 @@ function mm = ba_checkmetadata(m)
 
     % Order everything so it can be aggregated later
     mm = orderfields(m, {'File', 'Bead', 'Substrate', 'Medium', 'Zmotor', 'Magnet', 'Scope', 'Video', 'Results'});
-    mm.File = orderfields(mm.File, {'Fid', 'SampleName', 'SampleInstance', 'Binfile', 'Binpath', 'Hostname', 'IncubationStartTime'});
+    mm.File = orderfields(mm.File, {'Fid', 'Well', 'SampleName', 'SampleInstance', 'Binfile', 'Binpath', 'Hostname', 'IncubationStartTime'});
     mm.Bead = orderfields(mm.Bead, {'Diameter', 'SurfaceChemistry', 'LotNumber', 'PointSpreadFunction', 'PointSpreadFunctionFilename'});    
-    mm.Substrate = orderfields(mm.Substrate, {'Material', 'Size', 'SurfaceChemistry', 'Concentration_mgmL', 'LotNumber'});    
+    mm.Substrate = orderfields(mm.Substrate, {'Material', 'Size', 'Silane', 'SurfaceChemistry', 'Concentration_mgmL', 'LotNumber'});    
     mm.Medium = orderfields(mm.Medium, {'Name', 'ManufactureDate', 'Viscosity', 'Components', 'Buffer'});
     mm.Zmotor = orderfields(mm.Zmotor, {'StartingHeight', 'Velocity'});
     mm.Magnet = orderfields(mm.Magnet, {'Geometry', 'Size', 'Material', 'PartNumber', 'Supplier', 'Notes'});

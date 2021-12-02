@@ -12,8 +12,8 @@ if isempty(d)
                                 'Pulloff_time', 'Mean_time', 'Mean_vel', 'Force'});
     return
 else 
-    t = d.FrameNumber ./ d.Fps;
-    [g, ID] = findgroups(d.SpotID);
+    t = d.Frame ./ d.Fps;
+    [g, ID] = findgroups(d.ID);
 end
 
 myfits = splitapply(@(x,y)mylinfit(x,y,1), t, d.Z, g);
