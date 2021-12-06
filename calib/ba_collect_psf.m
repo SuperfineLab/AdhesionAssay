@@ -46,7 +46,7 @@ triggerconfig(cam, 'manual');
 cam.FramesPerTrigger = Inf;
 % preview(cam);
 pause(.2)
-outs = struct;
+
 
 % Initialize vector for height and time at each frame
 nSteps = 300;
