@@ -55,34 +55,28 @@ TotalFrames = 0;
 motor_velocity = 0.2; % [mm/sec]
 znow = starting_height;
 
-
 Nsec = starting_height/motor_velocity + 1;
 Fps = 1 / (exptime/1000);
 % NFrames = ceil(Fps * Nsec);
 NFrames = 7625;
 
-
-imaqmex('feature', '-previewFullBitDepth', true);
-vid = videoinput('pointgrey', 1,'F7_Raw16_1024x768_Mode2');
-vid.ReturnedColorspace = 'grayscale';
-triggerconfig(vid, 'manual');
-vid.FramesPerTrigger = NFrames;
-
-% Following code found in apps -> image acquisition
-% More info here: http://www.mathworks.com/help/imaq/basic-image-acquisition-procedure.html
-src = getselectedsource(vid); 
-src.ExposureMode = 'off'; 
-src.FrameRateMode = 'off';
-src.ShutterMode = 'manual';
-src.Gain = 14;
-src.Gamma = 1.15;
-src.Brightness = 5.8594;
-src.Shutter = exptime;
-
-vidRes = vid.VideoResolution;
+% Camera Setup
+CameraName = 'Grasshopper3';
+CameraFormat = 'F7_Raw16_1024x768_Mode2';
 imagetype = 'uint16';
+ExposureTime = exptime;
+Video = flir_config_video(CameraName, CameraFormat, ExposureTime);
+[cam, src] = flir_camera_open(Video);
+% trigconf = triggerconfig(cam, 'manual');
+triggerconfig(cam, 'manual');
+cam.FramesPerTrigger = NFrames;
 
+vidRes = cam.VideoResolution;
 imageRes = fliplr(vidRes);
+pause(0.1);
+
+
+
 
 filename = [filename, '_', num2str(vidRes(1)), 'x', ...
                            num2str(vidRes(2)), 'x', ...
@@ -94,7 +88,7 @@ pImage.UserData = znow;
 
 axis image
 setappdata(pImage, 'UpdatePreviewWindowFcn', @ba_pulloffview)
-p = preview(vid, pImage);
+p = preview(cam, pImage);
 set(p, 'CDataMapping', 'scaled');
 
 
@@ -104,7 +98,7 @@ set(p, 'CDataMapping', 'scaled');
 
 pause(2);
 logentry('Starting video...');
-start(vid);
+start(cam);
 pause(2);
 
 NFramesAvailable = 0;
@@ -112,7 +106,7 @@ NFramesAvailable = 0;
 % XXX TODO: Change bin filename to include frame width, height, depth, Nframes
 binfilename = [filename,'.bin'];
 if ~isempty(dir(binfilename))
-    delete(vid);
+    delete(cam);
     clear vid
     close(f)
     error('That file already exists. Change the filename and try again.');
@@ -130,7 +124,7 @@ zhand.MoveAbsolute(0, 1==0);
 
 logentry('Triggering video collection...');
 cnt = 0;
-trigger(vid);
+trigger(cam);
 
 % start timer for video timestamps
 t1=tic; 
@@ -145,11 +139,11 @@ while(NFramesTaken < NFrames)
     zheight(cnt,1) = znow;
     pImage.UserData = znow;
     
-    NFramesAvailable(cnt,1) = vid.FramesAvailable;
+    NFramesAvailable(cnt,1) = cam.FramesAvailable;
     NFramesTaken = NFramesTaken + NFramesAvailable(cnt,1);
 %     disp(['Num Grabbed Frames: ' num2str(NFramesAvailable(cnt,1)) '/' num2str(NFramesTaken)]);
 
-    [data, ~, meta] = getdata(vid, NFramesAvailable(cnt,1));    
+    [data, ~, meta] = getdata(cam, NFramesAvailable(cnt,1));    
     
     abstime{cnt,1} = vertcat(meta(:).AbsTime);
     framenumber{cnt,1} = meta(:).FrameNumber;
@@ -181,7 +175,7 @@ lastframe = data(:,:,1,end);
 elapsed_time = toc(t1);
 
 logentry('Stopping video collection...');
-stop(vid);
+stop(cam);
 pause(1);
     
 % Quickly move the ThorLabs z-motor to the starting height
@@ -312,7 +306,7 @@ m.Video.ShutterMode = src.ShutterMode;
 m.Video.Gain = src.Gain;
 m.Video.Gamma = src.Gamma;
 m.Video.Brightness = src.Brightness;
-m.Video.Format = vid.VideoFormat;
+m.Video.Format = cam.VideoFormat;
 m.Video.Height = 768;
 m.Video.Width = 1024;
 m.Video.Depth = 16;
@@ -327,7 +321,7 @@ m.Results.LastFrame = lastframe;
 
 save([filename, '.meta.mat'], '-STRUCT', 'm');
 
-delete(vid);
+delete(cam);
 clear vid
 
 close(f)
