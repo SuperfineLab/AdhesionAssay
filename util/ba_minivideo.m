@@ -41,7 +41,18 @@ if ~isempty(vidstatsfile)
     disp(['Max intens is: ' num2str(maxintens)]);
 end
 
-metadata = load(metadatafile.name);
+if ~isempty(metadatafile)
+    metadata = load(metadatafile.name);        
+    try
+        AllHeights = metadata.Results.TimeHeightVidStatsTable.ZHeight;
+    catch
+        AllHeights = [];
+    end
+else
+    AllHeights = [];
+end
+
+
 
 v = VideoWriter(outfile, 'MPEG-4');
 v.FrameRate = 60;
@@ -58,7 +69,12 @@ for k = 1:4:length(filelist)
         im = im ./ maxintens;
     end
     
-    height = metadata.Results.TimeHeightVidStatsTable.ZHeight(k);
+    if ~isempty(AllHeights)
+        height = AllHeights(k);
+    else
+        height = 0;
+    end
+    
     roundedHeight = height - rem(height, .1);
     imrgb = insertText(im, [5 5], ['f=' num2str(k) ', h=' num2str(roundedHeight)], ...
                                      'AnchorPoint', 'LeftTop', ...
