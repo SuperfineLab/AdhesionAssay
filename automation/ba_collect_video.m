@@ -43,6 +43,7 @@ switch Video.Depth
         pImage = imshow(uint16(zeros(imageRes)));
 end
 
+Video
 
 axis image
 setappdata(pImage, 'UpdatePreviewWindowFcn', @ba_pulloffview)
