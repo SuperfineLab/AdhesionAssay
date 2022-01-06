@@ -15,6 +15,7 @@ if nargin < 3 || isempty(viewOps)
     viewOps.cmin = 3500;
     viewOps.cmax = 65535;
     viewOps.exptime = 8;
+    viewOps.gain = 15;
 end
 
 if nargin < 4 || isempty(collect_position)
@@ -25,6 +26,14 @@ if nargin < 5 || isempty(duration)
     error('Please provide duration.');
 end
 
+
+% check for open impreview window
+h = findobj('Name', 'vid_impreview');
+if ~isempty(h)
+    logentry('Found open preview window. Closing.')
+    close(h);
+    pause(0.1);
+end
 
 % Record current Ludl stage position as a "safe" location, meaning that the
 % capillary tube is not subjected to sufficent magnetic forces to be an
@@ -41,6 +50,8 @@ stage_move_Ludl(hw.ludl,collect_position.Pos);
 
 % collect video
 Video = flir_config_video('Grasshopper3', 'F7_Raw16_1024x768_Mode2', viewOps.exptime);
+Video.Gain = viewOps.gain
+
 ba_collect_video(filename, Video, duration);
 
 % Return capillary to starting position (deemed as safe)
@@ -49,6 +60,10 @@ safe_pos = stage_move_Ludl(hw.ludl,safe_pos.Pos);
 % switch to brightfield and take an image to identify location of pole tip
 % and capillary.
 
+% If we had a preview, restore it once we're done collecting data
+if ~isempty(h)
+    ba_impreview(hw, viewOps);
+end
 
 outs = 0;
 
