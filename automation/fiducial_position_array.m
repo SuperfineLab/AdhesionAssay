@@ -18,8 +18,8 @@ image_height_pixels = 768;
 plate_length_mm = 57.96;
 plate_width_mm = 43.2;
 
-plate_length_ticks = mm2tick(plate_length_mm);
-plate_width_ticks = mm2tick(plate_width_mm);
+plate_length_ticks = mm2tick(ludl, plate_length_mm);
+plate_width_ticks = mm2tick(ludl, plate_width_mm);
 
 % WARNING: Adjust the size of imstack according to image size!
 imstack = zeros(image_height_pixels, image_width_pixels, 4);

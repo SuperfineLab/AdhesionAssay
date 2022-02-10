@@ -20,8 +20,8 @@ switch platelayout
         error('Unknown plate layout defined.');
 end
 
-plate_length_ticks = mm2tick(plate_length_mm);
-plate_width_ticks = mm2tick(plate_width_mm);
+plate_length_ticks = mm2tick(ludl, plate_length_mm);
+plate_width_ticks = mm2tick(ludl, plate_width_mm);
 
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
@@ -153,8 +153,8 @@ function [FidLudlLocs, imstack] = fiducial_position_array(ludl, platelayout)
             error('Unknown platelayout.');
     end
     
-    plate_length_ticks = mm2tick(plate_length_mm);
-    plate_width_ticks = mm2tick(plate_width_mm);
+    plate_length_ticks = mm2tick(ludl, plate_length_mm);
+    plate_width_ticks = mm2tick(ludl, plate_width_mm);
 
     % WARNING: Adjust the size of imstack according to image size!
     imstack = zeros(image_height_pixels, image_width_pixels, 4);

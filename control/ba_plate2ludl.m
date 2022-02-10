@@ -49,8 +49,8 @@ y_centers = transpose(plate.well_one_center(1) + plate.interwell_dist(2) * (rid-
 theta = cal.theta;
 
 % Convert mm to ticks
-well_one_tick = mm2tick(plate.well_one_center);
-interwell_tick = mm2tick(plate.interwell_dist);
+well_one_tick = mm2tick(ludl, plate.well_one_center);
+interwell_tick = mm2tick(ludl, plate.interwell_dist);
 
 % Define origin as the location of top-left edge of the nunc plate
 PlateOrigin = cal.centers(1,:);
@@ -71,7 +71,7 @@ dist_y = dist_y - ycor;
 
 % Convert offsets to ticks. Remember x and y are reversed between plate and
 % ludl coordinate systems
-xyOffset_ticks = mm2tick(fliplr(xyOffset_mm));
+xyOffset_ticks = mm2tick(ludl, fliplr(xyOffset_mm));
 
 xyLudl_ticks = [PlateOrigin(1) + dist_x - xyOffset_ticks(1), ...
                 PlateOrigin(2) + dist_y - xyOffset_ticks(2)];
