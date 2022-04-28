@@ -1,5 +1,8 @@
 function outs = ba_force_calib(filename, hw, viewOps, collect_position, duration)
 
+% CameraFormat = 'F7_Raw16_1024x768_Mode2';
+CameraFormat = 'F7_Raw8_2048x1536_Mode7';
+
 ludl = hw.ludl;
 
 if nargin < 1 || isempty(filename)
@@ -49,7 +52,7 @@ stage_move_Ludl(hw.ludl,collect_position.Pos);
 % pause(0.1);
 
 % collect video
-Video = flir_config_video('Grasshopper3', 'F7_Raw16_1024x768_Mode2', viewOps.exptime);
+Video = flir_config_video('Grasshopper3', CameraFormat, viewOps.exptime);
 Video.Gain = viewOps.gain
 
 ba_collect_video(filename, Video, duration);
