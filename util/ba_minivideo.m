@@ -1,4 +1,4 @@
-function ba_minivideo(stack_folder, destination_folder, outfile)
+function ba_minivideo(stack_folder, destination_folder, outfile, opts)
 % BA_MINIVIDEO creates a compressed and annotated mp4 for an image stack
 %
 
@@ -21,6 +21,12 @@ end
 
 if nargin < 3 || isempty(outfile)
     outfile = [destination_folder, stack_folder(slashpos(end):end), '.mp4'];
+end
+
+if nargin < 4 || isempty(opts)
+    opts.stride = 4;
+    opts.scale = 0.5;
+    opts.pmip = true;    
 end
 
 rootdir = pwd;
@@ -55,33 +61,50 @@ end
 
 
 v = VideoWriter(outfile, 'MPEG-4');
-v.FrameRate = 60;
+v.FrameRate = 15;
 
 open(v);
-for k = 1:4:length(filelist)
+for k = 1:opts.stride:length(filelist)
     myfile = fullfile(filelist(k).folder, (filelist(k).name));
-    im = imread(myfile);
-%     im = imresize(im, [640 NaN]);
-    im = imresize(im, 0.5);
+    
+    im = imread(myfile);    
+    
+    if ~exist('accim', 'var')
+        accim = uint16(zeros(size(im)));
+    end
+    
+    if opts.pmip
+        tmpim = cat(3, im, accim);
+        im = max(tmpim,[],3);
+        accim = im;
+    end    
+        
+    if opts.scale ~= 1
+        im = imresize(im, opts.scale);    
+    end
     
     if ~isempty(vidstatsfile)
         im = double(im);
         im = im ./ maxintens;
     end
     
+    
+    % To label the current height in the top-left corner of the video...
     if ~isempty(AllHeights)
         height = AllHeights(k);
     else
         height = 0;
     end
     
-    roundedHeight = height - rem(height, .1);
-    imrgb = insertText(im, [5 5], ['f=' num2str(k) ', h=' num2str(roundedHeight)], ...
-                                     'AnchorPoint', 'LeftTop', ...
-                                     'BoxColor', 'black', ...
-                                     'BoxOpacity', 0.4, ...
-                                     'TextColor', 'white', ...
-                                     'FontSize', 14);
+    height = round(height, 1);
+
+    imrgb = insertText(im, [5 5], ['f=' num2str(k), ...
+                                   ', h=' num2str(height)], ...
+                                   'AnchorPoint', 'LeftTop', ...
+                                   'BoxColor', 'black', ...
+                                   'BoxOpacity', 0.4, ...
+                                   'TextColor', 'white', ...
+                                   'FontSize', 14);
    
     im = im2uint8(imrgb);
     writeVideo(v, im); 
