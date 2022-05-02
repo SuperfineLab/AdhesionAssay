@@ -15,10 +15,11 @@ end
 for file = 1:length(filelist)
     
     filename = filelist(file).name;
-    tok = regexpi(filename, 'well(\d*)', 'tokens');
-    wellNum = str2num(tok{1}{1});
-        
-    Tally.WellNumber(file) = wellNum;
+%     tok = regexpi(filename, 'fov-(\d*)', 'tokens');
+%     wellNum = str2num(tok{1}{1});
+            
+%     Tally.WellNumber(file) = wellNum;
+    Tally.WellNumber(file) = file;
     Tally.FrameWidth(file) = VidHandles{file}.Width;
     Tally.FrameHeight(file) = VidHandles{file}.Height;
     Tally.FrameCount(file) = VidHandles{file}.NumFrames;
@@ -33,14 +34,14 @@ while hasFrame(VidHandles{1})
             foo = zeros(Tally.FrameHeight(file), Tally.FrameWidth(file));
         end
         wellNum = Tally.WellNumber(file);        
-        im(:,:,wellNum,frameIn) = foo(:,:,1); 
+        im(:,:,file,frameIn) = foo(:,:,1); 
     end
     fprintf('FrameNumberIn= %u\n', frameIn);
     frameIn = frameIn + 1;
 end
 
 
-Vout = VideoWriter('2021.09.15__HBEslideInterferingNANA_DF1000_mosaicvideo', 'MPEG-4');
+Vout = VideoWriter('HBEwith5mgmLNANA-greenbeads-30Deg-mosaicvideo', 'MPEG-4');
 % Vout = VideoWriter('2021.09.10__HBEslideNonInterfering_Trial3_mosaicvideo.mp4', 'MPEG-4');
 Vout.FrameRate = 60;
 open(Vout);
