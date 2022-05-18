@@ -67,14 +67,21 @@ for s = 1:S
     opts.scale = 1;
     opts.stride = 4;
     opts.pmip = true;
+    opts.tag.datetime = true;
+    opts.tag.frame = true;
+    opts.tag.height = false;
+    opts.tag.name = false; 
+    opts.tag.fov = true;
+    opts.tag.angle = true;
+    opts.tag.nana = true;
     ba_minivideo(stackdir,[],[],opts);
 %     
 %     logentry('Tracking beads in this stack...');
 %     ba_trackstack(stackdir);
 
 
-%     logentry('Compressing stack into smaller zip file.');
-%     ba_zipstack(stackdir);
+    logentry('Compressing stack into smaller zip file.');
+    ba_zipstack(stackdir);
     
 %     logentry('Deleting stack...');
 %     rmdir(stackdir, 's');
