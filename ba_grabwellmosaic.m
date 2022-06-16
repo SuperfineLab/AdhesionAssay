@@ -157,6 +157,6 @@ function logentry(txt)
                    num2str(floor(logtime(6)), '%02i') ') '];
      headertext = [logtimetext 'ba_grabwellmosaic: '];
      
-     fprintf('%s%s\Nframes', headertext, txt);
+     fprintf('%s%s frames \n', headertext, txt);
      
      return
