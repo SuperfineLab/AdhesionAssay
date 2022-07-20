@@ -20,61 +20,29 @@ if nargin < 4 || isempty(xyOffset_mm)
     xyOffset_mm = [0 0];
 end
 
-if numel(xyWellCoord) == 1
-    xyWellCoord = ba_wellnum2rc(xyWellCoord);
+if numel(xyWellCoord) == 2
+    xyWellNum = ba_wellrc2num(xyWellCoord);
+elseif numel(xyWellCoord) == 1
+    xyWellNum = xyWellCoord;
+else
+    error('Well designation is malformed.');
 end
 
-% Note: For distances x and y are reversed and both negative when written in 
-% Ludl space. Distances are in units of mm.
-switch platelayout
-    case '15v1' % nunc spec.
-%         plate.well_one_center = [14.32 11.25];
-        plate.well_one_center = [7.2 10.9];
-        plate.interwell_dist = [16.2, 11.79];
-    case '15v2'
-        plate.well_one_center = [5.4, 5.4];
-        plate.interwell_dist  = [16.2, 11.79];
-        
-end
+reshtrans = @(x)(reshape(transpose(x),[],1));
+
+plate = platedef(platelayout);
 
 % % Determining Distances
 [cid, rid] = meshgrid(1:5,1:3);
 
-x_centers = transpose(plate.well_one_center(1) + plate.interwell_dist(1) * (cid-1));
-y_centers = transpose(plate.well_one_center(1) + plate.interwell_dist(2) * (rid-1));
+xycenters(:,1) = reshtrans(plate.well_one_center(1) + plate.interwell_dist(1) * (cid-1));
+xycenters(:,2) = reshtrans(plate.well_one_center(1) + plate.interwell_dist(2) * (rid-1));
 
-% well_centers_platespace_ticks = [x_centers(:) y_centers(:)];
-% center = calib.center;
+platexy_mm = xycenters(xyWellNum,:) + xyOffset_mm;
 
 theta = cal.theta;
 
-% Convert mm to ticks
-well_one_tick = mm2tick(ludl, plate.well_one_center);
-interwell_tick = mm2tick(ludl, plate.interwell_dist);
-
-% Define origin as the location of top-left edge of the nunc plate
-PlateOrigin = cal.centers(1,:);
-
-
-% Find moving distance
-dist_x = -(well_one_tick(1) + (xyWellCoord(1) - 1) * interwell_tick(1));
-dist_y = -(well_one_tick(2) + (xyWellCoord(2) - 1) * interwell_tick(2));
-
-
-% Correction factors due to stage xy rotation
-xcor = abs(dist_y) * sin(theta);
-ycor = abs(dist_x) * sin(theta);
-
-% Find moving distance
-dist_x = dist_x + xcor;
-dist_y = dist_y - ycor;
-
-% Convert offsets to ticks. Remember x and y are reversed between plate and
-% ludl coordinate systems
-xyOffset_ticks = mm2tick(ludl, fliplr(xyOffset_mm));
-
-xyLudl_ticks = [PlateOrigin(1) + dist_x - xyOffset_ticks(1), ...
-                PlateOrigin(2) + dist_y - xyOffset_ticks(2)];
+xyLudl_ticks = plate2ludl(ludl, cal, platexy_mm);
 
 return
 
