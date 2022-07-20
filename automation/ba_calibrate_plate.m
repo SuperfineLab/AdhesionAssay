@@ -7,7 +7,13 @@ if nargin < 2 || isempty(platelayout)
     platelayout = '15v2';
 end
 
-plate = platedef(platelayout);
+% check for open impreview window
+h = findobj('Name', 'vid_impreview');
+if ~isempty(h)
+    logentry('Found open preview window. Closing.')
+    close(h);
+    pause(0.1);
+end
 
 cameraname = 'Grasshopper3';
 switch lower(cameraname)
@@ -21,16 +27,10 @@ switch lower(cameraname)
         imSpec.SE_radius = 14;        
 end
 
+plate = platedef(platelayout);
+
 plate.length_ticks = mm2tick(ludl, plate.length_mm);
 plate.width_ticks = mm2tick(ludl, plate.width_mm);
-
-% check for open impreview window
-h = findobj('Name', 'vid_impreview');
-if ~isempty(h)
-    logentry('Found open preview window. Closing.')
-    close(h);
-    pause(0.1);
-end
 
 
 % locate the fiducial marks, then stores the images and the positions in 
@@ -40,6 +40,8 @@ end
 % Finds the ludl coordinates that would place the fiducial center in the
 % center of the image
 [x,y] = image_center_find(imstack, pos, imSpec);
+
+cal.platedef = plate;
 cal.centers(:,1) = x;
 cal.centers(:,2) = y;
 
@@ -65,7 +67,7 @@ function [FidLudlLocs, imstack] = fiducial_position_array(ludl, plate, imSpec)
     plate.length_ticks = mm2tick(ludl, plate.length_mm);
     plate.width_ticks = mm2tick(ludl, plate.width_mm);
 
-    % WARNING: Adjust the size of imstack according to image size!
+    
     imstack = zeros(imSpec.Height, imSpec.Width, 4);
 
     FiducialOffsets = [                  0,                   0 ; ...
