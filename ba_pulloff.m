@@ -1,4 +1,4 @@
-function ba_pulloff(zhand, filename, exptime)
+ function ba_pulloff(zhand, filename, exptime)
 % Prior to starting experiment, make sure the magnet is centered.  Lower
 % the magnet to 0 and use the vertical micrometer to ensure the tips of the
 % magnet will touch the top of a glass slide (to apply maximum force to
@@ -59,6 +59,14 @@ Nsec = starting_height/motor_velocity + 1;
 Fps = 1 / (exptime/1000);
 % NFrames = ceil(Fps * Nsec);
 NFrames = 7625;
+
+% check for open impreview window
+h = findobj('Name', 'vid_impreview');
+if ~isempty(h)
+    logentry('Found open preview window. Closing.')
+    close(h);
+    pause(0.1);
+end
 
 % Camera Setup
 CameraName = 'Grasshopper3';
@@ -324,6 +332,11 @@ save([filename, '.meta.mat'], '-STRUCT', 'm');
 
 delete(cam);
 clear vid
+
+% % If we had a preview, restore it once we're done collecting data
+% if ~isempty(h)
+%     ba_impreview(hw, viewOps);
+% end
 
 close(f)
 logentry('Done!');
