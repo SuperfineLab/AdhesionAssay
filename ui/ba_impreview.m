@@ -6,7 +6,7 @@ function varargout = ba_impreview(hwhandle, viewOps)
         ExposureTime = 1000/60;
         focusTF = false;
         viewOps=struct('exptime', ExposureTime, ...
-        'focusTF', focusTF);
+                       'focusTF', focusTF);
     end
 
     if nargin < 1 || isempty(hwhandle)
