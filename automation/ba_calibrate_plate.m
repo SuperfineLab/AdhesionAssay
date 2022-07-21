@@ -27,28 +27,27 @@ switch lower(cameraname)
         imSpec.SE_radius = 14;        
 end
 
-plate = platedef(platelayout);
-
-plate.length_ticks = mm2tick(ludl, plate.length_mm);
-plate.width_ticks = mm2tick(ludl, plate.width_mm);
+cal.platedef = platedef(platelayout);
+cal.platedef.length_ticks = mm2tick(ludl, cal.platedef.length_mm);
+cal.platedef.width_ticks = mm2tick(ludl, cal.platedef.width_mm);
 
 
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
-[pos, imstack] = fiducial_position_array(ludl, plate, imSpec);
+[pos, imstack] = find_fiducial_positions(ludl, cal.platedef, imSpec);
 
 % Finds the ludl coordinates that would place the fiducial center in the
 % center of the image
-[x,y] = image_center_find(imstack, pos, imSpec);
+[cal.centers,imxy] = image_center_find(imstack, pos, imSpec);
 
-cal.platedef = plate;
-cal.centers(:,1) = x;
-cal.centers(:,2) = y;
+
+
+
 
 
 cal.theta = calculate_tilt_angle(cal);
 
-cal.errormatrix = calculate_error_matrix(cal, plate);
+cal.errormatrix = calculate_error_matrix(cal, cal.platedef);
 
 % If we had a preview, restore it once we're done collecting data
 % if ~isempty(h)
@@ -58,16 +57,11 @@ cal.errormatrix = calculate_error_matrix(cal, plate);
 return
 
 
-function [FidLudlLocs, imstack] = fiducial_position_array(ludl, plate, imSpec)
+function [FidLudlLocs, imstack] = find_fiducial_positions(ludl, plate, imSpec)
 % FIDUCIAL_POSITION_ARRAY opens a viewing window for the user to manually
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
 
-    
-    plate.length_ticks = mm2tick(ludl, plate.length_mm);
-    plate.width_ticks = mm2tick(ludl, plate.width_mm);
-
-    
     imstack = zeros(imSpec.Height, imSpec.Width, 4);
 
     FiducialOffsets = [                  0,                   0 ; ...
@@ -133,7 +127,7 @@ function [FidLudlLocs, imstack] = fiducial_position_array(ludl, plate, imSpec)
 return
 
 
-function [x_center, y_center, x_disp, y_disp] = image_center_find(imstack, xypos, imSpec)
+function [xy_center, xy_disp] = image_center_find(imstack, xypos, imSpec)
 % IMAGE_CENTER_FIND locates the center of each fiducial mark and determines 
 % the ludl coordinates that the stage would need to be in such that the 
 % center of each fiducial mark would be at the center of the image
@@ -165,13 +159,13 @@ function [x_center, y_center, x_disp, y_disp] = image_center_find(imstack, xypos
         % x_disp = (635/2 - x) * -factor;
         % y_disp = (470/2 - y) * factor;
 
-        x_disp = (imSpec.Width/2 - x) * -factor;
-        y_disp = (imSpec.Height/2 - y) * factor;
+        xy_disp(k,1) = (imSpec.Width/2 - x) * -factor;
+        xy_disp(k,2) = (imSpec.Height/2 - y) * factor;
 
         % Find coordinates for the center of the fiducial markings in ludl
         % coordinates
-        x_center(k,1) = xypos(k,1) + x_disp;
-        y_center(k,1) = xypos(k,2) + y_disp;
+        
+        
 
 %         % Debug plot (comment out later)
 %         figure; 
@@ -182,7 +176,8 @@ function [x_center, y_center, x_disp, y_disp] = image_center_find(imstack, xypos
 %         hold off
 %         legend('center of mass', 'center of field');
     end
-
+    
+    xy_center = xypos + xy_disp;
 return
 
 
@@ -193,7 +188,12 @@ function theta = calculate_tilt_angle(cal)
     Fbottom_rightXY = cal.centers(3,:);
     Fbottom_leftXY = cal.centers(4,:);
 
-    theta = atan(abs(Ftop_rightXY(1) - Ftop_leftXY(1))/abs(Ftop_rightXY(2) - Ftop_leftXY(2)));
+    theta = atan2(abs(Ftop_rightXY(1) - Ftop_leftXY(1)), abs(Ftop_rightXY(2) - Ftop_leftXY(2)));
+    
+    if Ftop_rightXY(1) > Ftop_leftXY(1)
+        theta = -theta;
+    end
+    
 return
 
 
@@ -203,7 +203,7 @@ function errormatrix = calculate_error_matrix(cal, plate)
     Ftop_rightXY = cal.centers(2,:);
     Fbottom_rightXY = cal.centers(3,:);
     Fbottom_leftXY = cal.centers(4,:);
-
+    
     cal.theta = atan(abs(Ftop_rightXY(1) - Ftop_leftXY(1))/abs(Ftop_rightXY(2) - Ftop_leftXY(2)));
 
     % Create error matrix of side lengths, order sides as NSEW, with top length as "North"
