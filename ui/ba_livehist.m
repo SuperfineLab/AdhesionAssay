@@ -1,4 +1,4 @@
-function ba_livehist(obj,event,hImage)
+function ba_livehist(obj, event, hImage)
 % BA_LIVEHIST is a callback function for ba_impreview.
 %
 
@@ -25,7 +25,7 @@ function ba_livehist(obj,event,hImage)
 
 im = event.Data;
 
-hwhandle = getappdata(hImage, 'hwhandle');
+hw = getappdata(hImage, 'hwhandle');
 viewOps = getappdata(hImage, 'viewOps');
 ghandles = getappdata(hImage, 'ghandles');
 manual_cmin = getappdata(hImage, 'cmin');
@@ -34,9 +34,9 @@ manual_cmax = getappdata(hImage, 'cmax');
 mypreview = ghandles.preview;
 myhist = ghandles.histogram;
 
-dim = double(im);
-med_ = median(dim, 'all');
-mad_ = mad(dim, [], 'all');
+% dim = double(im);
+% med_ = median(dim, 'all');
+% mad_ = mad(dim, [], 'all');
 
 %mypreview
 % Display the current image frame. Modify the min and max scale to reflect 
@@ -103,13 +103,20 @@ else
     focus_str = '';
 end
 
-%if isa(hwhandle.zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
-%    zpos_str = [', z = ' num2str(tm_getz(hwhandle.zhand)) ' [mm]'];
-%else 
-%    zpos_str = '';
-%end
+% if isa(hw.zhand, 'COM.MGMOTOR_MGMotorCtrl_1')
+%    zpos_str = [', z = ' num2str(tm_getz(hw.zhand)) ' [mm]'];
+% else 
+   zpos_str = '';
+% end
+%
+% if isfield(hw, 'ludl') && isfield(hw.ludl, 'handle') && isa(hw.ludl.handle, 'serial')
+%     xypos = stage_get_pos_Ludl(hw.ludl);
+%     xypos_str = [', xy = ' num2str(xypos.Pos) ' [ticks]']; 
+% else
+    xypos_str = '';
+% end
 
-title([image_str, focus_str]);%, zpos_str]);
+title([image_str, focus_str, xypos_str, zpos_str]);%, zpos_str]);
 
 % Refresh the display.
 drawnow
