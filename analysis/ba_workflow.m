@@ -57,16 +57,16 @@ for s = 1:S
     
 
 
-%     logentry('Loading frame extraction times and motor z-positions');
-%     tz = load([stackdir '.meta.mat']);
+    logentry('Loading frame extraction times and motor z-positions');
+    tz = load([stackdir '.meta.mat']);
     
-%     logentry('Retrieving first & last frames (used for first locating beads).');
-%     ba_extract_keyframes(stackdir);
-%     
-    logentry('Creating mini-video of stack using MP4 format');
-    opts.scale = 1;
+    logentry('Retrieving first & last frames (used for first locating beads).');
+    ba_extract_keyframes(stackdir);
+    
+      
+    opts.scale = 0.25;
     opts.stride = 4;
-    opts.pmip = true;
+    opts.pmip = false;
     opts.tag.datetime = true;
     opts.tag.frame = true;
     opts.tag.height = false;
@@ -74,11 +74,12 @@ for s = 1:S
     opts.tag.fov = true;
     opts.tag.angle = true;
     opts.tag.nana = true;
+    
+    logentry('Creating mini-video of stack using MP4 format'); 
     ba_minivideo(stackdir,[],[],opts);
-%     
-%     logentry('Tracking beads in this stack...');
-%     ba_trackstack(stackdir);
-
+    
+    logentry('Tracking beads in this stack...');
+    ba_trackstack(stackdir);
 
     logentry('Compressing stack into smaller zip file.');
     ba_zipstack(stackdir);
