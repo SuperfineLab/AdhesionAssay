@@ -6,7 +6,9 @@ pxy = plate_xycoord_mm;
 % platespec = cal.platedef;
 theta = cal.theta;
 
-R_pxy_mm = rot2d(pxy, theta);
+for k = 1:size(pxy,1)
+    R_pxy_mm(k,:) = rot2d(pxy(k,:), theta);
+end
 
 R_pxy_ticks = mm2tick(ludl, R_pxy_mm);
 
@@ -30,7 +32,8 @@ function [Rplatexy] = rot2d(platexy, theta)
 %   vector in terms of a coordinate system rotated by angle a. 
 %   Use w=inv(rot2d(a))*v to express vector v in a coordinate system
 %   rotated by a.
-    R = [cos(theta),-sin(theta);sin(theta),cos(theta)];
+    R = [ cos(theta), -sin(theta) ; ...
+          sin(theta),  cos(theta) ];
 %     Rplatexy = inv(R) * platexy;
     Rplatexy(1,:) = inv(R) \ platexy(:);
 return
