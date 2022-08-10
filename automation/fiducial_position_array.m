@@ -4,8 +4,8 @@ function [FidLudlLocs, imstack] = fiducial_position_array(ludl, plate, imSpec)
 % ludl coordinates at which each image was taken.
 
     
-    plate.length_ticks = mm2tick(ludl, plate.length_mm);
-    plate.width_ticks = mm2tick(ludl, plate.width_mm);
+    plate.length_ticks = mm2tick(ludl.scale, plate.length_mm);
+    plate.width_ticks = mm2tick(ludl.scale, plate.width_mm);
 
     % WARNING: Adjust the size of imstack according to image size!
     imstack = zeros(imSpec.Height, imSpec.Width, 4);

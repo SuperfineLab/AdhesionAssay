@@ -30,13 +30,13 @@ switch lower(cameraname)
 end
 
 cal.platedef = platedef(platelayout);
-cal.platedef.length_ticks = mm2tick(ludl, cal.platedef.length_mm);
-cal.platedef.width_ticks = mm2tick(ludl, cal.platedef.width_mm);
+cal.platedef.length_ticks = mm2tick(ludl.scale, cal.platedef.length_mm);
+cal.platedef.width_ticks = mm2tick(ludl.scale, cal.platedef.width_mm);
 
 
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
-[pos, imstack] = find_fiducial_positions(ludl, cal.platedef, imSpec);
+[pos, imstack] = find_fiducial_positions(ludl.scale, cal.platedef, imSpec);
 
 % Finds the ludl coordinates that would place the fiducial center in the
 % center of the image

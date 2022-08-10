@@ -1,4 +1,4 @@
-function ludlxy_ticks = plate2ludl(ludl, cal, plate_xycoord_mm)
+function ludlxy_ticks = plate2ludl(ludlscale_um, cal, plate_xycoord_mm)
 % ludlxy_ticks = platexy_mm2ludlxy_ticks(ludl, cal, plate_xycoord_mm)
 
 pxy = plate_xycoord_mm;
@@ -6,11 +6,13 @@ pxy = plate_xycoord_mm;
 % platespec = cal.platedef;
 theta = cal.theta;
 
-for k = 1:size(pxy,1)
+N = size(pxy,1);
+R_pxy_mm = NaN(N,2);
+for k = 1:N
     R_pxy_mm(k,:) = rot2d(pxy(k,:), theta);
 end
 
-R_pxy_ticks = mm2tick(ludl, R_pxy_mm);
+R_pxy_ticks = mm2tick(ludlscale_um, R_pxy_mm);
 
 ludl_origin_ticks = cal.centers(1,:);
 
@@ -18,8 +20,6 @@ ludlxy_ticks = ludl_origin_ticks - fliplr(R_pxy_ticks);
 
 return
 
-% function movegrid_ludl = plate2ludl(ludl, movegrid_plate)
-%     movegrid_ludl = mm2tick(ludl, [-movegrid_plate(2) movegrid_plate(1)]);
 
 function [Rplatexy] = rot2d(platexy, theta)
 %ROT2D Return 2D rotation matrix
