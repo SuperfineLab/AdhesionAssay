@@ -11,9 +11,9 @@ calibum_10x_1024x768 = 0.692; % [um/pixel]
 % exptime_10x = [100 100 100];
 
 
-well = [1:15];
+well = [1:5];
 % well = 1;
-exptime_10x = 50 * ones(size(well));
+exptime_10x = 8 * ones(size(well));
 
 exptime = exptime_10x;
 calibum = calibum_10x_1024x768;
@@ -35,7 +35,7 @@ for k = 1:length(well)
     viewOps.man_cmin = true;
     viewOps.man_cmax = true;
     viewOps.cmin = 3000;
-    viewOps.cmax = 15000;
+    viewOps.cmax = 65000;
     
     plate_space_move(hw.ludl, Plate.calib, well(k))
     
