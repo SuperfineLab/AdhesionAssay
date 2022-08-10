@@ -1,4 +1,4 @@
-clear Tally file frameIn frameOut foo im Vout
+clear Tally file frameIn frameOut foo im Vout height
 fclose('all');
 
 filelist = dir('*.mp4');
@@ -41,7 +41,7 @@ while hasFrame(VidHandles{1})
 end
 
 
-Vout = VideoWriter('HBEwith5mgmLNANA-greenbeads-30Deg-mosaicvideo', 'MPEG-4');
+Vout = VideoWriter('2022.07.28__1xHBE_3xThinkyProtocol-NoInt-PEG&PWM&SNA&DNA&HBEbeads-mosaicvideo', 'MPEG-4');
 % Vout = VideoWriter('2021.09.10__HBEslideNonInterfering_Trial3_mosaicvideo.mp4', 'MPEG-4');
 Vout.FrameRate = 60;
 open(Vout);
