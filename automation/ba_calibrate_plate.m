@@ -1,4 +1,4 @@
-function cal = ba_calibrate_plate(ludl, platelayout)
+function cal = ba_calibrate_plate(hw, platelayout)
 % BA_CALIBRATE_PLATE uses the fiducial marking images taken by the camera and the
 % location of the stage in ludl coordinates at that location to calculate
 % the location of the sample on the ludl stage
@@ -6,6 +6,8 @@ function cal = ba_calibrate_plate(ludl, platelayout)
 if nargin < 2 || isempty(platelayout)
     platelayout = '15v2';
 end
+
+ludl = hw.ludl;
 
 % check for open impreview window
 h = findobj('Name', 'vid_impreview');
@@ -40,11 +42,6 @@ cal.platedef.width_ticks = mm2tick(ludl, cal.platedef.width_mm);
 % center of the image
 [cal.centers,imxy] = image_center_find(imstack, pos, imSpec);
 
-
-
-
-
-
 cal.theta = calculate_tilt_angle(cal);
 
 cal.errormatrix = calculate_error_matrix(cal, cal.platedef);
@@ -62,6 +59,12 @@ function [FidLudlLocs, imstack] = find_fiducial_positions(ludl, plate, imSpec)
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
 
+    hw.ludl = ludl;
+    viewOps.cmin = 0;
+    viewOps.cmax = 65535;
+    viewOps.exptime = 8;
+    viewOps.focusTF = false;
+
     imstack = zeros(imSpec.Height, imSpec.Width, 4);
 
     FiducialOffsets = [                  0,                   0 ; ...
@@ -76,7 +79,7 @@ function [FidLudlLocs, imstack] = find_fiducial_positions(ludl, plate, imSpec)
     disp('Starting...')
 
     % preview(vid);
-    f = ba_impreview;
+    f = ba_impreview(hw, viewOps);
 
     for k = 1:size(FiducialOffsets,1)
 
@@ -88,8 +91,6 @@ function [FidLudlLocs, imstack] = find_fiducial_positions(ludl, plate, imSpec)
             stage_move_Ludl(ludl, FidLudlLocs(1,:) + FiducialOffsets(k,:));
             pause;
         end
-
-    %     frame = getsnapshot(vid);
 
         % This uses the ba_impreview function and relies on knowing the EXACT
         % configuration of the ba_impreview figure. The code should be changed
@@ -107,7 +108,6 @@ function [FidLudlLocs, imstack] = find_fiducial_positions(ludl, plate, imSpec)
 
         frame = ax.Children.CData;
 
-    %     imwrite(frame,strcat('im',num2str(k),'.tif'));
         imstack(:,:,k) = frame;
         ludl = stage_get_pos_Ludl(ludl);
         FidLudlLocs(k,:) = ludl.Pos;
@@ -137,7 +137,7 @@ function [xy_center, xy_disp] = image_center_find(imstack, xypos, imSpec)
     factor = 45;
 
     Nframes = size(imstack,3);
-    x_center = NaN(Nframes,1); y_center = NaN(Nframes,1); 
+    xy_disp = NaN(Nframes,2);
     for k = 1:Nframes
         
         % Binarize and erode/dilate image
@@ -151,33 +151,27 @@ function [xy_center, xy_disp] = image_center_find(imstack, xypos, imSpec)
         test = imdilate(test,SE); 
         test = imerode(test,SE); 
 
-        % (10:end-10,10:end-10)
         % Find/plot center of mass
         [x, y] = centerofmass(test);
 
         % Find pixel displacement from center and convert to ticks
-        % x_disp = (635/2 - x) * -factor;
-        % y_disp = (470/2 - y) * factor;
-
         xy_disp(k,1) = (imSpec.Width/2 - x) * -factor;
         xy_disp(k,2) = (imSpec.Height/2 - y) * factor;
 
-        % Find coordinates for the center of the fiducial markings in ludl
-        % coordinates
-        
-        
-
-%         % Debug plot (comment out later)
-%         figure; 
-%         imshow(test)
-%         hold on
-%             plot(x, y, 'or');
-%             plot(x_center, y_center, 'xg');   
-%         hold off
-%         legend('center of mass', 'center of field');
     end
     
+    % Find coordinates for the center of the fiducial markings in ludl
+    % coordinates
     xy_center = xypos + xy_disp;
+    
+%     % Debug plot (comment out later)
+%     figure; 
+%     imshow(test)
+%     hold on
+%     plot(x, y, 'or');
+%     plot(x_center, y_center, 'xg');   
+%     hold off
+%     legend('center of mass', 'center of field');
 return
 
 
@@ -204,8 +198,6 @@ function errormatrix = calculate_error_matrix(cal, plate)
     Fbottom_rightXY = cal.centers(3,:);
     Fbottom_leftXY = cal.centers(4,:);
     
-    cal.theta = atan(abs(Ftop_rightXY(1) - Ftop_leftXY(1))/abs(Ftop_rightXY(2) - Ftop_leftXY(2)));
-
     % Create error matrix of side lengths, order sides as NSEW, with top length as "North"
     errormatrix = zeros(4,2);
 
