@@ -19,4 +19,5 @@ switch platelayout
 %         plate.well_one_center = [14.32 11.25];
     otherwise 
         error('This plate definition is not found. Add specs to platedef.m');
-    end
+end
+
