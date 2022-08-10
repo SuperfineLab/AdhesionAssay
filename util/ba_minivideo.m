@@ -61,9 +61,18 @@ if ~isempty(metadatafile)
     catch
         AllHeights = [];
     end
-    time = table2array(metadata.Results.TimeStatsTable);
+    
+    if isfield(metadata.Results, 'TimeStatsTable')
+        time = table2array(metadata.Results.TimeStatsTable);
+    elseif isfield(metadata.Results, 'TimeHeightVidStatsTable')
+        time = table2array(metadata.Results.TimeHeightVidStatsTable);
+    else
+        error('Do not recognize the Time Table.');
+    end
+    
 else
     AllHeights = [];
+    Time = [];
 end
 
 
