@@ -36,7 +36,7 @@ cal.platedef.width_ticks = mm2tick(ludl.scale, cal.platedef.width_mm);
 
 % locate the fiducial marks, then stores the images and the positions in 
 % ludl coordinates at which each image was taken.
-[pos, imstack] = find_fiducial_positions(ludl.scale, cal.platedef, imSpec);
+[pos, imstack] = find_fiducial_positions(ludl, cal.platedef, imSpec);
 
 % Finds the ludl coordinates that would place the fiducial center in the
 % center of the image

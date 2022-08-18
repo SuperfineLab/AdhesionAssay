@@ -11,7 +11,7 @@ calibum_10x_1024x768 = 0.692; % [um/pixel]
 % exptime_10x = [100 100 100];
 
 
-well = [1:5];
+well = [1:15];
 % well = 1;
 exptime_10x = 8 * ones(size(well));
 
