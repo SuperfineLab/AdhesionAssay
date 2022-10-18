@@ -5,11 +5,12 @@ function m = ba_get_linefits(evtfile, calibum, visc_Pas, bead_diameter_um, Fid)
 d = load_evtfile(evtfile);
 
 if isempty(d)
-    m = table('Size', [0 8], ...
+    m = table('Size', [0 10], ...
               'VariableTypes', {'double', 'double', 'string', 'double', ...
-                                'double', 'double', 'double', 'double'},...
+                                'double', 'double', 'double', 'double', 'double', 'double'},...
               'VariableNames', {'Fid', 'Filename', 'SpotID', 'StartPosition', ...
-                                'Pulloff_time', 'Mean_time', 'Mean_vel', 'Force'});
+                                'Pulloff_time', 'Mean_time', 'Mean_vel', 'VelInterval', ...
+                                                             'Force', 'ForceInterval'});
     return
 else 
     t = d.Frame ./ d.Fps;
@@ -28,8 +29,9 @@ m.StartPosition = cell2mat(sp);
 m.Pulloff_time = cell2mat(myfits(:,1));
 m.Mean_time = cell2mat(myfits(:,2));
 m.Mean_vel = mb(:,1) * calibum * 1e-6;
+m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6;
 m.Force = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.Mean_vel;
-
+m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval;
 m = struct2table(m);
 
 return
@@ -39,9 +41,22 @@ function outs = get_startpos(x,y)
     outs{1,2} = y(1);
 return
 
+% function outs = mylinfit(t,z,order)
+%     mb = polyfit(t,z,order);
+%     outs{1,1} = t(1);
+%     outs{1,2} = mean(t);
+%     outs{1,3} = mb;
+% return
+
 function outs = mylinfit(t,z,order)
-    mb = polyfit(t,z,order);
+
+    myfit = fit(t,z,'poly1');
+    cf = transpose(confint(myfit));
+    
+%     mb = polyfit(t,z,order);
     outs{1,1} = t(1);
     outs{1,2} = mean(t);
-    outs{1,3} = mb;
+    outs{1,3} = myfit.p1;
+    outs{1,4} = cf(1,:);
+    
 return
