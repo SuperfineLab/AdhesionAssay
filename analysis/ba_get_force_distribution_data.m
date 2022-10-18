@@ -14,7 +14,7 @@ function grpF = ba_get_force_distribution_data(ba_process_data, maxforce, aggreg
     
     
     Data = ba_process_data;
-    aggVars = aggregating_variables(:);
+    aggVars = aggregating_variables(:)';
 
     if ~iscell(aggVars)
         error('Need cell array of aggregating variables');
@@ -24,8 +24,10 @@ function grpF = ba_get_force_distribution_data(ba_process_data, maxforce, aggreg
     BeadCountTable.Nvideos = splitapply(@numel, Data.FileTable.Fid, g);
     BeadCountTable.TotalBeadCount = splitapply(@sum, Data.FileTable.FirstFrameBeadCount, g);
 
-    FileVars(1,:) = [{'Fid'}; aggVars];
-    FTable = join(Data.ForceTable, Data.FileTable(:,FileVars));
+    FileVars(1,:) = [{'Fid'}, aggVars];
+    a = Data.ForceTable;
+    b = Data.FileTable(:,FileVars);
+    FTable = join(a, b, 'Keys', {'Fid'});
     FTable = innerjoin(FTable, BeadCountTable, 'Keys', aggVars);
     FTable(FTable.Force <= 0,:) = [];
 
