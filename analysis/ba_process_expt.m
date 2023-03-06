@@ -1,4 +1,4 @@
-function outs = ba_process_expt(filepath, aggregating_variables)
+function outs = ba_process_expt(filepath, PlateID, aggregating_variables)
 % BA_PROCESS_EXPT analzes the output of a bead adhesion experiment.
 %
 
@@ -7,6 +7,10 @@ function outs = ba_process_expt(filepath, aggregating_variables)
 % through z while being tracked by vst. The z-velocity is then used to back
 % out the detachment force
 
+if nargin < 2 || isempty('PlateID')
+    logentry('No PlateID defined. Creating one at random.');
+    PlateID = ['PL-' num2str(randi(2^32,1,1))];
+end
 rootdir = pwd;
 
 cd(filepath);
@@ -57,9 +61,15 @@ end
 
 
 ForceTable = vertcat(ForceTable{:});
+if isstring(ForceTable.SpotID)
+    ForceTable.SpotID = double(ForceTable.SpotID);
+end
+
 % ForceTable.Filename = [];
 
 FileTable = vertcat(FileTable{:});
+FileTable.PlateID = categorical(repmat(string(PlateID),height(FileTable),1));
+FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
 BeadInfoTable = vertcat(BeadInfoTable{:});
 
 [g, grpT] = findgroups(FileTable(:,aggregating_variables));
@@ -68,13 +78,20 @@ NStartingBeadsT = [grpT, table(NStartingBeads)];
 
 T = join(ForceTable, FileTable(:,{'Fid', aggregating_variables{:}}));
 T = join(T, NStartingBeadsT);
-
+% T = sortrows(T, {'Filename', 'Force'}, {'ascend', 'ascend'});
 [g, grpT] = findgroups(T(:,aggregating_variables));
 
-fracleft = splitapply(@(x1,x2){sa_fracleft(x1,x2)},T.Force,T.NStartingBeads,g);
-fracleft = cell2mat(fracleft);
-ForceTable.FractionLeft = fracleft;
-T.FractionLeft = fracleft;
+foo = splitapply(@(x1,x2,x3,x4){sa_fracleft(x1,x2,x3,x4)}, T.Fid, T.SpotID, T.Force, T.NStartingBeads, g);
+fooM = cell2mat(foo);
+
+Tmp.Fid = fooM(:,1);
+Tmp.SpotID = fooM(:,2);
+Tmp.Force = fooM(:,3);
+Tmp.FractionLeft = fooM(:,4);
+
+Tmp = struct2table(Tmp);
+ForceTable = join(ForceTable, Tmp);
+
 
 
 cd(rootdir);
@@ -82,6 +99,9 @@ cd(rootdir);
 outs.FileTable = FileTable;
 outs.ForceTable = ForceTable;
 outs.BeadInfoTable = BeadInfoTable;
+
+[DetachForce, fits] = ba_plate_detachmentforces(outs, aggregating_variables, false);
+outs.DetachForceTable = DetachForce;
 
 end
 
@@ -98,17 +118,19 @@ function sm = shorten_metadata(metadata)
     sm.SubstrateChemistry = string(metadata.Substrate.SurfaceChemistry);
     sm.MagnetGeometry = string(metadata.Magnet.Geometry);
     sm.Media = string(metadata.Medium.Name);
+    sm.pH = metadata.Medium.pH;
     
     [a,b] = regexpi(sm.Binfile,'_DF(\d*)_', 'match', 'tokens');
 
-    if ~isempty(b) || lower(sm.Media) == "int" || lower(sm.Media) == "intnana"
+%     if ~isempty(b) || lower(sm.Media) == "int" || lower(sm.Media) == "intnana"
 %         DF = str2double(b{1});
-        idx = contains(metadata.Medium.Components.Name, "Sialic Acid");
-        sm.MediumNANAConc = metadata.Medium.Components.Conc(idx);
+     idx = contains(metadata.Medium.Components.Name, "Sialic Acid");
+    if sum(idx)>0
+        sm.MediumNANAConc = categorical(metadata.Medium.Components.Conc(idx));
 %     elseif lower(sm.Media) == "int" || lower(sm.Media) == "intnana"
 %         sm.MediumNANAConc
     else
-        sm.MediumNANAConc = 0;
+        sm.MediumNANAConc = categorical(0);
     end
     
     
@@ -124,21 +146,24 @@ function sm = shorten_metadata(metadata)
     
     sm.BeadChemistry = categorical(sm.BeadChemistry);
     sm.SubstrateChemistry = categorical(sm.SubstrateChemistry);
-    sm.MagnetGeometry = categorical(sm.MagnetGeometry);    
+    sm.MagnetGeometry = categorical(sm.MagnetGeometry);  
+    sm.pH = categorical(sm.pH);
     sm.Media = categorical(sm.Media);
 end
 
-function outs = sa_fracleft(force, startCount)
+function outs = sa_fracleft(fid, spotid, force, startCount)
 
     force = force(:);
     Nforce = length(force);   
     
+    % I do not really understand how this determines "rank" of force, but
+    % it does and outputs the fraction left attached
     [~,Fidx] = sort(force, 'ascend');
+    [~,Frank] = sort(Fidx, 'ascend');    
     
-    FRank(Fidx,1) = [1:Nforce];
-    
-    outs = 1-(FRank ./ startCount);
+    fracleft = 1-(Frank ./ startCount);
 
+    outs = [fid(:), spotid(:), force(:), fracleft(:)];
 end
 
 

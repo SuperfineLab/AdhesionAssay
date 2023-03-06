@@ -5,8 +5,8 @@ subplot = @(m,n,p) subtightplot(m, n, p, [0.01 0.005], [0.1 0.01], [0.1 0.01]);
 well = 1:15;
 exptime(1:15) = 8;
 calibum = 0.692;
-for k = 1:5
-% for k = [5:-1:1,10:-1:6,15:-1:11]
+% for k = 1:5
+for k = [5:-1:1,10:-1:6,15:-1:11]
     
     fname = ['well-' num2str(well(k), '%02i') '_10x_' num2str(exptime(k)) 'ms'];
     
@@ -25,7 +25,7 @@ for k = 1:5
 end
 
 f = figure;
-for k = [5:-1:1]%, 10:-1:6, 15:-1:11]
+for k = [5:-1:1, 10:-1:6, 15:-1:11]
     figure(f);
     subplot(3,5,k);
     imagesc(X_mm, Y_mm, q(:,:,k)); 
