@@ -90,8 +90,9 @@ end
 figure(fitfig);
 ax = gca;
 ax.XScale = 'log';
+ystrings = {'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
 legend( q(:,1), ystrings, 'Location', 'SouthWest', 'Interpreter', 'none' );
-ylim([0 1.02])
+ylim([0 1])
 grid on
 
 % hold off;
