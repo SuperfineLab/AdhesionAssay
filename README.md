@@ -6,7 +6,7 @@ The AdhesionAssay project uses submodules for the assay's hardware, which includ
 
 To clone the full repository: `git clone --recursive git@github.com:cribb/AdhesionAssay.git`
 
-To update all submodules to their latest states: `git submodule foreach git pull origin master`
+To update all submodules to their latest states: `git submodule foreach git pull origin main`
 
 Note: Don't forget you have to commit the updated positions of the submodules to the super-repository, i.e. `git commit -m "Updated to newer commits for submodules." *`
 
