@@ -14,7 +14,7 @@ end
 rootdir = pwd;
 
 cd(filepath);
-
+logentry(['Moved to: ' filepath]);
 search_radius_low = 10;
 search_radius_high = 26;
 
@@ -91,8 +91,6 @@ Tmp.FractionLeft = fooM(:,4);
 
 Tmp = struct2table(Tmp);
 ForceTable = join(ForceTable, Tmp);
-
-
 
 cd(rootdir);
  
