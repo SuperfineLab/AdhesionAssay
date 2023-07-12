@@ -48,8 +48,8 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
         [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
     
         % % % DELETE NEXT TWO LINES. THEY DON'T BELONG. (UNTIL THEY DO).
-        xDataCell{k} = xData; yDataCell{k} = yData; weightsCell{k} = weights;
-        [ErfF,ErfG] = createErfFit(xData, yData)
+%         xDataCell{k} = xData; yDataCell{k} = yData; weightsCell{k} = weights;
+%         [ErfF,ErfG] = createErfFit(xData, yData);
 
         % Set up fittype and options.
         % Since there's always 100% left at the start, the "a" variable here
