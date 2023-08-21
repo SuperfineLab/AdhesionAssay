@@ -32,8 +32,11 @@ a = ancestor(hImage, 'axes');
 
 cmin = min(double(hImage.CData(:)));
 cmax = max(double(hImage.CData(:)));
-% cmin = 30;
-% cmax = 255;
+if cmin == cmax && cmin > 1
+    cmin = cmax - 1;
+end
+cmin = 4500;
+cmax = 65000;
 set(a, 'CLim', [uint16(cmin) uint16(cmax)]);
 
 return
