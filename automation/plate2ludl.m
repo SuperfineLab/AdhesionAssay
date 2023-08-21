@@ -1,4 +1,4 @@
-function ludlxy_ticks = plate2ludl(ludlscale_um, cal, plate_xycoord_mm)
+function ludlxy_ticks = plate2ludl(ludl, cal, plate_xycoord_mm)
 % ludlxy_ticks = platexy_mm2ludlxy_ticks(ludl, cal, plate_xycoord_mm)
 
 pxy = plate_xycoord_mm;
@@ -12,7 +12,7 @@ for k = 1:N
     R_pxy_mm(k,:) = rot2d(pxy(k,:), theta);
 end
 
-R_pxy_ticks = mm2tick(ludlscale_um, R_pxy_mm);
+R_pxy_ticks = mm2tick(ludl, R_pxy_mm);
 
 ludl_origin_ticks = cal.centers(1,:);
 

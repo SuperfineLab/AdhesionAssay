@@ -30,8 +30,8 @@ switch lower(cameraname)
 end
 
 cal.platedef = platedef(platelayout);
-cal.platedef.length_ticks = mm2tick(ludl.scale, cal.platedef.length_mm);
-cal.platedef.width_ticks = mm2tick(ludl.scale, cal.platedef.width_mm);
+cal.platedef.length_ticks = mm2tick(ludl, cal.platedef.length_mm);
+cal.platedef.width_ticks = mm2tick(ludl, cal.platedef.width_mm);
 
 
 % locate the fiducial marks, then stores the images and the positions in 
