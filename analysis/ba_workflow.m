@@ -57,8 +57,8 @@ for s = 1:S
     
 
 
-    logentry('Loading frame extraction times and motor z-positions');
-    tz = load([stackdir '.meta.mat']);
+%     logentry('Loading frame extraction times and motor z-positions');
+%     tz = load([stackdir '.meta.mat']);
     
     logentry('Retrieving first & last frames (used for first locating beads).');
     ba_extract_keyframes(stackdir);
