@@ -42,7 +42,7 @@ platexy_mm = xycenters(xyWellNum,:) + xyOffset_mm;
 
 theta = cal.theta;
 
-xyLudl_ticks = plate2ludl(ludl.scale, cal, platexy_mm);
+xyLudl_ticks = plate2ludl(ludl, cal, platexy_mm);
 
 return
 
