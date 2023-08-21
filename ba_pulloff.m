@@ -143,6 +143,13 @@ NFramesTaken = 0;
 % while(vid.FramesAvailable > 0)
 while(NFramesTaken < NFrames)
     cnt = cnt + 1;
+
+    % ran into a race condition error on newer (faster) machines where the
+    % number of available frames could be zero. Added in this 1-frame delay
+    % on the input to ensure the buffer always has at least one frame to
+    % grab from the image buffer.
+    pause(1/Fps);
+
     znow = zhand.GetPosition_Position(0);
     zheight(cnt,1) = znow;
     pImage.UserData = znow;
@@ -150,7 +157,7 @@ while(NFramesTaken < NFrames)
     NFramesAvailable(cnt,1) = cam.FramesAvailable;
     NFramesTaken = NFramesTaken + NFramesAvailable(cnt,1);
 %     disp(['Num Grabbed Frames: ' num2str(NFramesAvailable(cnt,1)) '/' num2str(NFramesTaken)]);
-
+   
     [data, ~, meta] = getdata(cam, NFramesAvailable(cnt,1));    
     
     abstime{cnt,1} = vertcat(meta(:).AbsTime);
@@ -217,8 +224,8 @@ Fid = ba_makeFid;
 [~,host] = system('hostname');
 
 % [a,b] = regexpi(filename,'fov(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
-% [a,b] = regexpi(filename,'well(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
-[a,b] = regexpi(filename,'well(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_DF(\d*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
+[a,b] = regexpi(filename,'well(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
+% [a,b] = regexpi(filename,'well(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_DF(\d*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 %[a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_I-([0-9]*)pct_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 % [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_M-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
 % [a,b] = regexpi(filename,'(\d*)_B-([a-zA-Z0-9]*)_S-([a-zA-Z0-9]*)_([a-zA-Z0-9]*)_(\d*)x(\d*)x(\d*)_(\w*)', 'match', 'tokens');
@@ -329,6 +336,9 @@ m.Results.LastFrame = lastframe;
 
 
 save([filename, '.meta.mat'], '-STRUCT', 'm');
+
+% [im_after, ~, meta] = getdata(cam, 1);
+% imwrite(im_after, [filename '_aftercollection.png'], 'PNG');
 
 delete(cam);
 clear vid
