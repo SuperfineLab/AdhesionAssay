@@ -49,14 +49,21 @@ end
 % Xlocs = linspace(-3.15, 3.15, 11);
 % Ylocs = transpose(linspace(-3.15, 3.15, 11));
 
+% Artemis calib_4x_2048x1536 = 0.858 [um/pix], 0% overlap = 1.757x1.318 [mm] interval
+% Xlocs = [-10.542/2:1.757:10.542/2];
+% Ylocs = [-9.226/2:1.318:9.226/2]';
+Xlocs = [-8.785/2:1.757:8.785/2];
+Ylocs = [-9.226/2:1.318:9.226/2]';
+
+
 % % Artemis, 4x objective, 1x multiplier, 1024x768, 0.583 um/pix, 3% overlap = interval 0.579 mm
 % Xlocs = [-6*0.579 : 0.579 : 6*0.579];
 % Ylocs = [-6*0.434  : 0.434  : 6*0.434]';
 
 
-% Artemis, 10x objective, 1x multiplier, 2048x1536, 0.692 um/pix, 3% overlap = interval 0.687 mm
-Xlocs = [-6*0.6873 : 0.6873 : 6*0.6873];
-Ylocs = [-6*0.515  : 0.515  : 6*0.515]';
+% % Artemis, 10x objective, 1x multiplier, 2048x1536, 0.692 um/pix, 3% overlap = interval 0.687 mm
+% Xlocs = [-6*0.6873 : 0.6873 : 6*0.6873];
+% Ylocs = [-6*0.515  : 0.515  : 6*0.515]';
 
 % % % % Artemis, 10x objective, 1x multiplier, 1024x768, 0.692 um/pix, 3% overlap = interval 0.687 mm
 % % Xlocs = [-25*0.6873 : 0.6873 : 25*0.6873];
@@ -68,13 +75,18 @@ Ylocs = [-6*0.515  : 0.515  : 6*0.515]';
 
 Xmat = repmat(Xlocs, size(Ylocs,1), 1)';
 Ymat = repmat(Ylocs, 1, size(Xlocs,2))';
+
+% % % ox-plot (boustrophodon?) flip for Xmat (yaxis on stage);
+% % Xmat(:,2:2:end) = flipud(Xmat(:,2:2:end));
+
+% vectorize into xycoord list
 Xlocs = Xmat(:);
 Ylocs = Ymat(:);
 
 % Camera Setup
 CameraName = 'Grasshopper3';
-% CameraFormat = 'F7_Raw16_2048x1536_Mode7';
-CameraFormat = 'F7_Raw16_1024x768_Mode2';
+CameraFormat = 'F7_Raw16_2048x1536_Mode7';
+% CameraFormat = 'F7_Raw16_1024x768_Mode2';
 ExposureTime = exptime;
 Video = flir_config_video(CameraName, CameraFormat, ExposureTime);
 [cam, src] = flir_camera_open(Video);
@@ -128,7 +140,7 @@ for k = 1:Nframes
     stout = stage_get_pos_Ludl(stage);
     ArrivedXY(k,:) = stout.Pos;
     logentry(['Arrived at position X: ' num2str(ArrivedXY(k,1)), ', Y: ' num2str(ArrivedXY(k,2)) '. ']);
-    
+    pause(exptime*0.001); % [ms] -> [s]
     Image{k,1} = p.CData;
 
 %     imwrite(im{k,1}, outfile);
