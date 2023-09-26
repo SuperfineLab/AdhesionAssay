@@ -43,17 +43,17 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     gn = unique(g);
     for k = 1:height(grpF)
         idx = (g == gn(k) );
-    
-        % % Fit: 'ExponentialWithOffset'.
-        [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
-    
+        
         % % % DELETE NEXT TWO LINES. THEY DON'T BELONG. (UNTIL THEY DO).
 %         xDataCell{k} = xData; yDataCell{k} = yData; weightsCell{k} = weights;
 %         [ErfF,ErfG] = createErfFit(xData, yData);
 
+        % % Fit: 'ExponentialWithOffset'.
         % Set up fittype and options.
         % Since there's always 100% left at the start, the "a" variable here
-        % should just be pinned to "1". 
+        % should just be pinned to "1".        
+        [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
+
         ft = fittype( 'a*exp(-b*x)+c', 'independent', 'x', 'dependent', 'y' );
         opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
         opts.Display = 'Off';
@@ -62,7 +62,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     %     opts.StartPoint = [1 0.5 0.5];
         opts.Weights = weights;
         opts.StartPoint = [0.750468607549764 0.192644774570146 0.568675630542075];
-    %     opts.Weights = weights;
+    
         
         % Fit model to data.
         try
@@ -110,7 +110,7 @@ end
 
 function [fitresult, gof] = createErfFit(xData, yData)
     
-    %% Fit: 'untitled fit 1'.
+    % % Fit: 'untitled fit 1'.
     [xData_1, yData_1] = prepareCurveData( xData, yData );
     
     % Set up fittype and options.
