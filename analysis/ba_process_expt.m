@@ -98,7 +98,7 @@ outs.FileTable = FileTable;
 outs.ForceTable = ForceTable;
 outs.BeadInfoTable = BeadInfoTable;
 
-[DetachForce, fits] = ba_plate_detachmentforces(outs, aggregating_variables, false);
+[DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, false);
 outs.DetachForceTable = DetachForce;
 
 end
