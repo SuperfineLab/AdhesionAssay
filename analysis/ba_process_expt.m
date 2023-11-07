@@ -43,11 +43,13 @@ for k = 1:length(evtfilelist)
    
    % Need to use original VST tracking file to find how many beads existed 
    % on the first frame.
-   origtracks = load_video_tracking([basename '.csv']);
-   FirstFrameBeadCount = length(unique(origtracks.id(origtracks.frame == 1)));
+   origtracks = load_video_tracking([basename '.csv'], [], [], [], 'absolute', [], 'table');
+   VSTfirstframe = origtracks(origtracks.Frame == 1, :);
+   FirstFrameBeadCount = height(VSTfirstframe);
    
    
    BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
+   BeadInfoTable{k} = ba_match_VST_and_MAT_tracks(BeadInfoTable{k}, VSTfirstframe);
    
    FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
    ForceTable{k} = ba_get_linefits(evtfilelist(k).name, calibum, visc_Pas, bead_diameter_um, Fid);
@@ -98,7 +100,8 @@ outs.FileTable = FileTable;
 outs.ForceTable = ForceTable;
 outs.BeadInfoTable = BeadInfoTable;
 
-[DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, false);
+% [DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, true);
+[DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, true);
 outs.DetachForceTable = DetachForce;
 
 end
