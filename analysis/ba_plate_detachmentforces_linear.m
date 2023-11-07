@@ -50,7 +50,7 @@ function [TableOut, fr] = ba_plate_detachmentforces_linear(ba_process_data, aggr
         idx = (g == gn(k) );
         
         % % Fit: 'Linear'.     
-        [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
+        [xData, yData, weights] = prepareCurveData( log10(F(idx)), frac(idx), w(idx) );
         ft = fittype( 'a + b*x', 'independent', 'x', 'dependent', 'y' );
         opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
         opts.Display = 'Off';
@@ -72,6 +72,14 @@ function [TableOut, fr] = ba_plate_detachmentforces_linear(ba_process_data, aggr
             outs(k,1).bconf = [NaN NaN];
         end
         
+        % debug figure
+        figure;
+        plot(fitresult, xData, yData, '.');
+        hold on;
+        errorbar(xData, yData, Fhigh(idx), 'horizontal', '.');
+        title(string(PlateID), 'Interpreter', 'none');
+        hold off;
+        drawnow;
     end
     
     outs = struct2table(outs);
@@ -82,14 +90,16 @@ function [TableOut, fr] = ba_plate_detachmentforces_linear(ba_process_data, aggr
     % Assuming the detachment force is set to 50%, this reduces to:
     %           force = -1/b*ln((0.5-c)/a))
     detachforce = @(a,b)((0.5-a)./b);
-    df = detachforce(outs.a, outs.b);
+    logdf = detachforce(outs.a, outs.b);
     
     TableOut = [grpF outs];
-    TableOut.DetachForce = df;
-    TableOut.confDetachForce(:,1) = detachforce(outs.aconf(:,1), outs.bconf(:,1));
-    TableOut.confDetachForce(:,2) = detachforce(outs.aconf(:,2), outs.bconf(:,2));
+    TableOut.DetachForce = 10.^logdf;
+    TableOut.confDetachForce(:,1) = 10.^detachforce(outs.aconf(:,1), outs.bconf(:,1));
+    TableOut.confDetachForce(:,2) = 10.^detachforce(outs.aconf(:,2), outs.bconf(:,2));
     TableOut.PlateID = repmat(PlateID, height(TableOut),1);
     TableOut = movevars(TableOut, 'PlateID', 'Before', 1);
+
+        
     
 end
 
