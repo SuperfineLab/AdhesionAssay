@@ -1,4 +1,4 @@
-function plate_space_move(ludl, calib, xyWellCoord, xyOffset_mm, platelayout) %(ludl, plate, wellcor)
+function varargout = plate_space_move(ludl, calib, xyWellCoord, xyOffset_mm, platelayout) %(ludl, plate, wellcor)
 % PLATE_SPACE_MOVE moves to the center of a given well
 
 % centers - location of center of fiducial marks
@@ -28,5 +28,11 @@ xyLudlCoord = ba_plate2ludl(ludl, calib, xyWellCoord, xyOffset_mm, platelayout);
 % Move the stage accordingly
 % Note: x and y are reversed
 stage_move_Ludl(ludl, xyLudlCoord);
+
+switch nargout
+    case 1
+        varargout{1} = double(xyLudlCoord);
+end
+
 pause(0.5);
 
