@@ -1,4 +1,4 @@
-% clear q
+clear q bead
 subplot = @(m,n,p) subtightplot(m, n, p, [0.01 0.005], [0.1 0.01], [0.1 0.01]);
 % function h =     subtightplot(m, n, p, gap,         marg_h,     marg_w,   varargin)
 
@@ -24,13 +24,18 @@ if ~exist("q","var")
         well = regexpi(fnamelist(k).name, 'well-(\d*)', 'tokens');
         well = str2num(well{1}{1});
     
-    
+        logentry(['k = ', num2str(k)]);
         m = m.mosaic;
         arrivedxy_ticks{k,1} = m.ArrivedXY;
 %         im = imtile(m.Image, 'GridSize', [13 13]); 
         im = imtile(m.Image, 'GridSize', [8 6]); 
     %     imwrite(im, [fname '.tif'], 'tif');
     %     im = im(3500:7500, 4000:10000);  
+        
+%        [bead.Centers{k,1}, bead.Radii{k,1}, bead.Metric{k,1}] = imfindcircles(im, [10 25]);
+% %        [tmp_centers, tmp_radii, tmp_metric] = imfindcircles(im, [10 25]);
+%         bead.Well{k,1} = k * ones(size(bead.Centers{k,1},1),1);
+
         myscale = 0.2;
         im = imresize(im, myscale, 'bicubic');
         q{well,1} = im;
@@ -41,11 +46,20 @@ if ~exist("q","var")
         X_mm = [1:width]  * calibum/1000 / myscale;
         Y_mm = [1:height] * calibum/1000 / myscale;
     end
+
+%     bead.Centers = vertcat(bead.Centers{:});
+%     bead.Radii = vertcat(bead.Radii{:});
+%     bead.Metric = vertcat(bead.Metric{:});
+%     bead.Well = vertcat(bead.Well{:});
+%     bead = struct2table(bead);
+
 end
+
+
 
 Pos = vertcat(Plate.fov(:).Pos);
 [wellnum, xyoffset_mm] = plate2well(hw.ludl, Plate.calib, Pos);
-imagecenterxy_mm = [max(X_mm)/2, max(Y_mm)/2];
+imagecenterxy_mm = [X_mm(end)/2, Y_mm(end)/2];
 magnetdrop_mm = imagecenterxy_mm + xyoffset_mm;
 
 f = figure;
