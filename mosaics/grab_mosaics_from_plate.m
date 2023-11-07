@@ -28,7 +28,7 @@ if ~exist('hw', 'var')
 end
 
 % collecting images at 4x
-
+f = figure;
 for k = 1:length(well)
     
 %     viewOps.CameraFormat = 'F7_Raw16_2048x1536_Mode7';
@@ -66,12 +66,15 @@ for k = 1:length(well)
     disp(fname);
     
     myscale = 0.25;
-    m = ba_grabwellmosaic(hw.ludl, Plate.calib, well(k), exptime(k), fname);
+%     m = ba_grabwellmosaic(hw.ludl, Plate.calib, well(k), exptime(k), 'normal', fname);
+    m = ba_grabwellmosaic(hw.ludl, Plate.calib, well(k), exptime(k), 'oxplow', fname);
+    m = sortrows(m, {'RowID', 'ColumnID'}, {'ascend','ascend'});
 %     im = imtile(m.Image, 'GridSize', [13 13]); 
     im = imtile(m.Image, 'GridSize', [8 6]); 
     im = imresize(im, myscale, 'bicubic');
 
-    figure(k);
+    figure(f);
+    subplot(3,5,well(k));
     imagesc(im); 
     axis image;
     colormap(gray); 
