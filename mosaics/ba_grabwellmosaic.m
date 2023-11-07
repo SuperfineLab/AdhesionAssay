@@ -1,4 +1,4 @@
-function mosaic = ba_grabwellmosaic(stage, calib, wellrc, exptime, fileout)
+function mosaic = ba_grabwellmosaic(stage, calib, wellrc, exptime, collectstyle, fileout)
 % BA_GRABWELLMOSAIC grabs a series of images to send to bead identification
 %
 % Usage: 
@@ -35,6 +35,12 @@ end
 if nargin < 4 || isempty(exptime)
     exptime = 8; % [ms]
 end
+
+if nargin < 5 || isempty(collectstyle)
+    collectstyle = 'normal';
+end
+
+% % 
 
 % % Artemis, 4x objective, 1x multiplier, ~40% overlap = interval 0.5 mm
 % Xlocs = [-3 : 0.5 : 3];
@@ -73,15 +79,26 @@ Ylocs = [-9.226/2:1.318:9.226/2]';
 % Xlocs = linspace(-3.15, 3.15, 11);
 % Ylocs = transpose(linspace(-3.15, 3.15, 11));
 
-Xmat = repmat(Xlocs, size(Ylocs,1), 1)';
-Ymat = repmat(Ylocs, 1, size(Xlocs,2))';
+Nx = length(Xlocs);
+Ny = length(Ylocs);
+Nframes = Nx * Ny;
 
-% % % ox-plot (boustrophodon?) flip for Xmat (yaxis on stage);
-% % Xmat(:,2:2:end) = flipud(Xmat(:,2:2:end));
+[mCol, mRow] = meshgrid(1:Nx,1:Ny);
+
+% ox-plow (boustrophedon) flip for mCol (yaxis on stage);
+if contains(collectstyle, 'oxplow')
+    mCol(2:2:end,:) = fliplr(mCol(2:2:end,:));
+end
+
+ColumnID = reshape(transpose(mCol), Nx*Ny, 1);
+RowID = reshape(transpose(mRow), Nx*Ny, 1);
+Xmat = transpose(Xlocs(mCol));
+Ymat = transpose(Ylocs(mRow));
+
 
 % vectorize into xycoord list
-Xlocs = Xmat(:);
-Ylocs = Ymat(:);
+Xloclist = Xmat(:);
+Yloclist = Ymat(:);
 
 % Camera Setup
 CameraName = 'Grasshopper3';
@@ -110,8 +127,8 @@ set(p, 'CDataMapping', 'scaled');
 % Controlling the Hardware and running the experiment
 %
 
-Nframes = numel(Xlocs);
-PrescribedXY = [Xlocs Ylocs];
+% Nframes = numel(Xloclist);
+PrescribedXY = [Xloclist Yloclist];
 
 % (1) Move stage to beginning position.
 logentry(['Microscope is collecting mosaic.']);
@@ -122,36 +139,37 @@ logentry('Starting collection...');
 
 Image = cell(Nframes, 1);
 ArrivedXY = zeros(Nframes,2);
-
+PrescribedXYludl = zeros(Nframes,2);
 tmp = stage_get_pos_Ludl(stage);
 tmpxy = tmp.Pos;
 
 for k = 1:Nframes
-    x = Xlocs(k);
-    y = Ylocs(k);
+    x = Xloclist(k);
+    y = Yloclist(k);
     
     figure(f); 
     drawnow;
 
     logentry([' Moving to position X: ' num2str(x) ', Y: ' num2str(y) '. ']);
 %     stage_move_Ludl(stage, [x, y]);
-    plate_space_move(stage, calib, wellrc, [x y]);
+    PrescribedXYludl(k,:) = plate_space_move(stage, calib, wellrc, [x y]);
     
     stout = stage_get_pos_Ludl(stage);
     ArrivedXY(k,:) = stout.Pos;
     logentry(['Arrived at position X: ' num2str(ArrivedXY(k,1)), ', Y: ' num2str(ArrivedXY(k,2)) '. ']);
     pause(exptime*0.001); % [ms] -> [s]
-    Image{k,1} = p.CData;
-
+    Image{k,1} = p.CData;    
 %     imwrite(im{k,1}, outfile);
 %     logentry(['Frame grabbed to ' outfile '.']);
     
 %     focus_score(k,1) = fmeasure(im{k,1}, 'GDER');
 end
 
+CollectOrder(:,1) = 1:Nframes;
+
 close(f);
 
-mosaic = table(PrescribedXY, ArrivedXY, Image);
+mosaic = table(CollectOrder, RowID, ColumnID, PrescribedXY, PrescribedXYludl, ArrivedXY, Image);
 save(fileout, 'mosaic')
 logentry('Done!');
 
@@ -169,6 +187,6 @@ function logentry(txt)
                    num2str(floor(logtime(6)), '%02i') ') '];
      headertext = [logtimetext 'ba_grabwellmosaic: '];
      
-     fprintf('%s%s frames \n', headertext, txt);
+     fprintf('%s%s \n', headertext, txt);
      
      return
