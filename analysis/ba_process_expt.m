@@ -1,4 +1,4 @@
-function outs = ba_process_expt(filepath, PlateID, aggregating_variables)
+function outs = ba_process_expt(filepath, PlateID, modeltype, aggregating_variables)
 % BA_PROCESS_EXPT analzes the output of a bead adhesion experiment.
 %
 
@@ -6,6 +6,9 @@ function outs = ba_process_expt(filepath, PlateID, aggregating_variables)
 % adhesion experiment where the bead detaches from the surface and moves
 % through z while being tracked by vst. The z-velocity is then used to back
 % out the detachment force
+if nargin< 3 || isempty('modeltype')
+    modeltype = 'erf';
+end
 
 if nargin < 2 || isempty('PlateID')
     logentry('No PlateID defined. Creating one at random.');
@@ -100,8 +103,17 @@ outs.FileTable = FileTable;
 outs.ForceTable = ForceTable;
 outs.BeadInfoTable = BeadInfoTable;
 
-% [DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, true);
-[DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, true);
+switch modeltype
+    case 'linear'
+        [DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, true);
+    case 'erf'        
+        [DetachForce, fits] = ba_plate_detachmentforces_erf(outs, aggregating_variables, true);
+    case 'exponential'
+                [DetachForce, fits] = ba_plate_detachmentforces(outs, aggregating_variables, true);
+    otherwise
+        error('Missing or unknown model type.');
+end
+
 outs.DetachForceTable = DetachForce;
 
 end
@@ -119,6 +131,7 @@ function sm = shorten_metadata(metadata)
     sm.SubstrateChemistry = string(metadata.Substrate.SurfaceChemistry);
     sm.MagnetGeometry = string(metadata.Magnet.Geometry);
     sm.Media = string(metadata.Medium.Name);
+    sm.Buffer = string(metadata.Medium.Buffer);
     sm.pH = metadata.Medium.pH;
     
     [a,b] = regexpi(sm.Binfile,'_DF(\d*)_', 'match', 'tokens');
