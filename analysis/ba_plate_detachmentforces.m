@@ -54,10 +54,11 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
         % should just be pinned to "1".        
         [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
 
+%         ft = fittype( 'a*exp(-b*x)+(1-a)*exp(-c*x)', 'independent', 'x', 'dependent', 'y' );
         ft = fittype( 'a*exp(-b*x)+c', 'independent', 'x', 'dependent', 'y' );
         opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
         opts.Display = 'Off';
-    %     opts.Upper = [1 Inf Inf];
+        opts.Upper = [1 Inf Inf];
         opts.Lower = [0 0 0];
     %     opts.StartPoint = [1 0.5 0.5];
         opts.Weights = weights;
@@ -84,6 +85,14 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
             outs(k,1).cconf = [NaN NaN];
         end
         
+        % debug figure
+        figure;
+        plot(fitresult, xData, yData, '.');
+        hold on;
+        errorbar(xData, yData, Fhigh(idx), 'horizontal', '.');
+        title(string(PlateID), 'Interpreter', 'none');
+        hold off;
+        drawnow;
     end
     
     outs = struct2table(outs);
@@ -104,6 +113,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     TableOut.confDetachForce(:,2) = detachforce(outs.aconf(:,2), outs.bconf(:,2), outs.cconf(:,2));
     TableOut.PlateID = repmat(PlateID, height(TableOut),1);
     TableOut = movevars(TableOut, 'PlateID', 'Before', 1);
+
     
 end
 
