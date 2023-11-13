@@ -1,11 +1,22 @@
 function outs = ba_process_expt(filepath, PlateID, modeltype, aggregating_variables)
-% BA_PROCESS_EXPT analzes the output of a bead adhesion experiment.
+% BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
 %
-
 % This function begins the process of analyzing the output of the bead
 % adhesion experiment where the bead detaches from the surface and moves
 % through z while being tracked by vst. The z-velocity is then used to back
-% out the detachment force
+% out the detachment force.
+% 
+% Inputs:
+%  filepath   path location of the tracking results for an "experiment"/plate.
+%  PlateID    string indentifier for the plate used in the experiment
+%  modeltype  model used for fitting forces. Can be "linear", "erf", or "exponential"
+%  aggregating_variables   The list of index variables for the experiment,
+%                          e.g, "pH", "BeadChemistry", "SubstrateChemistry", etc.
+%
+% Output:
+%  outs   structure containing tables of File, Bead/Tracking, and Force Data
+%
+
 if nargin< 3 || isempty('modeltype')
     modeltype = 'erf';
 end
@@ -14,6 +25,7 @@ if nargin < 2 || isempty('PlateID')
     logentry('No PlateID defined. Creating one at random.');
     PlateID = ['PL-' num2str(randi(2^32,1,1))];
 end
+
 rootdir = pwd;
 
 cd(filepath);
@@ -36,7 +48,7 @@ for k = 1:length(evtfilelist)
    calibum = metadata.Scope.Calibum;   
    bead_diameter_um = metadata.Bead.Diameter;   
    Ztable = metadata.Results.TimeHeightVidStatsTable;
-   Ztable.Time = Ztable.Time * (60 *60 * 24); % convert from days to seconds
+   Ztable.Time = Ztable.Time * (60 * 60 * 24); % convert from days to seconds
    Ztable.Time = (Ztable.Time - Ztable.Time(1));
    firstframe = metadata.Results.FirstFrame;
    lastframe = metadata.Results.LastFrame;
@@ -109,7 +121,7 @@ switch modeltype
     case 'erf'        
         [DetachForce, fits] = ba_plate_detachmentforces_erf(outs, aggregating_variables, true);
     case 'exponential'
-                [DetachForce, fits] = ba_plate_detachmentforces(outs, aggregating_variables, true);
+        [DetachForce, fits] = ba_plate_detachmentforces(outs, aggregating_variables, true);
     otherwise
         error('Missing or unknown model type.');
 end
@@ -155,7 +167,6 @@ function sm = shorten_metadata(metadata)
         sm.SubstrateLotNumber = string(metadata.Substrate.LotNumber);
     end
     
-    jac = sm;
     sm = struct2table(sm);
     
     sm.BeadChemistry = categorical(sm.BeadChemistry);
