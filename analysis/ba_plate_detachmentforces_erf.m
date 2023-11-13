@@ -91,15 +91,17 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
 
     for k = 1:length(outs)
         if outs(k).a > 0.5
-            DetachForce = outs(k).am;
+            DetachForce(k,1) = outs(k).am;
+            confDetachForce(k,:) = outs(k).amconf;
         else
-            DetachForce = outs(k).bm;
+            DetachForce(k,1) = outs(k).bm;
+            confDetachForce(k,:) = outs(k).bmconf;
         end
     end
 
     ForceData = cell2table(ForceData, 'VariableNames', {'ForceData'});
     DetachForce = table(DetachForce, 'VariableNames', {'DetachForce'});
-
+    confDetachForce = table(confDetachForce, 'VariableNames', {'confDetachForce'});    
     PctLeftData = cell2table(PctLeftData, 'VariableNames', {'PctLeftData'});
     Weights = cell2table(Weights, 'VariableNames', {'Weights'});
 
@@ -108,7 +110,7 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
     fr = cell2table(fr, 'VariableNames', {'FitObject'});
     % gofT = fillmissing(gofT, 'Constant', NaN);
         
-    TableOut = [grpT outs gofT fr ForceData DetachForce PctLeftData Weights] ;
+    TableOut = [grpT outs gofT fr ForceData DetachForce confDetachForce PctLeftData Weights] ;
     
 end
 
