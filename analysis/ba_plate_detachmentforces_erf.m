@@ -22,12 +22,11 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
     RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
                              'Keys', 'Fid');
+        
+    [g, grpT] = findgroups(RelevantData(:,aggregating_variables));
     
-    
-    [g, grpF] = findgroups(RelevantData(:,aggregating_variables));
-    
-    grpFstr = string(table2array(grpF));
-    ystrings = join(grpFstr, '_');
+    grpTstr = string(table2array(grpT));
+    ystrings = join(grpTstr, '_');
     
     F = RelevantData.Force*1e9;
     Flow = abs(F - RelevantData.ForceInterval(:,1)*1e9);
@@ -41,65 +40,86 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
     end
     
     gn = unique(g);
-    for k = 1:height(grpF)
+    for k = 1:height(grpT)
         idx = (g == gn(k) );
         
+        ForceData{k,1} = F(idx);
+        PctLeftData{k,1} = frac(idx);
+        Weights{k,1} = w(idx);
 
-%         xDataCell{k} = xData; yDataCell{k} = yData; weightsCell{k} = weights;
-        [ErfF,ErfG] = createErfFit( F(idx), frac(idx), w(idx) );
+        % Fit model to data.
+        try
+            [fitresult,gof] = createErfFit( ForceData{k,1}, ...
+                                            PctLeftData{k,1}, ...
+                                            Weights{k,1} );            
+            ci = confint(fitresult)';
+            fr{k,1} = fitresult;
+            gofout(k,1) = gof;
+            outs(k,1).a = fitresult.a;
+            outs(k,1).aconf = ci(1,:);
+            outs(k,1).am = fitresult.am;
+            outs(k,1).amconf = ci(2,:);
+            outs(k,1).as = fitresult.as;
+            outs(k,1).asconf = ci(3,:);
+            outs(k,1).bm = fitresult.bm;
+            outs(k,1).bmconf = ci(4,:);
+            outs(k,1).bs = fitresult.bs;
+            outs(k,1).bsconf = ci(5,:);
+        catch        
+            fr{k} = '';
+            gofout(k).sse = NaN;
+            gofout(k).rsquare = NaN;
+            gofout(k).dfe = NaN;
+            gofout(k).adjrsquare = NaN;
+            gofout(k).rmse = NaN;
+            outs(k,1).a = NaN;
+            outs(k,1).aconf = [NaN NaN];
 
-   
-        
-%         % Fit model to data.
-%         try
-%             [fitresult, gof(k,1)] = fit( x, y, ft, opts );
-%             ci = confint(fitresult)';
-%             fr{k} = fitresult;
-%             outs(k,1).a = fitresult.a;
-%             outs(k,1).aconf = ci(1,:);
-%             outs(k,1).b = fitresult.b;
-%             outs(k,1).bconf = ci(2,:);
-%             outs(k,1).c = fitresult.c;
-%             outs(k,1).cconf = ci(3,:);
-%         catch        
-%             outs(k,1).a = NaN;
-%             outs(k,1).aconf = [NaN NaN];
-%             outs(k,1).b = NaN;
-%             outs(k,1).bconf = [NaN NaN];
-%             outs(k,1).c = NaN;
-%             outs(k,1).cconf = [NaN NaN];
-%         end
+            outs(k,1).a = NaN;
+            outs(k,1).aconf = [NaN NaN];
+            outs(k,1).am = NaN;
+            outs(k,1).amconf = [NaN NaN];
+            outs(k,1).as = NaN;
+            outs(k,1).asconf = [NaN NaN];
+            outs(k,1).bm = NaN;
+            outs(k,1).bmconf = [NaN NaN];
+            outs(k,1).bs = NaN;
+            outs(k,1).bsconf = [NaN NaN];
+        end
         
     end
-    
+
+    for k = 1:length(outs)
+        if outs(k).a > 0.5
+            DetachForce = outs(k).am;
+        else
+            DetachForce = outs(k).bm;
+        end
+    end
+
+    ForceData = cell2table(ForceData, 'VariableNames', {'ForceData'});
+    DetachForce = table(DetachForce, 'VariableNames', {'DetachForce'});
+
+    PctLeftData = cell2table(PctLeftData, 'VariableNames', {'PctLeftData'});
+    Weights = cell2table(Weights, 'VariableNames', {'Weights'});
+
     outs = struct2table(outs);
-    gofT = struct2table(gof);
+    gofT = struct2table(gofout);
+    fr = cell2table(fr, 'VariableNames', {'FitObject'});
     % gofT = fillmissing(gofT, 'Constant', NaN);
-    
-    % fit form is fraction_left = a*exp(-b*force)+c. Solving for force
-    % yields:   force = -1/b*ln((fraction_left-c)/a))
-    % Assuming the detachment force is set to 50%, this reduces to:
-    %           force = -1/b*ln((0.5-c)/a))
-    detachforce = @(a,b,c) (-1./b .* log((0.5-c)./a));
-    df = detachforce(outs.a, outs.b, outs.c);
-    
-    % TableOut = [grpF outs gofT];
-    TableOut = [grpF outs];
-    TableOut.DetachForce = df;
-    TableOut.confDetachForce(:,1) = detachforce(outs.aconf(:,1), outs.bconf(:,1), outs.cconf(:,1));
-    TableOut.confDetachForce(:,2) = detachforce(outs.aconf(:,2), outs.bconf(:,2), outs.cconf(:,2));
-    TableOut.PlateID = repmat(PlateID, height(TableOut),1);
-    TableOut = movevars(TableOut, 'PlateID', 'Before', 1);
+        
+    TableOut = [grpT outs gofT fr ForceData DetachForce PctLeftData Weights] ;
     
 end
 
 
-function [fitresult, gof] = createErfFit(x, y, w)
+function [fitresult, gof] = createErfFit(force, pct_left, weights)
     
-    %% Fit: 'hbe'.
-    [xData, yData, weights] = prepareCurveData( x, y, w );
+    % log transform the force
+    logforce = log10(force);
+    [logforce, pct_left, weights] = prepareCurveData( logforce, pct_left, weights );
     
-    [tmpa,tmpb] = get_good_startpoint(xData, yData, weights);
+%     [tmpa,tmpb] = get_good_startpoint(logforce, pct_left, weights);
 
     % Set up fittype and options.
     ft = fittype( '1/2*(a*erfc(((x)-am)/(sqrt(2)*as))+(1-a)*erfc(((x)-bm)/(sqrt(2)*bs)))', 'independent', 'x', 'dependent', 'y' );
@@ -108,55 +128,61 @@ function [fitresult, gof] = createErfFit(x, y, w)
     opts.Lower = [0 0 0 0 0];
     opts.MaxFunEvals = 2600;
     opts.MaxIter = 2400;
-    opts.StartPoint = [0.9 50 0.127036942194857 100 0.548132777476588];
-    opts.Upper = [1 Inf Inf Inf Inf];
+    opts.StartPoint = [0.825816977489547 0.0781755287531837 0.442678269775446 0.106652770180584 0.961898080855054];
+    %             a  am   as   bm   bs
+    opts.Lower = [0 -Inf  0   -Inf  0];
+    opts.Upper = [1  Inf  Inf  Inf  Inf];
     opts.Weights = weights;
     
-    % Fit model to data.
-    [fitresult, gof] = fit( xData, yData, ft, opts );
-    
-    % Plot fit with data.
-    figure( 'Name', 'hbe' );
-    h = plot( fitresult, xData, yData, 'predobs' );
-    legend( h, 'y vs. x with w', 'hbe', 'Lower bounds (hbe)', 'Upper bounds (hbe)', 'Location', 'NorthEast', 'Interpreter', 'none' );
-    % Label axes
-    xlabel( 'x', 'Interpreter', 'none' );
-    ylabel( 'y', 'Interpreter', 'none' );
-    grid on
 
+    % Fit model to data.
+    [fitresult, gof] = fit( logforce, pct_left, ft, opts );
+    
+%     % Plot fit with data.
+%     figure( 'Name', 'erf fit' );
+%     h = plot( fitresult, logforce, pct_left, 'predobs' );
+%     legend( h, 'y vs. x with w', 'hbe', 'Lower bounds (hbe)', 'Upper bounds (hbe)', 'Location', 'NorthEast', 'Interpreter', 'none' );
+%     % Label axes
+%     xlabel( 'x', 'Interpreter', 'none' );
+%     ylabel( 'y', 'Interpreter', 'none' );
+%     grid on
+ 
 end
 
-function [fitresult, gof] = get_good_startpoint(x, y, w)
+
+function [pks, locs, widths] = get_good_startpoint(logforce, pct_left, weights)
     %% Fit: 'hbe spline'.
-    [xData, yData, weights] = prepareCurveData( x, y, w );
+    [logforce, pct_left, weights] = prepareCurveData( logforce, pct_left, weights );
     
     % Set up fittype and options.
     ft = fittype( 'smoothingspline' );
     opts = fitoptions( 'Method', 'SmoothingSpline' );
     opts.Normalize = 'on';
-    opts.SmoothingParam = 0.995;
+%     opts.Normalize = 'off';
+    opts.SmoothingParam = 0.96;
     opts.Weights = weights;
     
     % Fit model to data.
-    [fitresult, gof] = fit( xData, yData, ft, opts );
+    [fitresult, gof] = fit( logforce, pct_left, ft, opts );
     
+    myrange = linspace(min(logforce), max(logforce), 1000);
+    fitval = fitresult(myrange);
+%     dfit = CreateGaussScaleSpace(fitval, 2, 0.5);
+    dfit = diff(fitval,2);
+    [p, locs] = findpeaks(dfit, myrange(2:end-1));
+%     [pks, locs, widths] = findpeaks(dfit, myrange);
 
-%     % Plot fit with data.
-%     figure( 'Name', 'hbe spline' );
-%     h = plot( fitresult, xData, yData, 'predobs' );
-%     legend( h, 'y vs. x with w', 'hbe spline', 'Lower bounds (hbe spline)', 'Upper bounds (hbe spline)', 'Location', 'NorthEast', 'Interpreter', 'none' );
-%     % Label axes
-%     xlabel( 'x', 'Interpreter', 'none' );
-%     ylabel( 'y', 'Interpreter', 'none' );
-%     grid on
+
+
+    % Plot fit with data.
+    figure( 'Name', 'Good ERF startpoints' );
+    h = plot( fitresult, logforce, pct_left);
+    hold on
+    findpeaks(dfit, myrange(2:end-1));
+    legend( h, 'y vs. x with w', 'hbe spline', 'Lower bounds (hbe spline)', 'Upper bounds (hbe spline)', 'Location', 'NorthEast', 'Interpreter', 'none' );
+    % Label axes
+    xlabel( 'logforce', 'Interpreter', 'none' );
+    ylabel( 'pct_left', 'Interpreter', 'none' );
+    grid on
 end
 
-% function outs = sa_sortforce(forceANDfractionleft, direction)
-% 
-%     if nargin < 2 || isempty(direction)
-%         direction = 'ascend';
-%     end
-% 
-%     [outs,Fidx] = sortrows(forceANDfractionleft, direction);
-% 
-% end
