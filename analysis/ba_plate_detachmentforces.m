@@ -44,14 +44,6 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     for k = 1:height(grpF)
         idx = (g == gn(k) );
         
-        % % % DELETE NEXT TWO LINES. THEY DON'T BELONG. (UNTIL THEY DO).
-%         xDataCell{k} = xData; yDataCell{k} = yData; weightsCell{k} = weights;
-%         [ErfF,ErfG] = createErfFit(xData, yData);
-
-        % % Fit: 'ExponentialWithOffset'.
-        % Set up fittype and options.
-        % Since there's always 100% left at the start, the "a" variable here
-        % should just be pinned to "1".        
         [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
 
 %         ft = fittype( 'a*exp(-b*x)+(1-a)*exp(-c*x)', 'independent', 'x', 'dependent', 'y' );
@@ -103,7 +95,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     % yields:   force = -1/b*ln((fraction_left-c)/a))
     % Assuming the detachment force is set to 50%, this reduces to:
     %           force = -1/b*ln((0.5-c)/a))
-    detachforce = @(a,b,c) (-1./b .* log((0.5-c)./a));
+    detachforce = @(a,b,c)(-1./b .* log((0.5-c)./a));
     df = detachforce(outs.a, outs.b, outs.c);
     
     % TableOut = [grpF outs gofT];
