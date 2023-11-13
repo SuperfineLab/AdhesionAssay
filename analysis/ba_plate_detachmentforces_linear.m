@@ -99,44 +99,5 @@ function [TableOut, fr] = ba_plate_detachmentforces_linear(ba_process_data, aggr
     TableOut.PlateID = repmat(PlateID, height(TableOut),1);
     TableOut = movevars(TableOut, 'PlateID', 'Before', 1);
 
-        
-    
 end
 
-
-function [fitresult, gof] = createErfFit(xData, yData)
-    
-    % % Fit: 'untitled fit 1'.
-    [xData_1, yData_1] = prepareCurveData( xData, yData );
-    
-    % Set up fittype and options.
-    ft = fittype( 'erfc(b*x)+erfc(d*x)', 'independent', 'x', 'dependent', 'y' );
-    opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-    opts.Display = 'Off';
-    opts.StartPoint = [0.306349472016557 0.51077156417211];
-    
-    % Fit model to data.
-    [fitresult, gof] = fit( xData_1, yData_1, ft, opts );
-    
-    % Plot fit with data.
-    figure( 'Name', 'untitled fit 1' );
-    h = plot( fitresult, xData_1, yData_1 );
-    legend( h, 'yData vs. xData', 'untitled fit 1', 'Location', 'NorthEast', 'Interpreter', 'none' );
-    % Label axes
-    xlabel( 'xData', 'Interpreter', 'none' );
-    ylabel( 'yData', 'Interpreter', 'none' );
-    grid on
-
-end
-
-
-
-% function outs = sa_sortforce(forceANDfractionleft, direction)
-% 
-%     if nargin < 2 || isempty(direction)
-%         direction = 'ascend';
-%     end
-% 
-%     [outs,Fidx] = sortrows(forceANDfractionleft, direction);
-% 
-% end
