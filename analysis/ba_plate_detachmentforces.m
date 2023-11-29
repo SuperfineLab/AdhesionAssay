@@ -35,7 +35,8 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     frac = RelevantData.FractionLeft;
     
     if weightTF
-        w = 1./abs(Fhigh-F);
+%         w = 1./abs(Fhigh-F);
+        w = RelevantData.Weights;
     else
         w = ones(numel(F),1);
     end
