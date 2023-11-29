@@ -107,7 +107,13 @@ Tmp.Force = fooM(:,3);
 Tmp.FractionLeft = fooM(:,4);
 
 Tmp = struct2table(Tmp);
-ForceTable = join(ForceTable, Tmp);
+TmpTable = join(ForceTable, Tmp);
+
+ForceTable = TmpTable(TmpTable.Force > 10e-15,:);
+
+if height(TmpTable) ~= height(ForceTable)
+    logentry(['Removed ' num2str(height(TmpTable) - height(ForceTable)) ' force measurement(s). Below 10 fN threshold.']);
+end
 
 cd(rootdir);
  

@@ -34,12 +34,9 @@ function outs = ba_force_analysis(ba_process_data, diameter_range)
     % pull out the data
     zpos = T.ZmotorPos(T.AcceptableBeadSize);
     force = T.Force(T.AcceptableBeadSize);
-    forceinterval = abs(T.ForceInterval(T.AcceptableBeadSize,2)-force);
+    forceinterval = T.ForceInterval(T.AcceptableBeadSize);
+    w = T.Weights(T.AcceptableBeadSize);
 
-    % calculate the weights
-    w = 1 ./ (abs(forceinterval) ./ force); 
-    w = w./(max(w));
-    
     [x_zpos, y_force, weights] = prepareCurveData( log10(zpos), log10(force), w );
     
     % Set up fittype and options.

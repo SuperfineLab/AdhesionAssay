@@ -5,12 +5,13 @@ function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um,
 d = TrackingTable;
 
 if isempty(d)
-    m = table('Size', [0 10], ...
+    m = table('Size', [0 12], ...
               'VariableTypes', {'double', 'double', 'string', 'double', ...
-                                'double', 'double', 'double', 'double', 'double', 'double'},...
+                                'double', 'double', 'double', 'double', ...
+                                'double', 'double', 'double', 'double'},...
               'VariableNames', {'Fid', 'Filename', 'SpotID', 'StartPosition', ...
                                 'Pulloff_time', 'Mean_time', 'Mean_vel', 'VelInterval', ...
-                                                             'Force', 'ForceInterval'});
+                                'Force', 'ForceInterval', 'ForceError', 'Weights'});
     return
 else 
     t = d.Frame ./ d.Fps;
@@ -32,6 +33,11 @@ m.Mean_vel = mb(:,1) * calibum * 1e-6;
 m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6;
 m.Force = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.Mean_vel;
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval;
+m.ForceError = abs(m.ForceInterval(:,1) - m.Force);
+
+w = 1./(m.ForceError) ./ m.Force;
+m.Weights = w ./ max(w);
+
 m = struct2table(m);
 
 return
