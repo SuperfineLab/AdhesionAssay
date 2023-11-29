@@ -1,8 +1,8 @@
-function m = ba_get_linefits(evtfile, calibum, visc_Pas, bead_diameter_um, Fid)
+function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid)
 % BA_GET_LINEFITS calculates bead velocity and force from displacement line fits.
 %
 
-d = load_evtfile(evtfile);
+d = TrackingTable;
 
 if isempty(d)
     m = table('Size', [0 10], ...
@@ -23,7 +23,7 @@ sp = splitapply(@(x,y)get_startpos(x,y), d.X, d.Y, g);
 mb = cell2mat(myfits(:,3));
 
 m.Fid = repmat(Fid, size(myfits,1), 1);
-m.Filename = repmat(string(evtfile), size(myfits,1), 1);
+% m.Filename = repmat(string(evtfile), size(myfits,1), 1);
 m.SpotID = ID;
 m.StartPosition = cell2mat(sp);
 m.Pulloff_time = cell2mat(myfits(:,1));
