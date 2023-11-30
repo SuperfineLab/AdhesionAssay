@@ -35,6 +35,9 @@ search_radius_high = 26;
 
 evtfilelist = dir('*.evt.mat');
 
+Data = ba_load_raw_data(filepath, PlateID);
+FileTable = Data.FileTable;
+
 for k = 1:length(evtfilelist)
 
    basename = strrep(evtfilelist(k).name, '.evt.mat', '');
@@ -54,28 +57,30 @@ for k = 1:length(evtfilelist)
    lastframe = metadata.Results.LastFrame;
    
   
-   FileTable{k} = shorten_metadata(metadata);
+%    FileTable{k} = shorten_metadata(metadata);
    
    % Need to use original VST tracking file to find how many beads existed 
    % on the first frame.
-   origtracks = load_video_tracking([basename '.csv'], [], [], [], 'absolute', [], 'table');
-   VSTfirstframe = origtracks(origtracks.Frame == 1, :);
-   FirstFrameBeadCount = height(VSTfirstframe);
+%    origtracks = load_video_tracking([basename '.csv'], [], [], [], 'absolute', [], 'table');
+%    VSTfirstframe = origtracks(origtracks.Frame == 1, :);
+%    FirstFrameBeadCount = height(VSTfirstframe);
    
    
-   BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
-   BeadInfoTable{k} = ba_match_VST_and_MAT_tracks(BeadInfoTable{k}, VSTfirstframe);
+%    BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
+%    BeadInfoTable{k} = ba_match_VST_and_MAT_tracks(BeadInfoTable{k}, VSTfirstframe);
    
-   FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
-   ForceTable{k} = ba_get_linefits(evtfilelist(k).name, calibum, visc_Pas, bead_diameter_um, Fid);
+%    FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
+   ForceTable{k} = ba_get_linefits(Data.TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid);
    ForceTable{k}.ZmotorPos = interp1(Ztable.Time, Ztable.ZHeight, ForceTable{k}.Mean_time);
       
    % Number of stuck beads is equal to the starting number of beads minus
    % the number of Force approximations we made during our tracking
    % clean-up for the velocity calculation.
-   FileTable{k}.LastFrameBeadCount = FirstFrameBeadCount - height(ForceTable{k});   
+   FirstFrameBeadCount = table2array(FileTable( FileTable.Fid == Fid, "FirstFrameBeadCount"));
+   LastFrameBeadCount(k,1) = FirstFrameBeadCount - height(ForceTable{k});   
 end
 
+FileTable.LastFrameBeadCount = LastFrameBeadCount;
 
 ForceTable = vertcat(ForceTable{:});
 if isstring(ForceTable.SpotID)
@@ -84,10 +89,10 @@ end
 
 % ForceTable.Filename = [];
 
-FileTable = vertcat(FileTable{:});
-FileTable.PlateID = categorical(repmat(string(PlateID),height(FileTable),1));
-FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
-BeadInfoTable = vertcat(BeadInfoTable{:});
+% FileTable = vertcat(FileTable{:});
+% FileTable.PlateID = categorical(repmat(string(PlateID),height(FileTable),1));
+% FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
+% BeadInfoTable = vertcat(BeadInfoTable{:});
 
 [g, grpT] = findgroups(FileTable(:,aggregating_variables));
 NStartingBeads(:,1) = splitapply(@sum, FileTable.FirstFrameBeadCount, g);
@@ -109,6 +114,7 @@ Tmp.FractionLeft = fooM(:,4);
 Tmp = struct2table(Tmp);
 TmpTable = join(ForceTable, Tmp);
 
+% filter out any forces less than 10 femtoNewtons
 ForceTable = TmpTable(TmpTable.Force > 10e-15,:);
 
 if height(TmpTable) ~= height(ForceTable)
@@ -117,22 +123,24 @@ end
 
 cd(rootdir);
  
-outs.FileTable = FileTable;
-outs.ForceTable = ForceTable;
-outs.BeadInfoTable = BeadInfoTable;
+Data.FileTable = FileTable;
+Data.ForceTable = ForceTable;
+% Data.BeadInfoTable = BeadInfoTable;
 
 switch modeltype
     case 'linear'
-        [DetachForce, fits] = ba_plate_detachmentforces_linear(outs, aggregating_variables, true);
+        [DetachForce, fits] = ba_plate_detachmentforces_linear(Data, aggregating_variables, true);
     case 'erf'        
-        [DetachForce, fits] = ba_plate_detachmentforces_erf(outs, aggregating_variables, true);
+        [DetachForce, fits] = ba_plate_detachmentforces_erf(Data, aggregating_variables, true);
     case 'exponential'
-        [DetachForce, fits] = ba_plate_detachmentforces(outs, aggregating_variables, true);
+        [DetachForce, fits] = ba_plate_detachmentforces(Data, aggregating_variables, true);
     otherwise
         error('Missing or unknown model type.');
 end
 
-outs.DetachForceTable = DetachForce;
+Data.DetachForceTable = DetachForce;
+
+outs = Data;
 
 end
 
