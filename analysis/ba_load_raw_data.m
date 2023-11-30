@@ -1,4 +1,5 @@
 function outs = ba_load_raw_data(filepath, PlateID)
+% XXX @stephensnare TODO: Update the doctext for this function 
 % BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
 %
 % This function begins the process of analyzing the output of the bead
@@ -56,23 +57,25 @@ for k = 1:length(evtfilelist)
    firstframe = metadata.Results.FirstFrame;
    lastframe = metadata.Results.LastFrame;
    
-  
-   FileTable{k} = shorten_metadata(metadata);
+
    
+   FileTable{k} = shorten_metadata(metadata);
+   %loads a tracking data table
+
    % Need to use original VST tracking file to find how many beads existed 
    % on the first frame.
    origtracks = load_video_tracking(origfname, [], [], [], 'absolute', [], 'table');
-   TrackingTable = load_evtfile(evtname);
-   TrackingTable.Fid = Fid;
-   %loads a tracking data table
+
    VSTfirstframe = origtracks(origtracks.Frame == 1, :);
    FirstFrameBeadCount = height(VSTfirstframe);
-
+   
+   FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
 
    BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
    BeadInfoTable{k} = ba_match_VST_and_MAT_tracks(BeadInfoTable{k}, VSTfirstframe);
 
-   FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
+   TrackingTable{k} = load_evtfile(evtname);
+   TrackingTable{k}.Fid = repmat(Fid, height(TrackingTable{k}), 1);
 
    
    % Number of stuck beads is equal to the starting number of beads minus
@@ -87,12 +90,18 @@ end
 FileTable = vertcat(FileTable{:});
 FileTable.PlateID = categorical(repmat(string(PlateID),height(FileTable),1));
 FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
+
 BeadInfoTable = vertcat(BeadInfoTable{:});
+TrackingTable = vertcat(TrackingTable{:});
+
 %
 outs.FileTable = FileTable;
 outs.BeadInfoTable = BeadInfoTable;
+outs.TrackingTable = TrackingTable;
+
 cd(rootdir);
 end
+
 function sm = shorten_metadata(metadata)
     sm.Fid = metadata.File.Fid;
     sm.FullFilename = string(fullfile(metadata.File.Binpath, metadata.File.Binfile));
