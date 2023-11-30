@@ -2,24 +2,23 @@ function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um,
 % BA_GET_LINEFITS calculates bead velocity and force from displacement line fits.
 %
 
-d = TrackingTable;
 
-if isempty(d)
-    m = table('Size', [0 12], ...
-              'VariableTypes', {'double', 'double', 'string', 'double', ...
+if isempty(TrackingTable)
+    m = table('Size', [0 10], ...
+              'VariableTypes', {'double', 'double', 'double', ...
                                 'double', 'double', 'double', 'double', ...
-                                'double', 'double', 'double', 'double'},...
-              'VariableNames', {'Fid', 'Filename', 'SpotID', 'StartPosition', ...
+                                'double', 'double', 'double'},...
+              'VariableNames', {'Fid', 'SpotID', 'StartPosition', ...
                                 'Pulloff_time', 'Mean_time', 'Mean_vel', 'VelInterval', ...
-                                'Force', 'ForceInterval', 'ForceError', 'Weights'});
+                                'Force', 'ForceError', 'Weights'});
     return
-else 
-    t = d.Frame ./ d.Fps;
-    [g, ID] = findgroups(d.ID);
 end
 
-myfits = splitapply(@(x,y)mylinfit(x,y,1), t, d.Z, g);
-sp = splitapply(@(x,y)get_startpos(x,y), d.X, d.Y, g);
+t = TrackingTable.Frame ./ TrackingTable.Fps;
+[g, ID] = findgroups(TrackingTable.ID);
+
+myfits = splitapply(@(x,y)mylinfit(x,y,1), t, TrackingTable.Z, g);
+sp = splitapply(@(x,y)get_startpos(x,y), TrackingTable.X, TrackingTable.Y, g);
 
 mb = cell2mat(myfits(:,3));
 
@@ -32,11 +31,13 @@ m.Mean_time = cell2mat(myfits(:,2));
 m.Mean_vel = mb(:,1) * calibum * 1e-6;
 m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6;
 m.Force = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.Mean_vel;
-m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval;
-m.ForceError = abs(m.ForceInterval(:,1) - m.Force);
 
-w = 1./(m.ForceError) ./ m.Force;
-m.Weights = w ./ max(w);
+ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval;
+m.ForceError = abs(ForceInterval(:,1) - m.Force);
+
+w = 1./(m.ForceError);
+w = w ./ max(w);
+m.Weights = w;
 
 m = struct2table(m);
 
