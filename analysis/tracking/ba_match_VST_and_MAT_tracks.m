@@ -4,6 +4,9 @@ function BeadInfoTable = ba_match_VST_and_MAT_tracks(BeadInfoTable, VSTfirstfram
         error('Need both VST and MAT tracking data as inputs.');
     end
 
+    % threshold pixel distance between VST and MAT xy positions
+    pixeldist_threshold = 6;
+
     [g, gT] = findgroups(VSTfirstframe.ID);
 
 
@@ -20,33 +23,43 @@ function BeadInfoTable = ba_match_VST_and_MAT_tracks(BeadInfoTable, VSTfirstfram
         testXY = [VSTfirstframe.X(idx), VSTfirstframe.Y(idx)];
 
         dist = dist_matrix([testXY; BeadInfoTable.BeadPosition]);
-
         dist = dist(2:end,1);         
-        [neardist,matidx] = min(dist, [], 'omitnan');
+
+        [neardist, matidx] = min(dist, [], 'omitnan');
         
         % If the nearest object is too far away, then it's not a real match (NaN output)
-        if neardist < 4 % threshold pixel distance between VST and MAT xy positions
+        if neardist < pixeldist_threshold
             BeadInfoTable.SpotID(matidx) = VSTid_list(k);
             BeadInfoTable.VSTxy(matidx,:) = [VSTfirstframe.X(k) VSTfirstframe.Y(k)]; 
             BeadInfoTable.VSTarea(matidx,:) = VSTfirstframe.RegionSize(k);
         end
         BeadInfoTable.MatchDist(matidx,:) = neardist;
         
-        BeadInfoTable = movevars(BeadInfoTable, "VSTxy", "After", "BeadPosition");
-        BeadInfoTable = movevars(BeadInfoTable, "SpotID", "Before", "BeadPosition");
-
     end    
 
+    BeadInfoTable = movevars(BeadInfoTable, "VSTxy", "After", "BeadPosition");
+    BeadInfoTable = movevars(BeadInfoTable, "SpotID", "Before", "BeadPosition");
+
+%     figure; 
+%     plot(VSTfirstframe.X, VSTfirstframe.Y, 'kx', ...
+%          BeadInfoTable.BeadPosition(:,1),BeadInfoTable.BeadPosition(:,2), 'g.', ...
+%          BeadInfoTable.VSTxy(:,1), BeadInfoTable.VSTxy(:,2), 'ro');
+%     title('Bead Finding Debug Plot');
+%     xlabel('X position [px');
+%     ylabel('Y position [px]');
+%     legend('Orig VST loc', 'MATtrack loc', 'Found VST loc');
+%     xlim([0 1024]);
+%     ylim([0 768]);
+%     set(gca, 'YDir', 'reverse');
+%     drawnow;
+
 end
 
 
-function outs = findmatch(VSTid, VSTxy, MatBeadPosition, g)
-
-            testXY = [VSTfirstframe.X(idx), VSTfirstframe.Y(idx)];
-
-        dist = dist_matrix([testXY; BeadInfoTable.BeadPosition]);
-
-
-outs = 0;
-
-end
+% function outs = findmatch(VSTid, VSTxy, MatBeadPosition, g)
+% 
+%     testXY = [VSTfirstframe.X(idx), VSTfirstframe.Y(idx)];    
+%     dist = dist_matrix([testXY; BeadInfoTable.BeadPosition]);    
+%     outs = 0;
+% 
+% end
