@@ -30,14 +30,11 @@ rootdir = pwd;
 
 cd(filepath);
 logentry(['Moved to: ' filepath]);
-search_radius_low = 10;
-search_radius_high = 26;
-
-evtfilelist = dir('*.evt.mat');
 
 Data = ba_load_raw_data(filepath, PlateID);
 FileTable = Data.FileTable;
 
+evtfilelist = dir('*.evt.mat');
 for k = 1:length(evtfilelist)
 
    basename = strrep(evtfilelist(k).name, '.evt.mat', '');
@@ -50,27 +47,13 @@ for k = 1:length(evtfilelist)
    visc_Pas = metadata.Medium.Viscosity;
    calibum = metadata.Scope.Calibum;   
    bead_diameter_um = metadata.Bead.Diameter;   
+
    Ztable = metadata.Results.TimeHeightVidStatsTable;
    Ztable.Time = Ztable.Time * (60 * 60 * 24); % convert from days to seconds
    Ztable.Time = (Ztable.Time - Ztable.Time(1));
-   firstframe = metadata.Results.FirstFrame;
-   lastframe = metadata.Results.LastFrame;
    
-  
-%    FileTable{k} = shorten_metadata(metadata);
-   
-   % Need to use original VST tracking file to find how many beads existed 
-   % on the first frame.
-%    origtracks = load_video_tracking([basename '.csv'], [], [], [], 'absolute', [], 'table');
-%    VSTfirstframe = origtracks(origtracks.Frame == 1, :);
-%    FirstFrameBeadCount = height(VSTfirstframe);
-   
-   
-%    BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
-%    BeadInfoTable{k} = ba_match_VST_and_MAT_tracks(BeadInfoTable{k}, VSTfirstframe);
-   
-%    FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
-   ForceTable{k} = ba_get_linefits(Data.TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid);
+   tmpTracking = Data.TrackingTable(Data.TrackingTable.Fid == Fid, :);
+   ForceTable{k} = ba_get_linefits(tmpTracking, calibum, visc_Pas, bead_diameter_um, Fid);  
    ForceTable{k}.ZmotorPos = interp1(Ztable.Time, Ztable.ZHeight, ForceTable{k}.Mean_time);
       
    % Number of stuck beads is equal to the starting number of beads minus
