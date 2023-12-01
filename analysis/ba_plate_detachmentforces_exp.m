@@ -1,4 +1,4 @@
-function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating_variables, weightTF)
+function [TableOut, fr] = ba_plate_detachmentforces_exp(ba_process_data, aggregating_variables, weightTF)
 
     if nargin < 3 || isempty(weightTF)
         weightTF = true;
