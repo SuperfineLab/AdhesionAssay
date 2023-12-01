@@ -116,7 +116,7 @@ switch modeltype
     case 'erf'        
         [DetachForce, fits] = ba_plate_detachmentforces_erf(Data, aggregating_variables, true);
     case 'exponential'
-        [DetachForce, fits] = ba_plate_detachmentforces(Data, aggregating_variables, true);
+        [DetachForce, fits] = ba_plate_detachmentforces_exp(Data, aggregating_variables, true);
     otherwise
         error('Missing or unknown model type.');
 end
