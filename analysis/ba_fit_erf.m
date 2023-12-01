@@ -1,8 +1,4 @@
-function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms, plotTF)
-
-    if nargin < 5 || isempty(plotTF)
-        plotTF = false;
-    end
+function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
 
     if nargin < 4 || isempty(Nterms)
         Nterms = 2;
