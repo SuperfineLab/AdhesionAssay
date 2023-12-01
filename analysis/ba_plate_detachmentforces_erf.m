@@ -28,9 +28,9 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
     grpTstr = string(table2array(grpT));
     ystrings = join(grpTstr, '_');
     
-    foo = splitapply(@(x1,x2,x3)ba_fit_erf(x1,x2,x3), log10(RelevantData.Force*1e9), ...
-                                                      RelevantData.FractionLeft, ...
-                                                      RelevantData.Weights);
+%     foo = splitapply(@(x1,x2,x3)ba_fit_erf(x1,x2,x3), log10(RelevantData.Force*1e9), ...
+%                                                       RelevantData.FractionLeft, ...
+%                                                       RelevantData.Weights);
 
     F = RelevantData.Force*1e9;
     Ferr = RelevantData.ForceError*1e9;
@@ -92,7 +92,7 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
         end
         
         if plotTF
-            ba_plot_fit(fitresult, logforce, pct_left, weights);
+            ba_plot_fit(fitresult, ForceData{k,1}, ForceError{k,1}, PctLeftData{k,1});
         end
 
     end
