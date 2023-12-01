@@ -1,4 +1,9 @@
-function ba_plot_fit(fitresult, logforce, pct_left, weights)
+function ba_plot_fit(fitresult, force, errforce, pct_left)
+
+    logforce = log10(force);
+    errlogforce = log10(force + errforce)-log10(force);
+
+            
         % Plot fit with data.
         figure( 'Name', 'erf fit' );
         h = plot( fitresult, logforce, pct_left, 'predobs' );
@@ -8,8 +13,10 @@ function ba_plot_fit(fitresult, logforce, pct_left, weights)
         ylabel( 'Fraction Left', 'Interpreter', 'none' );
         grid on
 
-        errlength = log10(10.^logforce + 1./weights);
-        e = errorbar( gca, logforce, pct_left, errlength, 'horizontal');
-        e.LineStyle = 'none';
-        e.Color = 'b';
+        hold on            
+            e = errorbar( gca, logforce, pct_left, errlogforce, 'horizontal', '.');
+            e.LineStyle = 'none';
+            e.Color = 'b';
+        hold off
+        drawnow
 end
