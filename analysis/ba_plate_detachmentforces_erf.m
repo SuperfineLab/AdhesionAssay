@@ -50,6 +50,7 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
         ForceError{k,1} = Ferr(idx);
         PctLeftData{k,1} = frac(idx);
         Weights{k,1} = w(idx);
+        Included{k,1} = true(length(idx),1);
 
         % Fit model to data.
         try
@@ -109,17 +110,18 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
 
     ForceData = cell2table(ForceData, 'VariableNames', {'ForceData'});
     ForceError = cell2table(ForceError, 'VariableNames', {'ForceError'});
-    DetachForce = table(DetachForce, 'VariableNames', {'DetachForce'});
-    confDetachForce = table(confDetachForce, 'VariableNames', {'confDetachForce'});    
     PctLeftData = cell2table(PctLeftData, 'VariableNames', {'PctLeftData'});
     Weights = cell2table(Weights, 'VariableNames', {'Weights'});
+    Included = cell2table(Included, 'VariableNames', {'included'});
+    DetachForce = table(DetachForce, 'VariableNames', {'DetachForce'});
+    confDetachForce = table(confDetachForce, 'VariableNames', {'confDetachForce'});    
 
     outs = struct2table(outs);
     gofT = struct2table(gofout);
     frT = cell2table(fr(:), 'VariableNames', {'FitObject'});
     % gofT = fillmissing(gofT, 'Constant', NaN);
         
-    TableOut = [grpT outs gofT frT ForceData ForceError DetachForce PctLeftData Weights] ;
+    TableOut = [grpT outs gofT frT ForceData ForceError DetachForce PctLeftData Weights Included] ;
     
 end
 
