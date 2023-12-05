@@ -9,9 +9,9 @@ function [TableOut, fr] = ba_plate_detachmentforces_erf(ba_process_data, aggrega
     % "Fraction Left" plot is always going to be plotting the Fraction of beads
     % left to detach vs the force at which they detach. SO, that means all we
     % need are the aggregating variables AND those relevant columns
-    
-    FileTableVars = [{'PlateID', 'Fid'}, aggregating_variables(:)'];
     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceError', 'Weights', 'FractionLeft'};
+    FileTableVars = [{'PlateID', 'Fid'}, aggregating_variables(:)'];
+    
     
     PlateID = unique(Data.FileTable.PlateID);
     

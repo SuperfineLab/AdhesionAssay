@@ -110,16 +110,19 @@ Data.FileTable = FileTable;
 Data.ForceTable = ForceTable;
 % Data.BeadInfoTable = BeadInfoTable;
 
-switch modeltype
-    case 'linear'
-        [DetachForce, fits] = ba_plate_detachmentforces_linear(Data, aggregating_variables, true, false);
-    case 'erf'        
-        [DetachForce, fits] = ba_plate_detachmentforces_erf(Data, aggregating_variables, true, true);
-    case 'exponential'
-        [DetachForce, fits] = ba_plate_detachmentforces_exp(Data, aggregating_variables, true, false);
-    otherwise
-        error('Missing or unknown model type.');
-end
+% switch modeltype
+%     case 'linear'
+%         [DetachForce, fits] = ba_plate_detachmentforces_linear(Data, aggregating_variables, true, false);
+%     case 'erf'        
+%         [DetachForce, fits] = ba_plate_detachmentforces_erf(Data, aggregating_variables, true, true);
+%     case 'exponential'
+%         [DetachForce, fits] = ba_plate_detachmentforces_exp(Data, aggregating_variables, true, false);
+%     otherwise
+%         error('Missing or unknown model type.');
+% end
+
+
+[DetachForce, fits] = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, true);
 
 Data.DetachForceTable = DetachForce;
 

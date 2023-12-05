@@ -11,7 +11,7 @@ function [TableOut, fr] = ba_plate_detachmentforces_exp(ba_process_data, aggrega
     % need are the aggregating variables AND those relevant columns
     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'FractionLeft'};
     FileTableVars = [{'PlateID', 'Fid'}, aggregating_variables(:)'];
-    % FileTableVars = {'Fid', aggregating_variables{:}};
+    
     
     PlateID = unique(Data.FileTable.PlateID);
     
