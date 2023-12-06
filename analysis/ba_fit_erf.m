@@ -32,6 +32,10 @@ function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
     opts.MaxFunEvals = 26000;
     opts.MaxIter = 24000;
     opts.Weights = weights;
+    opts.TolFun = 1e-07;
+    opts.TolX = 1e-07;
+    opts.DiffMinChange = 1e-08;
+    opts.DiffMaxChange = 0.01;
     
     % Fit model to data.
     [fitresult, gof] = fit( logforce, pct_left, ft, opts );
