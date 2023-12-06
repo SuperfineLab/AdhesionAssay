@@ -46,22 +46,28 @@ for k = 1:length(evtfilelist)
    % Load data from metadata file. Ultimately, use this as indexing file 
    % when combining data for an entire experiment
    metadata = load(metafname);
+
+   FileTable{k} = shorten_metadata(metadata);
    
    Fid = metadata.File.Fid;
-   visc_Pas = metadata.Medium.Viscosity;
-   calibum = metadata.Scope.Calibum;   
-   bead_diameter_um = metadata.Bead.Diameter;   
-   Ztable = metadata.Results.TimeHeightVidStatsTable;
-   Ztable.Time = Ztable.Time * (60 * 60 * 24); % convert from days to seconds
-   Ztable.Time = (Ztable.Time - Ztable.Time(1));
+
+   Zn = height(metadata.Results.TimeHeightVidStatsTable);
+   Ztable{k} = metadata.Results.TimeHeightVidStatsTable;
+   Ztable{k}.Fid = repmat(Fid, Zn, 1);
+
+   % DatenumTime is the number of days since 0-Jan-0000 (proleptic ISO calendar)
+   Ztable{k}.DatenumTime = Ztable{k}.Time;
+   
+   % Time = relative number of seconds since beginning the experiment
+   Ztable{k}.Time = Ztable{k}.Time * (60 * 60 * 24); % convert from days to seconds
+   Ztable{k}.Time = (Ztable{k}.Time - Ztable{k}.Time(1));
+   
+   
    firstframe = metadata.Results.FirstFrame;
    lastframe = metadata.Results.LastFrame;
    
-
    
-   FileTable{k} = shorten_metadata(metadata);
-   %loads a tracking data table
-
+   % Loads a tracking data table
    % Need to use original VST tracking file to find how many beads existed 
    % on the first frame.
    origtracks = load_video_tracking(origfname, [], [], [], 'absolute', [], 'table');
@@ -70,7 +76,7 @@ for k = 1:length(evtfilelist)
    FirstFrameBeadCount = height(VSTfirstframe);
    
    FileTable{k}.FirstFrameBeadCount = FirstFrameBeadCount;
-
+   FileTable{k}.StartTime = datetime(Ztable{k}.DatenumTime(1), 'ConvertFrom', 'datenum');
    BeadInfoTable{k} = ba_discoverbeads(firstframe, lastframe, search_radius_low, search_radius_high, Fid);   
    BeadInfoTable{k} = ba_match_VST_and_MAT_tracks(BeadInfoTable{k}, VSTfirstframe);
 
@@ -91,11 +97,14 @@ FileTable = vertcat(FileTable{:});
 FileTable.PlateID = categorical(repmat(string(PlateID),height(FileTable),1));
 FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
 
+Ztable = vertcat(Ztable{:});
+Ztable = movevars(Ztable, {'Frame', 'Time', 'ZHeight', 'Mean', 'StDev', 'Max', 'Min'}, 'after', 'Fid');
 BeadInfoTable = vertcat(BeadInfoTable{:});
 TrackingTable = vertcat(TrackingTable{:});
 
 %
 outs.FileTable = FileTable;
+outs.TimeHeightVidStatsTable = Ztable;
 outs.BeadInfoTable = BeadInfoTable;
 outs.TrackingTable = TrackingTable;
 
@@ -111,6 +120,7 @@ function sm = shorten_metadata(metadata)
     sm.Binfile = string(metadata.File.Binfile);
     sm.SampleName = string(metadata.File.SampleName);
     sm.BeadChemistry = string(metadata.Bead.SurfaceChemistry);
+    sm.BeadExpectedDiameter = metadata.Bead.Diameter;
     sm.SubstrateChemistry = string(metadata.Substrate.SurfaceChemistry);
     sm.MagnetGeometry = string(metadata.Magnet.Geometry);
     sm.Media = string(metadata.Medium.Name);

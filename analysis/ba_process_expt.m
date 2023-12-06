@@ -26,32 +26,49 @@ if nargin < 2 || isempty('PlateID')
     PlateID = ['PL-' num2str(randi(2^32,1,1))];
 end
 
+if nargin < 1 || isempty('filepath')
+    error('No input data. Needs a B-style struct or a filepath on the input.');
+end
+
 rootdir = pwd;
 
-cd(filepath);
-logentry(['Moved to: ' filepath]);
+switch class(filepath)
+    case 'char'
+        if ~isempty(dir(filepath))
+            cd(filepath);
+            logentry(['Moved to: ' filepath]);
 
-Data = ba_load_raw_data(filepath, PlateID);
+            Data = ba_load_raw_data(filepath, PlateID);
+        else
+            error('Filepath is either empty or does not exist.');
+        end
+    case 'struct'
+        if isfield(filepath, 'FileTable') && isfield(filepath, 'BeadInfoTable')
+            Data.FileTable = filepath.FileTable;
+            Data.BeadInfoTable = filepath.BeadInfoTable;
+        else
+            error('Input Data structure is malformed.');            
+        end
+    otherwise
+        error('The input datatype is incorrect. Need a struct or filepath on the input.');
+end
+
 FileTable = Data.FileTable;
+for k = 1:height(FileTable)
 
-evtfilelist = dir('*.evt.mat');
-for k = 1:length(evtfilelist)
+%    basename = strrep(evtfilelist(k).name, '.evt.mat', '');
+%    
+%    % Load data from metadata file. Ultimately, use this as indexing file 
+%    % when combining data for an entire experiment
+%    metadata = load([basename '.meta.mat']);
+   
+   Fid = FileTable.Fid(k);
+   visc_Pas = FileTable.MediumViscosity(k);
+   calibum = FileTable.Calibum(k);   
+   bead_diameter_um = FileTable.BeadExpectedDiameter(k); 
 
-   basename = strrep(evtfilelist(k).name, '.evt.mat', '');
-   
-   % Load data from metadata file. Ultimately, use this as indexing file 
-   % when combining data for an entire experiment
-   metadata = load([basename '.meta.mat']);
-   
-   Fid = metadata.File.Fid;
-   visc_Pas = metadata.Medium.Viscosity;
-   calibum = metadata.Scope.Calibum;   
-   bead_diameter_um = metadata.Bead.Diameter;   
-
-   Ztable = metadata.Results.TimeHeightVidStatsTable;
-   Ztable.Time = Ztable.Time * (60 * 60 * 24); % convert from days to seconds
-   Ztable.Time = (Ztable.Time - Ztable.Time(1));
-   
+   Ztable = Data.TimeHeightVidStatsTable(Data.TimeHeightVidStatsTable.Fid == Fid,:);
+      
    tmpTracking = Data.TrackingTable(Data.TrackingTable.Fid == Fid, :);
    ForceTable{k} = ba_get_linefits(tmpTracking, calibum, visc_Pas, bead_diameter_um, Fid);  
    ForceTable{k}.ZmotorPos = interp1(Ztable.Time, Ztable.ZHeight, ForceTable{k}.Mean_time);
