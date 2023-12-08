@@ -19,15 +19,15 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     
     PlateID = unique(Data.FileTable.PlateID);
     
-    if length(PlateID) > 1
-        error('Something is amiss. There should only be one plate''s worth of data here.');
-    end
+%     if length(PlateID) > 1
+%         error('Something is amiss. There should only be one plate''s worth of data here.');
+%     end
     
     RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
-                             'Keys', 'Fid');
+                             'Keys', {'Fid'});
         
-    [g, grpT] = findgroups(RelevantData(:,aggregating_variables));
+    [g, grpT] = findgroups(RelevantData(:,['PlateID', aggregating_variables]));
     
     grpTstr = string(table2array(grpT));
     ystrings = join(grpTstr, '_');
@@ -87,9 +87,6 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
                     gofout(k).rmse = NaN;
                     outs(k,1).a = NaN;
                     outs(k,1).aconf = [NaN NaN];
-        
-                    outs(k,1).a = NaN;
-                    outs(k,1).aconf = [NaN NaN];
                     outs(k,1).am = NaN;
                     outs(k,1).amconf = [NaN NaN];
                     outs(k,1).as = NaN;
@@ -136,14 +133,14 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
                     outs(k,1).bconf = [NaN NaN];
                 end
                 
-                % debug figure
-                figure;
-                plot(fitresult, xData, yData, '.');
-                hold on;
-                errorbar(xData, yData, Fhigh(idx), 'horizontal', '.');
-                title(string(PlateID), 'Interpreter', 'none');
-                hold off;
-                drawnow;
+%                 % debug figure
+%                 figure;
+%                 plot(fitresult, xData, yData, '.');
+%                 hold on;
+%                 errorbar(xData, yData, Fhigh(idx), 'horizontal', '.');
+%                 title(string(PlateID), 'Interpreter', 'none');
+%                 hold off;
+%                 drawnow;
 
             case 'exp'
                 [xData, yData, weights] = prepareCurveData( F(idx), frac(idx), w(idx) );
@@ -178,14 +175,14 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
                     outs(k,1).cconf = [NaN NaN];
                 end
         
-        % debug figure
-        figure;
-        plot(fitresult, xData, yData, '.');
-        hold on;
-        errorbar(xData, yData, Fhigh(idx), 'horizontal', '.');
-        title(string(PlateID), 'Interpreter', 'none');
-        hold off;
-        drawnow;
+%         % debug figure
+%         figure;
+%         plot(fitresult, xData, yData, '.');
+%         hold on;
+%         errorbar(xData, yData, Fhigh(idx), 'horizontal', '.');
+%         title(string(PlateID), 'Interpreter', 'none');
+%         hold off;
+%         drawnow;
 
 
             otherwise
