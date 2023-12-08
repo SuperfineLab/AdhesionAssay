@@ -9,22 +9,27 @@ end
             
     % Plot fit with data.
     figurehandle.Name = 'erf fit';    
+    clf
+    hold on
     try
-        h = plot( fitresult, logforce, pct_left, 'predobs' );
-        legend( h, 'y vs. x with w', 'hbe', 'Lower bounds (hbe)', 'Upper bounds (hbe)', 'Location', 'NorthEast', 'Interpreter', 'none' );
-        % Label axes
-        xlabel( 'log(force [nN])', 'Interpreter', 'none' );
-        ylabel( 'Fraction Left', 'Interpreter', 'none' );
-        grid on
+        
+%             h = plot( fitresult, logforce, pct_left, 'predobs' );
+%             legend( h, 'y vs. x with w', 'hbe', 'Lower bounds (hbe)', 'Upper bounds (hbe)', 'Location', 'NorthEast', 'Interpreter', 'none' );
+            h = plot( fitresult, logforce, pct_left );
+            legend( h, 'y vs. x with w', 'hbe', 'Location', 'NorthEast', 'Interpreter', 'none' );
 
-        hold on            
+            xlabel( 'log(force [nN])', 'Interpreter', 'none' );
+            ylabel( 'Fraction Left', 'Interpreter', 'none' );
+            grid on
+
+        
             e = errorbar( gca, logforce, pct_left, errlogforce, 'horizontal', '.');
             e.LineStyle = 'none';
             e.Color = 'b';
-        hold off
-    catch
-        clf;
+        
+    catch        
         text(0.5,0.5,'Error while plotting.');
     end
+    hold off
     drawnow
 end
