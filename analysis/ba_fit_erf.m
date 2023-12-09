@@ -38,6 +38,40 @@ function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
     opts.DiffMaxChange = 0.01;
     
     % Fit model to data.
-    [fitresult, gof] = fit( logforce, pct_left, ft, opts );
+    try
+        [fitresult, gof] = fit( logforce, pct_left, ft, opts );
 
+        ci = confint(fitresult)';
+    %     fr{k,1} = fitresult;
+    %     gofout(k,1) = gof;
+        outs.a = fitresult.a;
+        outs.aconf = ci(1,:);
+        outs.am = fitresult.am;
+        outs.amconf = ci(2,:);
+        outs.as = fitresult.as;
+        outs.asconf = ci(3,:);
+        outs.bm = fitresult.bm;
+        outs.bmconf = ci(4,:);
+        outs.bs = fitresult.bs;
+        outs.bsconf = ci(5,:);
+    catch
+        fr = '';
+        gofout.sse = NaN;
+        gofout.rsquare = NaN;
+        gofout.dfe = NaN;
+        gofout.adjrsquare = NaN;
+        gofout.rmse = NaN;
+        outs.a = NaN;
+        outs.aconf = [NaN NaN];
+        outs.a = NaN;
+        outs.aconf = [NaN NaN];
+        outs.am = NaN;
+        outs.amconf = [NaN NaN];
+        outs.as = NaN;
+        outs.asconf = [NaN NaN];
+        outs.bm = NaN;
+        outs.bmconf = [NaN NaN];
+        outs.bs = NaN;
+        outs.bsconf = [NaN NaN];
+    end
 end

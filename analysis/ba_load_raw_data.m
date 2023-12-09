@@ -1,4 +1,4 @@
-function outs = ba_load_raw_data(filepath, PlateID)
+function outs = ba_load_raw_data(filepath)
 % XXX @stephensnare TODO: Update the doctext for this function 
 % BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
 %
@@ -18,14 +18,14 @@ function outs = ba_load_raw_data(filepath, PlateID)
 %  outs   structure containing tables of File, Bead/Tracking, and Force Data
 %
 
-if nargin< 3 || isempty('modeltype')
-    modeltype = 'erf';
-end
-
-if nargin < 2 || isempty('PlateID')
-    logentry('No PlateID defined. Creating one at random.');
-    PlateID = ['PL-' num2str(randi(2^32,1,1))];
-end
+% if nargin< 3 || isempty('modeltype')
+%     modeltype = 'erf';
+% end
+% 
+% if nargin < 2 || isempty('PlateID')
+%     logentry('No PlateID defined. Creating random one.');
+%     PlateID = ['PL-' num2str(randi(2^32,1,1))];
+% end
 
 rootdir = pwd;
 
@@ -94,7 +94,7 @@ end
 
 % 
 FileTable = vertcat(FileTable{:});
-FileTable.PlateID = categorical(repmat(string(PlateID),height(FileTable),1));
+FileTable.PlateID = categorical(string(FileTable.PlateID));
 FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
 
 Ztable = vertcat(Ztable{:});
@@ -112,6 +112,7 @@ cd(rootdir);
 end
 
 function sm = shorten_metadata(metadata)
+    sm.PlateID = metadata.PlateID;
     sm.Fid = metadata.File.Fid;
     sm.FullFilename = string(fullfile(metadata.File.Binpath, metadata.File.Binfile));
     sm.StartTime = metadata.Results.TimeHeightVidStatsTable.Time(1);

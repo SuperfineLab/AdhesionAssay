@@ -1,4 +1,4 @@
-function Data = ba_process_expt(filepath, PlateID, modeltype, aggregating_variables)
+function Data = ba_process_expt(filepath, modeltype, aggregating_variables)
 % BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
 %
 % This function begins the process of analyzing the output of the bead
@@ -17,7 +17,7 @@ function Data = ba_process_expt(filepath, PlateID, modeltype, aggregating_variab
 %  Data   structure containing tables of File, Bead/Tracking, and Force Data
 %
 
-if nargin< 3 || isempty('modeltype')
+if nargin < 3 || isempty('modeltype')
     modeltype = 'erf';
 end
 
@@ -38,7 +38,7 @@ switch class(filepath)
             cd(filepath);
             logentry(['Moved to: ' filepath]);
 
-            Data = ba_load_raw_data(filepath, PlateID);
+            Data = ba_load_raw_data(filepath);
         else
             error('Filepath is either empty or does not exist.');
         end
@@ -56,68 +56,23 @@ switch class(filepath)
         error('The input datatype is incorrect. Need a struct or filepath on the input.');
 end
 
-FileTable = Data.FileTable;
-for k = 1:height(FileTable)
-
-   Fid = FileTable.Fid(k);
-   visc_Pas = FileTable.MediumViscosity(k);
-   calibum = FileTable.Calibum(k);   
-   bead_diameter_um = FileTable.BeadExpectedDiameter(k); 
-
-   myZtable = Data.TimeHeightVidStatsTable(Data.TimeHeightVidStatsTable.Fid == Fid,:);      
-   myTracking = Data.TrackingTable(Data.TrackingTable.Fid == Fid, :);
-
-   ForceTable{k} = ba_get_linefits(myTracking, calibum, visc_Pas, bead_diameter_um, Fid);  
-   ForceTable{k}.ZmotorPos = interp1(myZtable.Time, myZtable.ZHeight, ForceTable{k}.Mean_time);
+ForceTable = ba_make_ForceTable(Data);
+Data.ForceTable = ForceTable;
       
-   % Number of stuck beads is equal to the starting number of beads minus
-   % the number of Force approximations we made during our tracking
-   % clean-up for the velocity calculation.
-   FirstFrameBeadCount = table2array(FileTable( FileTable.Fid == Fid, "FirstFrameBeadCount"));
-   LastFrameBeadCount(k,1) = FirstFrameBeadCount - height(ForceTable{k});   
-end
-
-FileTable.LastFrameBeadCount = LastFrameBeadCount;
-
-ForceTable = vertcat(ForceTable{:});
-if isstring(ForceTable.SpotID)
-    ForceTable.SpotID = double(ForceTable.SpotID);
-end
-
-[g, grpT] = findgroups(FileTable(:,aggregating_variables));
-NStartingBeads(:,1) = splitapply(@sum, FileTable.FirstFrameBeadCount, g);
-NStartingBeadsT = [grpT, table(NStartingBeads)];
-
-T = join(ForceTable, FileTable(:,{'Fid', aggregating_variables{:}}));
-T = join(T, NStartingBeadsT);
-% T = sortrows(T, {'Filename', 'Force'}, {'ascend', 'ascend'});
-[g, grpT] = findgroups(T(:,aggregating_variables));
-
-foo = splitapply(@(x1,x2,x3,x4){sa_fracleft(x1,x2,x3,x4)}, T.Fid, T.SpotID, T.Force, T.NStartingBeads, g);
-fooM = cell2mat(foo);
-
-Tmp.Fid = fooM(:,1);
-Tmp.SpotID = fooM(:,2);
-Tmp.Force = fooM(:,3);
-Tmp.FractionLeft = fooM(:,4);
-
-Tmp = struct2table(Tmp);
-TmpTable = join(ForceTable, Tmp);
+[Data.FileTable, Data.ForceTable] = ba_calc_BeadsLeft(Data, aggregating_variables);
 
 % filter out any forces less than 10 femtoNewtons
-ForceTable = TmpTable(TmpTable.Force > 10e-15,:);
+TmpTable = Data.ForceTable(Data.ForceTable.Force > 10e-15,:);
 
-if height(TmpTable) ~= height(ForceTable)
+if height(TmpTable) ~= height(Data.ForceTable)
     logentry(['Removed ' num2str(height(TmpTable) - height(ForceTable)) ' force measurement(s). Below 10 fN threshold.']);
 end
 
-cd(rootdir);
- 
-Data.FileTable = FileTable;
-Data.ForceTable = ForceTable;
+Data.ForceTable = TmpTable;
 
 [Data.DetachForceTable, fits] = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, false);
 
+cd(rootdir);
 
 end
 
