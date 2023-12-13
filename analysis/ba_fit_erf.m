@@ -1,4 +1,4 @@
-function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
+function outs = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
 
     if nargin < 4 || isempty(Nterms)
         Nterms = 2;
@@ -14,13 +14,24 @@ function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
     switch Nterms
         case 1
             ft = fittype( '1/2*(a*erfc(((x)-am)/(sqrt(2)*as)))', 'independent', 'x', 'dependent', 'y' );
-            opts.StartPoint = [0.9 0.085 0.5];
+
+            if nargin < 5 || isempty(startpoint)
+                opts.StartPoint = [0.9 0.085 0.5];
+            else
+                opts.StartPoint = startpoint;
+            end            
             %             a  am   as  
             opts.Lower = [0 -Inf  0  ];
             opts.Upper = [1  Inf  Inf];
         case 2
             ft = fittype( '1/2*(a*erfc(((x)-am)/(sqrt(2)*as))+(1-a)*erfc(((x)-bm)/(sqrt(2)*bs)))', 'independent', 'x', 'dependent', 'y' );
-            opts.StartPoint = [0.825816977489547 0.0781755287531837 0.442678269775446 0.106652770180584 0.961898080855054];
+            
+            if nargin < 5 || isempty(startpoint)
+                opts.StartPoint = [0.825816977489547 0.0781755287531837 0.442678269775446 0.106652770180584 0.961898080855054];
+            else
+                opts.StartPoint = startpoint;
+            end
+
             %             a  am   as   bm   bs
             opts.Lower = [0 -Inf  0   -Inf  0  ];
             opts.Upper = [1  Inf  Inf  Inf  Inf];       
@@ -42,8 +53,12 @@ function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
         [fitresult, gof] = fit( logforce, pct_left, ft, opts );
 
         ci = confint(fitresult)';
-    %     fr{k,1} = fitresult;
-    %     gofout(k,1) = gof;
+        outs.FitObject = fitresult;
+        outs.sse = gof.sse;
+        outs.rsquare = gof.rsquare;
+        outs.dfe = gof.dfe;
+        outs.adjrsquare = gof.adjrsquare;
+        outs.rmse = gof.rmse;
         outs.a = fitresult.a;
         outs.aconf = ci(1,:);
         outs.am = fitresult.am;
@@ -55,12 +70,12 @@ function [fitresult, gof] = ba_fit_erf(logforce, pct_left, weights, Nterms)
         outs.bs = fitresult.bs;
         outs.bsconf = ci(5,:);
     catch
-        fr = '';
-        gofout.sse = NaN;
-        gofout.rsquare = NaN;
-        gofout.dfe = NaN;
-        gofout.adjrsquare = NaN;
-        gofout.rmse = NaN;
+        outs.FitObject = '';
+        outs.sse = NaN;
+        outs.rsquare = NaN;
+        outs.dfe = NaN;
+        outs.adjrsquare = NaN;
+        outs.rmse = NaN;
         outs.a = NaN;
         outs.aconf = [NaN NaN];
         outs.a = NaN;
