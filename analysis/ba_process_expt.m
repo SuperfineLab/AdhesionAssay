@@ -17,13 +17,8 @@ function Data = ba_process_expt(filepath, modeltype, aggregating_variables)
 %  Data   structure containing tables of File, Bead/Tracking, and Force Data
 %
 
-if nargin < 3 || isempty('modeltype')
+if nargin < 2 || isempty('modeltype')
     modeltype = 'erf';
-end
-
-if nargin < 2 || isempty('PlateID')
-    logentry('No PlateID defined. Creating one at random.');
-    PlateID = ['PL-' num2str(randi(2^32,1,1))];
 end
 
 if nargin < 1 || isempty('filepath')
@@ -56,21 +51,25 @@ switch class(filepath)
         error('The input datatype is incorrect. Need a struct or filepath on the input.');
 end
 
-ForceTable = ba_make_ForceTable(Data);
-Data.ForceTable = ForceTable;
-      
-[Data.FileTable, Data.ForceTable] = ba_calc_BeadsLeft(Data, aggregating_variables);
 
-% filter out any forces less than 10 femtoNewtons
-TmpTable = Data.ForceTable(Data.ForceTable.Force > 10e-15,:);
+if ~isfield(Data, 'ForceTable')
 
-if height(TmpTable) ~= height(Data.ForceTable)
-    logentry(['Removed ' num2str(height(TmpTable) - height(ForceTable)) ' force measurement(s). Below 10 fN threshold.']);
+    Data.ForceTable = ba_make_ForceTable(Data);
+          
+    [Data.FileTable, Data.ForceTable] = ba_calc_BeadsLeft(Data, aggregating_variables);
+    
+    % filter out any forces less than 10 femtoNewtons
+    TmpTable = Data.ForceTable(Data.ForceTable.Force > 10e-15,:);
+    
+    if height(TmpTable) ~= height(Data.ForceTable)
+        logentry(['Removed ' num2str(height(TmpTable) - height(Data.ForceTable)) ' force measurement(s). Below 10 fN threshold.']);
+    end
+    
+    Data.ForceTable = TmpTable;
 end
 
-Data.ForceTable = TmpTable;
 
-[Data.DetachForceTable, fits] = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, false);
+Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, false);
 
 cd(rootdir);
 
