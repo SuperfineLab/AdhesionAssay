@@ -1,15 +1,15 @@
-function outs = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
+function myfit = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
 
     if nargin < 4 || isempty(Nterms)
         Nterms = 2;
     end
 
-%     % log transform the force
-%     logforce = log10(force);
     [logforce, pct_left, weights] = prepareCurveData( logforce, pct_left, weights );
     
     % Set up fittype and options.
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
+
+    myfit = initialize_fit_output(Nterms);
 
     switch Nterms
         case 1
@@ -23,6 +23,8 @@ function outs = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
             %             a  am   as  
             opts.Lower = [0 -Inf  0  ];
             opts.Upper = [1  Inf  Inf];
+
+            NecessaryPointsN = 4;
         case 2
             ft = fittype( '1/2*(a*erfc(((x)-am)/(sqrt(2)*as))+(1-a)*erfc(((x)-bm)/(sqrt(2)*bs)))', 'independent', 'x', 'dependent', 'y' );
             
@@ -35,6 +37,8 @@ function outs = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
             %             a  am   as   bm   bs
             opts.Lower = [0 -Inf  0   -Inf  0  ];
             opts.Upper = [1  Inf  Inf  Inf  Inf];       
+
+            NecessaryPointsN = 5;
         otherwise
             error('Unknown number of terms. Select "1" or "2" terms.');
     end
@@ -48,45 +52,66 @@ function outs = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
     opts.DiffMinChange = 1e-08;
     opts.DiffMaxChange = 0.01;
     
-    % Fit model to data.
-    try
+    if numel(logforce) > NecessaryPointsN
         [fitresult, gof] = fit( logforce, pct_left, ft, opts );
-
         ci = confint(fitresult)';
-        outs.FitObject = fitresult;
-        outs.sse = gof.sse;
-        outs.rsquare = gof.rsquare;
-        outs.dfe = gof.dfe;
-        outs.adjrsquare = gof.adjrsquare;
-        outs.rmse = gof.rmse;
-        outs.a = fitresult.a;
-        outs.aconf = ci(1,:);
-        outs.am = fitresult.am;
-        outs.amconf = ci(2,:);
-        outs.as = fitresult.as;
-        outs.asconf = ci(3,:);
-        outs.bm = fitresult.bm;
-        outs.bmconf = ci(4,:);
-        outs.bs = fitresult.bs;
-        outs.bsconf = ci(5,:);
-    catch
-        outs.FitObject = '';
-        outs.sse = NaN;
-        outs.rsquare = NaN;
-        outs.dfe = NaN;
-        outs.adjrsquare = NaN;
-        outs.rmse = NaN;
-        outs.a = NaN;
-        outs.aconf = [NaN NaN];
-        outs.a = NaN;
-        outs.aconf = [NaN NaN];
-        outs.am = NaN;
-        outs.amconf = [NaN NaN];
-        outs.as = NaN;
-        outs.asconf = [NaN NaN];
-        outs.bm = NaN;
-        outs.bmconf = [NaN NaN];
-        outs.bs = NaN;
-        outs.bsconf = [NaN NaN];
+    else
+        logentry('Not enough points to fit this model. Returning NaN.')
+        return
     end
+
+
+    % Fit model to data.
+    myfit.FitObject = fitresult;
+    myfit.sse = gof.sse;
+    myfit.rsquare = gof.rsquare;
+    myfit.dfe = gof.dfe;
+    myfit.adjrsquare = gof.adjrsquare;
+    myfit.rmse = gof.rmse;
+    myfit.a = fitresult.a;
+    myfit.aconf = ci(1,:);
+    myfit.am = fitresult.am;
+    myfit.amconf = ci(2,:);
+    myfit.as = fitresult.as;
+    myfit.asconf = ci(3,:);
+
+    switch Nterms
+        case 1
+            myfit.bm = NaN;
+            myfit.bmconf = [NaN NaN];
+            myfit.bs = NaN;
+            myfit.bsconf = [NaN NaN];
+        case 2
+            myfit.bm = fitresult.bm;
+            myfit.bmconf = ci(4,:);
+            myfit.bs = fitresult.bs;
+            myfit.bsconf = ci(5,:);
+    end
+
+    myfit.Nterms = Nterms;
+end
+
+
+function InitFit = initialize_fit_output(Nterms)
+
+    InitFit.FitObject = '';
+    InitFit.sse = NaN;
+    InitFit.rsquare = NaN;
+    InitFit.dfe = NaN;
+    InitFit.adjrsquare = NaN;
+    InitFit.rmse = NaN;
+    InitFit.a = NaN;
+    InitFit.aconf = [NaN NaN];
+    InitFit.a = NaN;
+    InitFit.aconf = [NaN NaN];
+    InitFit.am = NaN;
+    InitFit.amconf = [NaN NaN];
+    InitFit.as = NaN;
+    InitFit.asconf = [NaN NaN];
+    InitFit.bm = NaN;
+    InitFit.bmconf = [NaN NaN];
+    InitFit.bs = NaN;
+    InitFit.bsconf = [NaN NaN];
+    InitFit.Nterms = Nterms;
+
 end
