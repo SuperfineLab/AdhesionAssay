@@ -1,10 +1,18 @@
 
+if ismac
+    path_for_genpath = '/Users/stevesnare/code/';
+else
+    path_for_genpath = 'D:\jcribb\src\';
+end
 
-path_for_genpath = strrep('D:\jcribb\src\3dfmAnalysis', "\", filesep);
-%%On mac this will replace \ with / but on windows it does nothing
+%%this will set the path for addpath/genpath for Stephen's mac or Jeremy's 
+%pc depending on who is running the code
 
-addpath(genpath(path_for_genpath));
-addpath(genpath(path_for_genpath));
+addpath(genpath([path_for_genpath,filesep, '3dfmAnalysis']));
+addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
+
+%%% add genpath thing for analysis for Jeremy and for 3dfm analysis for
+%%% myself
 
 % close all
 
@@ -483,7 +491,11 @@ end
 function BigStudy = load_bigstudy_data(aggvar)
 
     % all-data-path
-    adp = strrep('\\nsrg.cs.unc.edu\nanodata2\cribb\expts\AdhesionAssay\datasets_NOTvideo\','\',filesep);
+    if ismac
+        adp = '/Users/stevesnare/adhesion_data/datasets_NOTvideo/';
+    else
+        adp = 'K:\expts\AdhesionAssay\datasets_NOTvideo\';
+    end
     DataSrcs = { ...
                  'ba_210802pegni',        [adp, '2021.08.02__mPEGslideNonInterfering']; ...
                  'ba_230724pegni',        [adp, '2023.07.24__Rho-PEGslide_HBE+lectins']; ... 
@@ -533,7 +545,7 @@ function BigStudy = load_bigstudy_data(aggvar)
     
     model = 'erf';
     for k = 1:length(DataSrcs)
-        q = ba_process_expt([platepaths{k},filesep], model, aggvar);        
+        q = ba_process_expt(platepaths{k}, model, aggvar);        
         BigFileT{k,1} = q.FileTable;
         BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
         BigTrackingT{k,1} = q.TrackingTable;
