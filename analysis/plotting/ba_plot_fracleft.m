@@ -1,4 +1,8 @@
-function ba_plot_fracleft_new(ba_process_data, aggregating_variables)
+function ba_plot_fracleft(ba_process_data, aggregating_variables, plotFerrTF)
+
+if nargin < 3 || isempty(plotFerrTF)
+    plotFerrTF = false;
+end
 
 Data = ba_process_data.DetachForceTable;
 
@@ -18,19 +22,40 @@ f = figure;
 
 for k = 1:height(Data)
 
+    myfit = Data.FitObject{k};
+    mylogforce = log10(Data.RawData{k}.Force);
+    mylogforceCI = log10(Data.RawData{k}.ForceError);
+    mypctleft = Data.RawData{k}.PctLeft;
+    
+    logerr = ba_ci2err(mylogforce, mylogforceCI, 'log', 'log');
+    mylogforce_errlow = logerr(:,1);
+    mylogforce_errhigh = logerr(:,2);
+
     figure(f);
     hold on;
     if contains(class(Data.FitObject{k}), 'cfit')
-            h = plot(Data.FitObject{k}, log10(Data.ForceData{k}), Data.PctLeftData{k});%, 'predobs');
-        
-            set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), 'MarkerFaceColor', cmap(k,:))
-            set(h(2), 'LineStyle', '-', 'LineWidth', 2, 'Color', cmap(k,:));
-    %     errorbar(F(idx), frac(idx), Flow(idx), Fhigh(idx), 'horizontal', ...
-    %                                   'LineStyle','None','Color',cmap(k,:));
-        q(k,:) = h;
+        h = plot(myfit, mylogforce, mypctleft);
+        set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), 'MarkerFaceColor', cmap(k,:))
+        set(h(2), 'LineStyle', '-', 'LineWidth', 2, 'Color', cmap(k,:));
+    else
+        h = plot(mylogforce, mypctleft, 'o');
+        set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), ...
+                  'MarkerFaceColor', cmap(k,:));
     end
 
+    if plotFerrTF
+        h = errorbar(mylogforce, mypctleft, mylogforce_errlow, mylogforce_errhigh);
+%             , 'horizontal', 'LineStyle','None','Color',cmap(k,:));
+    end
+
+    LineHandles(k,:) = h;
+    ystrings{k} = Data.BeadChemistry(k);
+
 end
+
+        
+ystrings = cellfun(@char, ystrings, 'UniformOutput', false);
+
 figure(f);
 xlabel('logForce [nN]', 'Interpreter', 'none' );
 ylabel('Fraction Left', 'Interpreter', 'none' );
@@ -38,8 +63,8 @@ grid on
 
 ax = gca;
 % ax.XScale = 'log';
-ystrings = {'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
-legend( q(:,1), ystrings, 'Location', 'SouthWest', 'Interpreter', 'none' );
+
+legend( LineHandles(:,1), ystrings, 'Location', 'SouthWest', 'Interpreter', 'none' );
 ylim([0 1])
 xlim([-1.5 1.5])
 grid on
