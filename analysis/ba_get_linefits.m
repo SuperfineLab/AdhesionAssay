@@ -28,16 +28,16 @@ m.SpotID = ID;
 m.StartPosition = cell2mat(sp);
 m.Pulloff_time = cell2mat(myfits(:,1));
 m.Mean_time = cell2mat(myfits(:,2));
-m.Mean_vel = mb(:,1) * calibum * 1e-6;
+m.Mean_vel = mb(:,1) * calibum * 1e-6; % [m/s]
 m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6;
-m.Force = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.Mean_vel;
+m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
 
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval;
-m.ForceError = abs(ForceInterval(:,1) - m.Force);
+m.ForceError = abs(m.ForceInterval(:,1) - m.Force);
 
-w = 1./(m.ForceError);
-w = w ./ max(w);
-m.Weights = w;
+% w = 1./(m.ForceError);
+% w = w ./ max(w);
+m.Weights = ba_weights(m.ForceInterval, 0.95);
 
 m = struct2table(m);
 
@@ -57,8 +57,10 @@ return
 
 function outs = mylinfit(t,z,order)
 
+    conflevel = 0.95;
+
     myfit = fit(t,z,'poly1');
-    cf = transpose(confint(myfit));
+    cf = transpose(confint(myfit,conflevel));
     
 %     mb = polyfit(t,z,order);
     outs{1,1} = t(1);
