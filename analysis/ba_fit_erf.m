@@ -13,7 +13,7 @@ function myfit = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
 
     switch Nterms
         case 1
-            ft = fittype( '1/2*(a*erfc(((x)-am)/(sqrt(2)*as)))', 'independent', 'x', 'dependent', 'y' );
+            ft = fittype( '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as)))', 'independent', 'Fd', 'dependent', 'y' );
 
             if nargin < 5 || isempty(startpoint)
                 opts.StartPoint = [0.9 0.085 0.5];
@@ -26,7 +26,7 @@ function myfit = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
 
             NecessaryPointsN = 4;
         case 2
-            ft = fittype( '1/2*(a*erfc(((x)-am)/(sqrt(2)*as))+(1-a)*erfc(((x)-bm)/(sqrt(2)*bs)))', 'independent', 'x', 'dependent', 'y' );
+            ft = fittype( '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as))+(1-a)*erfc(((Fd)-bm)/(sqrt(2)*bs)))', 'independent', 'Fd', 'dependent', 'y' );
             
             if nargin < 5 || isempty(startpoint)
                 opts.StartPoint = [0.825816977489547 0.0781755287531837 0.442678269775446 0.106652770180584 0.961898080855054];
