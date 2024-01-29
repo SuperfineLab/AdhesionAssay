@@ -200,8 +200,8 @@ ylabel('Force [nN]');
 pretty_plot;
 
 % Plotting the data for the averaged plates.
-plot_FuncSurface(pmat, seabreeze(10), 'Percent Stuck Beads', xstrings, ystrings);
-plot_FuncSurface(10.^gmat, seabreeze(10), 'Median Pulloff Force [nN]', xstrings, ystrings);
+% plot_FuncSurface(pmat, seabreeze(10), 'Percent Stuck Beads', xstrings, ystrings);
+% plot_FuncSurface(10.^gmat, seabreeze(10), 'Median Pulloff Force [nN]', xstrings, ystrings);
 plot_FuncSurface(10.^mmat, pinefresh(15), 'Mean Pulloff Force [nN]', xstrings, ystrings);
 plot_FuncSurface(bmat, pinefresh(25), 'Bootstrap Mean Pulloff Force, main mode [nN]', xstrings, ystrings);
 % plot_StuckBoxes(AvgPlatesT.FileTable, "SNA", [-5 105]);
