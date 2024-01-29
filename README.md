@@ -1,5 +1,5 @@
 # Superfine Lab Adhesion Assay
-Running an Automated Experiment (Last Updated 9/11/2020)
+Running an Automated Experiment (Last Updated 2024.01.24)
 
 ## Cloning, commiting, and pulling updates
 The AdhesionAssay project uses submodules for the assay's hardware, which includes the Thorlabs Zmotor, Nikon Scope, Ludl Stage, and eventually the camera. This requires cloning and pulling updates in a slightly different way.
@@ -142,3 +142,5 @@ where `h` is the handle of the z-motor, `filename` is the file name for the new,
 
 A skeleton of the workflow has been created in a script called `master_control.` It currently is verified to have the capability to run an experiment, but has not been
 tested on actual samples yet.
+
+
