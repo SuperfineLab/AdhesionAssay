@@ -31,10 +31,10 @@ if ~exist("q","var")
         im = imtile(m.Image, 'GridSize', [8 6]); 
     %     imwrite(im, [fname '.tif'], 'tif');
     %     im = im(3500:7500, 4000:10000);  
-        
-%        [bead.Centers{k,1}, bead.Radii{k,1}, bead.Metric{k,1}] = imfindcircles(im, [10 25]);
-% %        [tmp_centers, tmp_radii, tmp_metric] = imfindcircles(im, [10 25]);
-%         bead.Well{k,1} = k * ones(size(bead.Centers{k,1},1),1);
+%         q = imbinarize(im, 'global');
+       [bead.Centers{k,1}, bead.Radii{k,1}, bead.Metric{k,1}] = imfindcircles(im, [10 25]);
+%        [tmp_centers, tmp_radii, tmp_metric] = imfindcircles(im, [10 25]);
+        bead.Well{k,1} = k * ones(size(bead.Centers{k,1},1),1);
 
         myscale = 0.2;
         im = imresize(im, myscale, 'bicubic');
