@@ -9,7 +9,7 @@ calibum_10x_1024x768 = 0.692; % [um/pixel]
 
 % well = [1 6 11];
 exptime_10x = 8;
-exptime_4x = 20;
+exptime_4x = 25;
 
 
 % well = [1:15];
@@ -51,13 +51,13 @@ for k = 1:length(well)
 %     logentry(['Focus set to: ' num2str(scope_get_focus(hw.scope))]);
 %     pause(2);
 % else
-    ui = ba_impreview(hw, viewOps);
+%     ui = ba_impreview(hw, viewOps);
 % % % %     current_focus = scope_get_focus(hw.scope);
 % % % %     best_focus = ba_findfocus(hw.scope, [current_focus - 4200, current_focus + 4200], 400, exptime(k));
 % % % %     scope_set_focus(hw.scope, best_focus);
-    logentry('Focus the image, then press a key.');
-    pause;
-    close(ui);
+%     logentry('Focus the image, then press a key.');
+%     pause;
+%     close(ui);
 % end
     
     
