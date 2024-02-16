@@ -24,7 +24,7 @@ for k = 1:height(Data)
 
     myfit = Data.FitObject{k};
     mylogforce = log10(Data.RawData{k}.Force);
-    mylogforceCI = log10(Data.RawData{k}.ForceError);
+    mylogforceCI = log10(Data.RawData{k}.ForceInterval);
     mypctleft = Data.RawData{k}.PctLeft;
     
     logerr = ba_ci2err(mylogforce, mylogforceCI, 'log', 'log');
