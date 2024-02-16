@@ -1,4 +1,4 @@
-function Data = ba_process_expt(filepath, modeltype, aggregating_variables)
+function Data = ba_process_expt(filepath, modeltype, aggregating_variables, savefileTF)
 % BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
 %
 % This function begins the process of analyzing the output of the bead
@@ -17,11 +17,19 @@ function Data = ba_process_expt(filepath, modeltype, aggregating_variables)
 %  Data   structure containing tables of File, Bead/Tracking, and Force Data
 %
 
-if nargin < 2 || isempty('modeltype')
+if nargin < 4 || isempty(savefileTF)
+    savefileTF = false;
+end
+
+if nargin < 3 || isempty(aggregating_variables)
+    error('Need aggregating variables for compiling results.');
+end
+
+if nargin < 2 || isempty(modeltype)
     modeltype = 'erf';
 end
 
-if nargin < 1 || isempty('filepath')
+if nargin < 1 || isempty(filepath)
     error('No input data. Needs a B-style struct or a filepath on the input.');
 end
 
@@ -47,6 +55,8 @@ switch class(filepath)
         else
             error('Input Data structure is malformed.');            
         end
+
+        savefileTF = false;
     otherwise
         error('The input datatype is incorrect. Need a struct or filepath on the input.');
 end
@@ -68,8 +78,14 @@ if ~isfield(Data, 'ForceTable')
     Data.ForceTable = TmpTable;
 end
 
-
 Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, false);
+
+if savefileTF
+    PlateName = string(unique(Data.FileTable.PlateID));
+    if numel(PlateName) == 1
+        save([char(PlateName), '.platedata.mat'], '-STRUCT', 'Data');
+    end
+end
 
 cd(rootdir);
 
