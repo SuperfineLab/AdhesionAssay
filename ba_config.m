@@ -39,7 +39,7 @@ end
 
 viewOps.cmin = 0;
 viewOps.cmax = 65535;
-viewOps.gain = 15;
+viewOps.gain = 14;
 viewOps.focusTF = false;
 viewOps.exptime = 8; 
 
