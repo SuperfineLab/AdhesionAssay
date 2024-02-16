@@ -1,4 +1,4 @@
-function outs = compare_before_after_mosaics(before, after, hw, Plate)
+function outs = compare_before_after_mosaics(before, after, hw, Plate, mytitle)
 
 calibum = 0.858;
 subplot = @(m,n,p) subtightplot(m, n, p, [0.01 0.005], [0.1 0.01], [0.1 0.01]);
@@ -25,8 +25,8 @@ foo = splitapply(@(x){sa_delaunay_table(x)}, before.Centers, g);
 f = figure; 
 % g = figure; 
 h = figure; 
-BeforePatchfig = figure; 
-AfterPatchfig = figure;
+% BeforePatchfig = figure; 
+% AfterPatchfig = figure;
 
 for k = 1 : 15
 
@@ -57,9 +57,18 @@ for k = 1 : 15
         plot(bins(1:end-1)*calibum/1000, hafter(:,k));
         hold off;
         if k==1, legend('before', 'after'); end
-        f.Name = 'N beads removed by distance, mm';
+        f.Name = [mytitle, ', N beads removed by distance, mm'];
         ylim([0 50]);
-        
+        xlim([0 6.5]);
+        fax = gca;
+        fax.XTick = [1:6];
+        if any(k == [1,6,11])            
+            ylabel('bead count');
+        end
+
+        if any(k == 11:15)
+            xlabel('mm from poletip');
+        end
 %         figure(g);
 %         subplot(3,5,k);
 %         plot(bins(1:end-1)*calibum/1000, hbefore-hafter);
@@ -67,12 +76,20 @@ for k = 1 : 15
 %         ylim([0 50]);
         
         figure(h);
-        subplot(3,5,k);
-        h.Name = 'bead removal factor 1-(after/before)';
+        subplot(3,5,k);[mytitle, ', N beads removed by distance, mm'];
+        h.Name = [mytitle, ', bead removal factor 1-(after/before)'];
         plot(bins(1:end-1)*calibum/1000, 1-(hafter(:,k)./hbefore(:,k)));
-        ylim([0 1.1]);
+        ylim([0 1.1]);        
+        xlim([0 6.5]);
+        fax = gca;
+        fax.XTick = [1:6];
+        if any(k == [1,6,11])            
+            ylabel('removal factor');
+        end
 
-
+        if any(k == 11:15)
+            xlabel('mm from poletip');
+        end
     cmap = hot(65535);
 %         D = table(DelaunayVertLocs, Xvertices, Yvertices, Area, ...
 %         'VariableNames', {'DelaunayVertLocs', 'Xvertices', 'Yvertices', 'Area'});
