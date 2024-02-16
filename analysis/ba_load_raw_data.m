@@ -114,6 +114,7 @@ end
 function sm = shorten_metadata(metadata)
     sm.PlateID = metadata.PlateID;
     sm.Fid = metadata.File.Fid;
+    sm.Well = metadata.File.Well;
     sm.FullFilename = string(fullfile(metadata.File.Binpath, metadata.File.Binfile));
     sm.StartTime = metadata.Results.TimeHeightVidStatsTable.Time(1);
     sm.MeanFps  = 1 ./ mean(diff(metadata.Results.TimeHeightVidStatsTable.Time*86400));
