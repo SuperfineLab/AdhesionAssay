@@ -14,14 +14,14 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     % left to detach vs the force at which they detach. SO, that means all we
     % need are the aggregating variables AND those relevant columns
     
-    FileTableVars = [{'PlateID', 'Fid'}, aggregating_variables(:)'];
+    FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn'}, aggregating_variables(:)']);
     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceError', 'Weights', 'FractionLeft'};
     
     RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
                              'Keys', {'Fid'});
         
-    [g, grpT] = findgroups(RelevantData(:,['PlateID', aggregating_variables]));
+    [g, grpT] = findgroups(RelevantData(:,unique(['PlateID', aggregating_variables])));
     
 
 %     foo = splitapply(@(x1,x2,x3)ba_fit_erf(x1,x2,x3), log10(RelevantData.Force*1e9), ...
