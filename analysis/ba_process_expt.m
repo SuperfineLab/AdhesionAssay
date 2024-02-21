@@ -78,7 +78,7 @@ if ~isfield(Data, 'ForceTable')
     Data.ForceTable = TmpTable;
 end
 
-Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, false);
+Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, true);
 
 if savefileTF
     PlateName = string(unique(Data.FileTable.PlateID));
