@@ -490,7 +490,7 @@ function BigStudy = load_bigstudy_data(aggvar, savedatafilesTF)
 
     % all-data-path
     if ismac
-        adp = '/Users/stevesnare/adhesion_data/datasets_NOTvideo/';
+        adp = '/Users/stevesnare/adhesion_data_local/datasets_NOTvideo/';
     else
         adp = 'K:\expts\AdhesionAssay\datasets_NOTvideo\';
     end
