@@ -14,7 +14,7 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 savedatafilesTF = true;
 
-aggregating_variables = {'SubstrateChemistry', 'BeadChemistry', ...
+aggregating_variables = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
                          'Media', 'pH'};
 
 rootdir = pwd;
@@ -84,7 +84,7 @@ xstrings = string(table2array(gxT));
 ystrings = string(plateNames);
 
 
-DetachVars = {'PlateID', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
+DetachVars = {'PlateID', 'PlateColumn', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
               'pH', 'DetachForce', 'confDetachForce'};
 
 Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', aggregating_variables);
@@ -174,59 +174,57 @@ AvgPlatesT.VisCol = grp2idx(AvgPlatesT.BeadChemistry);
 [g3x, g3xT] = findgroups(AvgPlatesT(:,{'BeadChemistry'}));
 xstrings = string(table2array(g3xT));
 
-sz = [max(AvgPlatesT.VisRow), max(AvgPlatesT.VisCol)];
-pmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StuckPercent);
-nmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.NForces);
-gmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.MedianForce);
-dmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.MadForce);
-mmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.MeanForce);
-smat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StdForce);
-zmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StdErrForce);
-bmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.bootMeanForce);
-bsmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.bootStdError);
-blclmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.bootCI(:,1));
-buclmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.bootCI(:,2));
+Vr = AvgPlatesT.VisRow;
+Vc = AvgPlatesT.VisCol;
 
-figure; %     errlogforce = log10(force + errforce)-log10(force);
-% % bar(mmat([2 5 6 7],:));
-% bar(10.^mmat);
+sz = [max(Vr), max(Vc)];
+pmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.StuckPercent);
+nmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.NForces);
+gmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.MedianForce);
+dmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.MadForce);
+mmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.MeanForce);
+smat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.StdForce);
+zmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.StdErrForce);
+bmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.bootMeanForce);
+bsmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.bootStdError);
+blclmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.bootCI(:,1));
+buclmat = OrganizeSurfaceData(sz, Vr, Vc, AvgPlatesT.bootCI(:,2));
+
+figure; 
 barwitherr(bsmat, bmat);
 ax = gca;
 ax.XTickLabel = ystrings;
-% ax.XTickLabel = {'0 µM', '36 µM', '360 µM', '36,000 µM'};
 ax.TickLabelInterpreter = 'none';
 legend('PEG', 'WGA', 'HBE');
 xlabel('');
 ylabel('Force [nN]');
+title('bootstrap mean force : stderr');
 pretty_plot;
 
 % Plotting the data for the averaged plates.
 % plot_FuncSurface(pmat, seabreeze(10), 'Percent Stuck Beads', xstrings, ystrings);
 % plot_FuncSurface(10.^gmat, seabreeze(10), 'Median Pulloff Force [nN]', xstrings, ystrings);
-plot_FuncSurface(10.^mmat, pinefresh(15), 'Mean Pulloff Force [nN]', xstrings, ystrings);
+plot_FuncSurface(10.^mmat, pinefresh(25), 'Mean Pulloff Force [nN]', xstrings, ystrings);
 plot_FuncSurface(bmat, pinefresh(25), 'Bootstrap Mean Pulloff Force, main mode [nN]', xstrings, ystrings);
 % plot_StuckBoxes(AvgPlatesT.FileTable, "SNA", [-5 105]);
 % plot_StuckBoxes(AvgPlatesT.FileTable, "HBE", [-5 105]);
-% plot_ForceBoxes(AvgPlatesT, "mPEG", [0 100]);
-% plot_ForceBoxes(AvgPlatesT, "PWM", [0 100]);
-% plot_ForceBoxes(AvgPlatesT, "WGA", [0 100]);
-% plot_ForceBoxes(AvgPlatesT, "SNA", [0 100]);
+% plot_ForceBoxes(AvgPlatesT, "EG", [0 100]);
 % plot_ForceBoxes(AvgPlatesT, "HBE", [0 100]);
 
 
 % % 
 %  Anova code
 % %
-BigT = innerjoin(B.FileTable, B.ForceTable);
-hbeT = BigT( BigT.SubstrateChemistry == 'HBE', :);
-hbeT = hbeT( hbeT.Media == "IntNANA" | hbeT.Media == "NoInt", :);
-if iscategorical(hbeT.MediumNANAConc)
-    nanatmp = arrayfun(@str2num,string(hbeT.MediumNANAConc));
-else
-    nanatmp = gnanaT.MediumNANAConc;
-end
-hbeT.MediaAll = join([string(hbeT.Media), string(num2str(nanatmp, '%.0e'))]);
-[ag, agT] = findgroups(hbeT(:,{'BeadChemistry', 'MediaAll'}));
+% BigT = innerjoin(B.FileTable, B.ForceTable);
+% hbeT = BigT( BigT.SubstrateChemistry == 'HBE', :);
+% hbeT = hbeT( hbeT.Media == "IntNANA" | hbeT.Media == "NoInt", :);
+% if iscategorical(hbeT.MediumNANAConc)
+%     nanatmp = arrayfun(@str2num,string(hbeT.MediumNANAConc));
+% else
+%     nanatmp = gnanaT.MediumNANAConc;
+% end
+% hbeT.MediaAll = join([string(hbeT.Media), string(num2str(nanatmp, '%.0e'))]);
+% [ag, agT] = findgroups(hbeT(:,{'BeadChemistry', 'MediaAll'}));
 % foo = anova1(hbeT.Force, ag);
 % an = anovan(hbeT.Force, {hbeT.BeadChemistry, hbeT.MediaAll}, 'model', 2, 'varnames', {'Bead Chemistry', 'Medium'});
 
@@ -498,7 +496,7 @@ function BigStudy = load_bigstudy_data(aggvar, savedatafilesTF)
     DataSrcs = { ...
                  'ba_240125coohni',       '2024.01.25__COOHslide_COOHbeads_noint'; ...
                  'ba_240126pegni',        '2024.01.26__mPEGslide_mPEGbeads_noint'; ...
-                 'ba_220623ni',           '2022.06.23__HBEbeads_HBEplate_homogeneity_test'; ...
+%                  'ba_220623ni',           '2022.06.23__HBEbeads_HBEplate_homogeneity_test'; ...
                  'ba_240129ni',           '2024.01.29__HBEslide_HBEbeads_noint'; ...
                  'ba_240130ni',           '2024.01.30__HBEslide2_HBEbeads_noint'; ...
                  };
