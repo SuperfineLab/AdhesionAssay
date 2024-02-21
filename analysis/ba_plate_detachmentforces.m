@@ -64,7 +64,8 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
         end                 
                 
         if plotTF
-            ba_plot_fit(myfits(k,1).FitObject, RawData.Force, RawData.ForceError, RawData.PctLeft);
+            figh = ba_plot_fit(myfits(k,1).FitObject, RawData.Force, RawData.ForceError, RawData.PctLeft);
+            figh.Name = [figh.Name, ': ', char(unique(RelevantData.PlateID))];
         end
 
         RawDataOut{k,1} = RawData;
