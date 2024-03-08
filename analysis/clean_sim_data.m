@@ -41,10 +41,10 @@ ci_widths = vertcat(ci_widths{:});
 %value, for now i will say 1000 but will talk to jeremy to see if he
 %thinks this is reasonable
 
-am_indices = ci_widths.amconfwidth > 1000;
+am_indices = ci_widths.amconfwidth > 20;
 ci_widths.amconfwidth(am_indices) = NaN;
 
-bm_indices = ci_widths.bmconfwidth > 1000;
+bm_indices = ci_widths.bmconfwidth > 20;
 ci_widths.bmconfwidth(bm_indices) = NaN;
 
 both_nan_indices = isnan(ci_widths.amconfwidth) & isnan(ci_widths.bmconfwidth);
