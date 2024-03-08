@@ -1,4 +1,12 @@
 function myfit = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
+%
+%
+%
+%
+% NOTE: Starting points are tuned to the log10(force_in_nN). The units must
+% match exactly in order for the fitting function to operate in an expected
+% fashion within the number of MaxEvals set in the code.
+% 
 
     if nargin < 4 || isempty(Nterms)
         Nterms = 2;
@@ -89,6 +97,11 @@ function myfit = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
     end
 
     myfit.Nterms = Nterms;
+
+%    plotTF = true;
+%    if plotTF
+%        figh = ba_plot_fit(fitresult, 10.^logforce, [], pct_left);        
+%    end
 end
 
 
