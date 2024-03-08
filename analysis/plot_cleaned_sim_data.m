@@ -1,4 +1,10 @@
 function outs = plot_cleaned_sim_data(cleaned_sim_data,master_curves)
+%master curves argument is the output from running resample_study(Broot,1,1,true)
+
+
+%%% You will need to run master_curves = splitvars(master_curves, 'amconf');
+%%% and also master_curves = splitvars(master_curves, 'bmconf');
+%%% for the function to work properly
 
 idx = 1;
 plategroups = unique(cleaned_sim_data.PlateID);
