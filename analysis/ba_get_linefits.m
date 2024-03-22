@@ -10,11 +10,11 @@ if isempty(TrackingTable)
                                 'double', 'double', 'double', 'double'},...
               'VariableNames', {'Fid', 'SpotID', 'StartPosition', ...
                                 'Pulloff_time', 'Mean_time', 'Mean_vel', 'VelInterval', ...
-                                'Force', 'ForceInterval', 'ForceError', 'Weights'});
+                                'Force', 'ForceInterval', 'ForceErrorFactor', 'Weights'});
     return
 end
 
-t = TrackingTable.Frame ./ TrackingTable.Fps;
+t = TrackingTable.Frame ./ TrackingTable.Fps; % [s]
 [g, ID] = findgroups(TrackingTable.ID);
 
 myfits = splitapply(@(x,y)mylinfit(x,y,1), t, TrackingTable.Z, g);
@@ -26,34 +26,32 @@ m.Fid = repmat(Fid, size(myfits,1), 1);
 % m.Filename = repmat(string(evtfile), size(myfits,1), 1);
 m.SpotID = ID;
 m.StartPosition = cell2mat(sp);
-m.Pulloff_time = cell2mat(myfits(:,1));
-m.Mean_time = cell2mat(myfits(:,2));
+m.Pulloff_time = cell2mat(myfits(:,1)); % [s]
+m.Mean_time = cell2mat(myfits(:,2)); % [s]
 m.Mean_vel = mb(:,1) * calibum * 1e-6; % [m/s]
-m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6;
+m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6; % [m/s]
 m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
-
-m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval;
-m.ForceError = abs(m.ForceInterval(:,1) - m.Force);
-
-% w = 1./(m.ForceError);
-% w = w ./ max(w);
+m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval; % [N]
+m.ForceErrorFactor = ba_errorfactor(m.Force, m.ForceInterval);
 m.Weights = ba_weights(m.ForceInterval, 0.95);
 
 m = struct2table(m);
 
-return
+m = fleshout_table_metadata(m);
+
+end
 
 function outs = get_startpos(x,y)
     outs{1,1} = x(1);
     outs{1,2} = y(1);
-return
+end
 
 % function outs = mylinfit(t,z,order)
 %     mb = polyfit(t,z,order);
 %     outs{1,1} = t(1);
 %     outs{1,2} = mean(t);
 %     outs{1,3} = mb;
-% return
+% end
 
 function outs = mylinfit(t,z,order)
 
@@ -68,4 +66,27 @@ function outs = mylinfit(t,z,order)
     outs{1,3} = myfit.p1;
     outs{1,4} = cf(1,:);
     
-return
+end
+
+
+function m = fleshout_table_metadata(m)
+
+    meta = {'Fid',           '',      'File ID (generated randomly)'; 
+            'SpotID',        '',      'Spot ID (obtained from Spot Tracker)'; 
+            'StartPosition', '[px]',  'Starting position of (cleaned) trajectory'; 
+            'Pulloff_time',  '[s]',   'First time point from cleaned trajectory'; 
+            'Mean_time',     '[s]',   'Average time point from cleaned trajectory'; 
+            'Mean_vel',      '[m/s]', 'Average velocity during cleaned trajectory'; 
+            'VelInterval',   '[m/s]', 'Confidence interval for velocity fit'; 
+            'Force',         '[N]',   'Detachment force applied to tracked SpotID'; 
+            'ForceInterval', '[N]',   'Confidence interval for Detachment force'; 
+            'ForceErrorFactor', '[]', 'Breadth of Force Interval normalized by Force'; 
+            'Weights',       '[]',    'Weight of Detachment Force, given Interval size'; 
+           };
+    
+    m.Properties.VariableNames = meta(:,1);
+    m.Properties.VariableUnits = meta(:,2);
+    m.Properties.VariableDescriptions = meta(:,3);
+
+end
+

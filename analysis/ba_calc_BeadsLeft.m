@@ -37,6 +37,9 @@ function [newFileTable,newForceTable] = ba_calc_BeadsLeft(Data, aggregating_vari
     
     Tmp = struct2table(Tmp);
     newForceTable = join(ForceTable, Tmp);
+
+    newForceTable.Properties.VariableUnits{'FractionLeft'} = '[]';
+    newForceTable.Properties.VariableDescriptions{'FractionLeft'} = 'Fraction of beads remaining on substrate';
 end
 
 
