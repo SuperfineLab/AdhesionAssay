@@ -35,6 +35,7 @@ drawnow
 
 end
 
+
 % Solve best fit using global optimization and genetic algorithm
 function optstart = optimize_startpoint_ga(fitfcn, p0, logforce_nN, factorLeft, weights, lb, ub)
 
@@ -58,7 +59,6 @@ function optstart = optimize_startpoint_ga(fitfcn, p0, logforce_nN, factorLeft, 
 %     ms = MultiStart('UseParallel', true, 'Display', 'iter');
 %     [optstart,errormulti] = run(ms,problem);
 end
-
 
 
 function optstart = optimize_startpoint(fitfcn, p0, logforce_nN, factorLeft, lb, ub)
