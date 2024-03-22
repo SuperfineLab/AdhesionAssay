@@ -1,4 +1,10 @@
 function optstart = ba_optimize_startpoint(logforce_nN, factorLeft, weights, Nterms)
+% Assembles a "protofit" that optimizes the fitting startpoints for the
+% secondary final fits outputted by ba_fit_erf. This approach was designed
+% to help matlab find the best possible fit while still providing
+% user-friendly outputs (fit objects) the rest of the ba code is already 
+% designed to use..
+%
 
 % p = [a am as bm bs]
 %                  1/2*(a   *erfc(((Fd)-am  )/(sqrt(2)*as  ))+(1-a   )*erfc(((Fd)-bm  )/(sqrt(2)*bs  )))
