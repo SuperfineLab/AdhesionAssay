@@ -15,78 +15,207 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     % need are the aggregating variables AND those relevant columns
     
     FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn'}, aggregating_variables(:)']);
-    ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceError', 'Weights', 'FractionLeft'};
+    ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights', 'FractionLeft'};
     
     RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
-                             'Keys', {'Fid'});
-        
-    [g, grpT] = findgroups(RelevantData(:,unique(['PlateID', aggregating_variables])));
+                             'Keys', {'Fid'});         
     
+    RelevantData = sortrows(RelevantData, "FractionLeft", 'descend');
 
-%     foo = splitapply(@(x1,x2,x3)ba_fit_erf(x1,x2,x3), log10(RelevantData.Force*1e9), ...
-%                                                       RelevantData.FractionLeft, ...
-%                                                       RelevantData.Weights);
+    [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
+
+    % 0. Tack on the "IncludeinFit" Variable so we can filter some out later
+    RelevantData.IncludeInFit = true(height(RelevantData),1);
+
+    % 1. Put forces into the correct units (nanoNewtons) for fitting
+    RelevantData.Force = RelevantData.Force * 1e9;
+
+    % 2. Tag forces that extend below a lower threshold force (bead
+    % force_gravity - buoyancy force = 0.014 nN.
+    threshold_force = 0.014;
+    RelevantData.IncludeInFit(RelevantData.Force < threshold_force) = false;
+
+    % 3. Optimize starting points according to number of modes
+    Nterms = 2;
+    grpT.StartingPoint = splitapply(@(x1,x2,x3,x4)sa_optimize_start(x1,x2,x3,x4,Nterms), ...
+                                                   log10(RelevantData.Force), ...
+                                                   RelevantData.FractionLeft, ...
+                                                   RelevantData.Weights, ...
+                                                   RelevantData.IncludeInFit, ...
+                                                   g);
+
+    RelevantData = innerjoin(RelevantData, grpT);
+
+    % 3b. After joining, the groups need re-defining because of possible re-sorting
+    [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
+
+    grpT.IncludeCurve = true(height(grpT),1);
 
     if weightTF
         Weights = RelevantData.Weights;
     else
         Weights = ones(height(RelevantData),1);
-    end
-    
-    IncludeCurve = true(height(grpT),1);
-    IncludeInFit = true(height(RelevantData),1);
+    end    
 
-    gn = unique(g);
-    for k = 1:height(grpT)
-        idx = (g == gn(k) );
+    % 4. Assemble RawData tables for each condition for convenient plotting
+    grpT.RawData = splitapply(@(x1,x2,x3,x4,x5,x6){sa_assemble_rawdata(x1,x2,x3,x4,x5,x6)}, ...
+                               RelevantData.Force, ...
+                               RelevantData.ForceRelWidth, ...
+                               RelevantData.ForceInterval, ...
+                               RelevantData.FractionLeft, ...
+                               RelevantData.Weights, ...
+                               RelevantData.IncludeInFit, ...
+                               g);
+
+    % 5. Perform the One mode and Two mode fits and collect the fitting info
+    foo{1} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,1), ...
+                                                  RelevantData.Force, ...                                                  
+                                                  RelevantData.FractionLeft, ...
+                                                  Weights, ...    
+                                                  RelevantData.StartingPoint, ...
+                                                  g);     
+    foo{1} = horzcat(grpT, foo{1});
+    foo{2} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,2), ...
+                                                  RelevantData.Force, ...                                                  
+                                                  RelevantData.FractionLeft, ...
+                                                  Weights, ...
+                                                  RelevantData.StartingPoint, ...
+                                                  g);     
+    foo{2} = horzcat(grpT, foo{2});
+    FitTable = vertcat(foo{:});
+
+    % 6. Compare fits and use the best (ONE or TWO modes)
+    [df, dfT] = findgroups(FitTable(:, unique(['PlateID', aggregating_variables])));
+    q = splitapply(@(x1,x2,x3,x4)sa_choosebestmodel(x1,x2,x3,x4), ...
+                                         FitTable.FitObject, ...
+                                         FitTable.GoodnessOfFit, ...
+                                         FitTable.FitOptions, ...
+                                         FitTable.Nmodes,  ...
+                                         df);
+    BestFitTable = horzcat(dfT, q);
+
         
-        RawData = table(RelevantData.Force(idx)*1e9, ...
-                        RelevantData.ForceError(idx)*1e9, ...
-                        RelevantData.ForceInterval(idx,:)*1e9, ...
-                        RelevantData.FractionLeft(idx), ...
-                        Weights(idx), ...
-                        IncludeInFit(idx), ...
-                        'VariableNames', {'Force', 'ForceError', 'ForceInterval', 'PctLeft', 'Weights', 'IncludeInFit'});
-        RawData = sortrows(RawData, "Force", "ascend");
+    % 7. Summarize fitting data
+    [sf, sfT] = findgroups(BestFitTable(:, unique(['PlateID', aggregating_variables, 'BestModel'])));
+    q = splitapply(@(x1,x2)sa_summarizefits(x1,x2), BestFitTable.FitObject, BestFitTable.GoodnessOfFit, sf);
+    FitSummaryTable = [sfT q];
 
-        % Fit model to data.
-        myfits(k,1) = ba_fit_erf( log10(RawData.Force), RawData.PctLeft, RawData.Weights);            
+    % 8. Choose dominant detachment force
+    [df, dfT] = findgroups(FitSummaryTable(:, unique(['PlateID', aggregating_variables, 'BestModel'])));
+    [dfT.DetachForce, dfT.confDetachForce] = splitapply(@(x1,x2)sa_choosedetachforce(x1,x2), BestFitTable.FitObject, BestFitTable.GoodnessOfFit, df);
 
-        % Hacked in for a single detachment force value. This
-        % doesn't make sense in the long run.                
-        if myfits(k).a > 0.5
-            DetachForce(k,1) = myfits(k).am;
-            confDetachForce(k,:) = myfits(k).amconf;
-        else
-            DetachForce(k,1) = myfits(k).bm;
-            confDetachForce(k,:) = myfits(k).bmconf;
-        end                 
-                
-        if plotTF
-            figh = ba_plot_fit(myfits(k,1).FitObject, RawData.Force, RawData.ForceError, RawData.PctLeft);
-            figh.Name = [figh.Name, ': ', char(unique(RelevantData.PlateID))];
-        end
-
-        RawDataOut{k,1} = RawData;
-    end
-    
-    
-
-    DetachForce = table(DetachForce, 'VariableNames', {'DetachForce'});
-    confDetachForce = table(confDetachForce, 'VariableNames', {'confDetachForce'});  
-    RawDataOut = cell2table(RawDataOut, 'VariableNames', {'RawData'});
-    IncludeCurve = table(IncludeCurve, 'VariableNames', {'IncludeCurve'});
-
-    myfits = struct2table(myfits);
-
-    TableOut = [grpT myfits DetachForce confDetachForce RawDataOut IncludeCurve] ;
+    % 9. Merge in our RawData summarized before.
+    TableOut = innerjoin(dfT, grpT, 'Keys', unique(['PlateID', aggregating_variables]));
+    TableOut = movevars(TableOut, "PlateID", "Before", 2);
+    TableOut = movevars(TableOut, {'BeadChemistry', 'SubstrateChemistry', 'Media', 'DetachForce', 'confDetachForce', 'RawData' }, "After", "PlateID");          
 
 end
 
 
 
 
+%
+% Support Functions
+%
+function outs = sa_optimize_start(logforce_nN, fractionleft, weights, includetf, nterms)
+
+    outs = ba_optimize_startpoint(logforce_nN(includetf), ...
+                                 fractionleft(includetf), ...
+                                 weights(includetf), ...
+                                 nterms);
+
+end
 
 
+function outs = sa_choosebestmodel(fitobject, gof, opt, nmodes) 
 
+    rmse1 = gof(nmodes == 1).rmse;
+    rmse2 = gof(nmodes == 2).rmse;
+
+    if rmse1 < rmse2
+        disp(['Model One is better! One: ' num2str(rmse1) ' vs Two: ' num2str(rmse2)]);
+        best = 1;
+    else
+        disp(['Model Two is better! One: ' num2str(rmse1) ' vs Two: ' num2str(rmse2)]);
+        best = 2;
+    end
+
+    outs = table( fitobject(nmodes == best), ...
+                  gof(nmodes == best), ...
+                  opt(nmodes == best), ...
+                  best, ...
+                  'VariableNames', {'FitObject', 'GoodnessOfFit', 'FitOptions', 'BestModel'});
+        
+end
+
+
+function outs = sa_summarizefits(fitobject,goodness_of_fit)
+
+
+    fo = fitobject{1};
+
+    fco = coeffvalues(fo);
+    fci = confint(fo);
+
+    % If the one-term fit was the best, pad bm and bs with NaN outputs
+    if numel(fco) == 3
+        fco(1,4:5) = NaN(1,2);
+        fci(1:2,4:5) = NaN(2,2);
+    end
+
+    fci = transpose(fci);
+
+    a = fco(1);
+    am = fco(2);
+    as = fco(3);
+    bm = fco(4);
+    bs = fco(5);
+
+%     [a,am,as,bm,bs] = deal(fco(1:5))
+
+    aconf = fci(1,:);
+    amconf = fci(2,:);
+    asconf = fci(3,:);
+    bmconf = fci(4,:);
+    bsconf = fci(5,:);
+
+    CoeffT = table(a, aconf, am, amconf, as, asconf, ...
+                             bm, bmconf, bs, bsconf);
+
+    gof = struct2table(goodness_of_fit);
+
+    outs = [CoeffT gof];
+
+
+end
+
+function [outforce, outci] = sa_choosedetachforce(fitobject,goodness_of_fit)
+    fo = fitobject{1};
+    
+    fco = coeffvalues(fo);
+    ci = confint(fo)';
+
+    % Hacked in for a single detachment force value. This
+    % doesn't make sense in the long run.                
+    if fo.a > 0.5
+        outforce = fo.am;
+        outci(1,:) = ci(2,:);
+    else
+        try
+            outforce = fo.bm;
+            outci(1,:) = ci(4,:);
+        catch
+            outforce = fo.am;
+            outci(1,:) = ci(2,:);
+        end
+    end      
+end
+
+
+function outs = sa_assemble_rawdata(force, force_error_factor, force_interval, factorleft, weights, includetf)
+
+    outs = table(force, force_error_factor, force_interval, factorleft, weights, includetf);
+    outs.Properties.VariableNames = {'Force', 'ForceRelWidth', 'ForceInterval', 'FactorLeft', 'Weights', 'IncludeInFit'};
+    outs.Properties.VariableUnits = {'[nN]',  '[nN]',             '[nN]',          '[]',         '[]',      '[]'};
+end

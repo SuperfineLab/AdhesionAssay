@@ -24,7 +24,7 @@ deltaCI = diff(conf_lowhi, 1, 2);
 
 % The weights used to influence later fitting methods is related to the
 % inverse of the total uncertainty. I've scaled these to a maximum value of
-% one, which should give the lowest uncertainty full weight and the highest
-% uncertainty a minimal (but not zero) weight in the fit.
+% one, which should give the smallest uncertainty full weight and the
+% largest uncertainty a minimal (but not zero) weight in the fit.
 weights = 1 ./ (deltaCI/critval).^2;
 weights = weights ./ max(weights);

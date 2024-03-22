@@ -5,7 +5,10 @@ if nargin < 5 || isempty(figh)
 end
 
     logforce = log10(force);
-    errlogforce = log10(force + errforce)-log10(force);
+
+    if ~isempty(errforce)
+        errlogforce = log10(force + errforce)-log10(force);
+    end
             
     % Plot fit with data.
     figh.Name = 'erf fit';    
@@ -15,21 +18,23 @@ end
         
 %             h = plot( fitresult, logforce, pct_left, 'predobs' );
 %             legend( h, 'y vs. x with w', 'hbe', 'Lower bounds (hbe)', 'Upper bounds (hbe)', 'Location', 'NorthEast', 'Interpreter', 'none' );
-            axh = plot( fitresult, logforce, pct_left );
+            axh = plot( fitresult, logforce, pct_left, 'predobs' );
             legend( axh, 'y vs. x with w', '', 'Location', 'NorthEast', 'Interpreter', 'none' );
 
             xlabel( 'log(force [nN])', 'Interpreter', 'none' );
             ylabel( 'Fraction Left', 'Interpreter', 'none' );
             grid on
 
-        
+        if ~isempty(errforce)
             e = errorbar( gca, logforce, pct_left, errlogforce, 'horizontal', '.');
             e.LineStyle = 'none';
             e.Color = 'b';
+        end
         
     catch        
         text(0.5,0.5,'Error while plotting.');
     end
     hold off
+    ylim([-0.1 1.1]);
     drawnow
 end
