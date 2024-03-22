@@ -10,7 +10,7 @@ if isempty(TrackingTable)
                                 'double', 'double', 'double', 'double'},...
               'VariableNames', {'Fid', 'SpotID', 'StartPosition', ...
                                 'Pulloff_time', 'Mean_time', 'Mean_vel', 'VelInterval', ...
-                                'Force', 'ForceInterval', 'ForceErrorFactor', 'Weights'});
+                                'Force', 'ForceInterval', 'ForceRelWidth', 'Weights'});
     return
 end
 
@@ -32,7 +32,7 @@ m.Mean_vel = mb(:,1) * calibum * 1e-6; % [m/s]
 m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6; % [m/s]
 m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval; % [N]
-m.ForceErrorFactor = ba_errorfactor(m.Force, m.ForceInterval);
+m.ForceRelWidth = ba_relativewidthCI(m.Force, m.ForceInterval);
 m.Weights = ba_weights(m.ForceInterval, 0.95);
 
 m = struct2table(m);
@@ -80,7 +80,7 @@ function m = fleshout_table_metadata(m)
             'VelInterval',   '[m/s]', 'Confidence interval for velocity fit'; 
             'Force',         '[N]',   'Detachment force applied to tracked SpotID'; 
             'ForceInterval', '[N]',   'Confidence interval for Detachment force'; 
-            'ForceErrorFactor', '[]', 'Breadth of Force Interval normalized by Force'; 
+            'ForceRelWidth', '[]',    'Breadth of Force Interval normalized by measured Force'; 
             'Weights',       '[]',    'Weight of Detachment Force, given Interval size'; 
            };
     
