@@ -19,7 +19,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     % "Fraction Left" plot is always going to be plotting the Fraction of beads
     % left to detach vs the force at which they detach. SO, that means all we
     % need are the aggregating variables AND those relevant columns    
-    FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn'}, aggregating_variables(:)']);
+    FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', 'FirstFrameBeadCount'}, aggregating_variables(:)']);
 %     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights', 'FractionLeft'};
     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights'};
 
@@ -35,7 +35,12 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     Np = numel(agglist);
 
     [g, gT] = findgroups(RelevantData(:, agglist));
-    tmp = splitapply(@(x1,x2,x3){ba_fracleft(x1,x2,x3)}, RelevantData.Fid, RelevantData.SpotID, RelevantData.Force, g);
+    tmp = splitapply(@(x1,x2,x3,x4){ba_fracleft(x1,x2,x3,x4)}, ...
+                                    RelevantData.Fid, ...
+                                    RelevantData.SpotID, ...
+                                    RelevantData.Force, ...
+                                    RelevantData.FirstFrameBeadCount, ...
+                                    g);
     tmp = vertcat(tmp{:});
     foo = table(tmp(:,1), tmp(:,2), tmp(:,3),'VariableNames', {'Fid', 'SpotID', 'FractionLeft'});
     RelevantData = innerjoin(RelevantData, foo, 'Keys', {'Fid', 'SpotID'});
