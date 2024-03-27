@@ -1,4 +1,4 @@
-function [SimOut, SamplingCheck] = resample_study(Broot, NSims, NCurves, WithReplacementTF)
+function [SimOut, MasterCurveDetachForceTable] = resample_study(Broot, NSims, NCurves, WithReplacementTF)
 %%% SamplingN - how many beads do you want to sample from each plate?
 %%% WithReplacementTF - A Boolean; true means with replacement, false means
 %%% without replacement
@@ -51,11 +51,12 @@ RawForceDataT = innerjoin(Broot.FileTable(:,FileVarsToKeep), Broot.ForceTable, '
 for c = 1:length(NCurves)
     for s = 1:NSims
         SimID = s;
-        sim{s,1} = RunSim(RawForceDataT, NCurves(c), SimID, WithReplacementTF);
+        mysim{s,1} = RunSim(RawForceDataT, NCurves(c), SimID, WithReplacementTF);
     end
-    q{c,1} = vertcat(sim{:});      
+    q{c,1} = vertcat(mysim{:});      
 end
 SimOut = vertcat(q{:});
+
 
 PlateSummaryT = SummarizePlateCounts(RawForceDataT);
 
@@ -66,12 +67,7 @@ PlateSummaryT = SummarizePlateCounts(RawForceDataT);
 SamplingCheck.SimMeanPointsPerForceCurve = splitapply(@mean, SimOut.Nforces, g);
 SamplingCheck.PlateMeanPointsPerForceCurve = mean(PlateSummaryT.TotalNforces) ./ SamplingCheck.CurveCount;
 
-
-
-
-
-
-
+SamplingCheck
 
 end
 
@@ -98,12 +94,16 @@ clear tmp;
 % function myfit = ba_fit_erf(logforce, pct_left, weights, Nterms, startpoint)
 Nterms = 2;
 [gg, ggT] = findgroups(RawForceDataNew.PlateID, RawForceDataNew.CurveID);
-tmp = splitapply(@(x1,x2,x3,x4,x5){sa_grabfits(x1, x2, x3, x4, x5, Nterms)}, ...
+
+RawForceDataNew.StartPoint = NaN(height(RawForceDataNew),5);
+
+tmp = splitapply(@(x1,x2,x3,x4,x5,x6){sa_grabfits(x1, x2, x3, x4, x5, x6, Nterms)}, ...
                              RawForceDataNew.PlateID, ...
                              RawForceDataNew.CurveID, ...
                              RawForceDataNew.Force, ...
                              RawForceDataNew.FractionLeft, ...
                              RawForceDataNew.Weights, ...
+                             RawForceDataNew.StartPoint, ...
                              gg);
 tmp = vertcat(tmp{:});
 
@@ -133,15 +133,19 @@ function outs = sa_setCurveID(PlateID, Fid, SpotID, NCurves, replaceTF)
 end
 
 
-function outs = sa_grabfits(plateid, curveid, force, fractionleft, weights, nterms)
+function outs = sa_grabfits(plateid, curveid, force, fractionleft, weights, startpoint, nterms)
     
-    myfit = ba_fit_erf(log10(force * 1e9), fractionleft, weights, nterms);  
+    % ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
+    myfit = ba_fit_erf(log10(force * 1e9), fractionleft, weights, startpoint, nterms);  
     
     myfit.PlateID = plateid(1);
     myfit.CurveID = curveid(1);
     myfit.Nforces = numel(force);
 
-    outs = struct2table(myfit, 'AsArray',true);
+%     outs = struct2table(myfit, 'AsArray',true);
+    outs = myfit;
+    
+    
 end
 
 
