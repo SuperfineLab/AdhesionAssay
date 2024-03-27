@@ -293,7 +293,7 @@ end
 % % % % %         end
 % % % % % 
 % % % % % 
-% % % % %     ci_widths = vertcat(ci_widths{:});
+% % % % %     
 % % % % % 
 % % % % %     outs = ci_widths;
 % % % % % 
