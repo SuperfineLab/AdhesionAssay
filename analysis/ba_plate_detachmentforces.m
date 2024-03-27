@@ -9,21 +9,40 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     end
     
     Data = ba_process_data;
+
+
+% % % %     fooT = innerjoin(Broot.FileTable, Broot.ForceTable, 'Keys', 'Fid');
+% % % % figure; plot(log10(fooT.Force), fooT.NewFractionLeft, '.');
+% % % % [g gT] = findgroups(fooT.PlateID);
+% % % % figure; plot(log10(fooT.Force(g==1)), fooT.NewFractionLeft(g==1), '.');
     
     % "Fraction Left" plot is always going to be plotting the Fraction of beads
     % left to detach vs the force at which they detach. SO, that means all we
-    % need are the aggregating variables AND those relevant columns
-    
+    % need are the aggregating variables AND those relevant columns    
     FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn'}, aggregating_variables(:)']);
-    ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights', 'FractionLeft'};
-    
+%     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights', 'FractionLeft'};
+    ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights'};
+
     RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
                              'Keys', {'Fid'});         
     
-    RelevantData = sortrows(RelevantData, "FractionLeft", 'descend');
 
-    [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
+    %
+    % Calculate fraction left according to aggregation parameters
+    %
+    agglist(1,:) = unique(['PlateID' aggregating_variables(:)']);
+    Np = numel(agglist);
+
+    [g, gT] = findgroups(RelevantData(:, agglist));
+    tmp = splitapply(@(x1,x2,x3){ba_fracleft(x1,x2,x3)}, RelevantData.Fid, RelevantData.SpotID, RelevantData.Force, g);
+    tmp = vertcat(tmp{:});
+    foo = table(tmp(:,1), tmp(:,2), tmp(:,3),'VariableNames', {'Fid', 'SpotID', 'FractionLeft'});
+    RelevantData = innerjoin(RelevantData, foo, 'Keys', {'Fid', 'SpotID'});
+    clear foo
+
+    RelevantData = sortrows(RelevantData, [agglist "FractionLeft"], [repmat("ascend", Np, 1) "descend"]);
+
 
     % 0. Tack on the "IncludeinFit" Variable so we can filter some out later
     RelevantData.IncludeInFit = true(height(RelevantData),1);
@@ -38,6 +57,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
 
     % 3. Optimize starting points according to number of modes
     Nterms = 2;
+    [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
     grpT.StartingPoint = splitapply(@(x1,x2,x3,x4)sa_optimize_start(x1,x2,x3,x4,Nterms), ...
                                                    log10(RelevantData.Force), ...
                                                    RelevantData.FractionLeft, ...
@@ -67,7 +87,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
                                RelevantData.Weights, ...
                                RelevantData.IncludeInFit, ...
                                g);
-
+%  ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
     % 5. Perform the One mode and Two mode fits and collect the fitting info
     foo{1} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,1), ...
                                                   RelevantData.Force, ...                                                  
@@ -108,7 +128,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     % 9. Merge in our RawData summarized before.
     TableOut = innerjoin(dfT, grpT, 'Keys', unique(['PlateID', aggregating_variables]));
     TableOut = movevars(TableOut, "PlateID", "Before", 2);
-    TableOut = movevars(TableOut, {'BeadChemistry', 'SubstrateChemistry', 'Media', 'DetachForce', 'confDetachForce', 'RawData' }, "After", "PlateID");          
+%     TableOut = movevars(TableOut, {'BeadChemistry', 'SubstrateChemistry', 'Media', 'DetachForce', 'confDetachForce', 'RawData' }, "After", "PlateID");          
 
 end
 
