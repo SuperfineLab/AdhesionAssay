@@ -4,6 +4,6 @@ function outs = ba_relwidthCI(val, conf_interval)
 % measured value over which the confidence interval is defined.
 %
 
-    outs = abs(diff(conf_interval,[],2)) ./ val; 
+    outs = abs(diff(conf_interval,[],2) ./ val); 
 
 end
