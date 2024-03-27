@@ -1,6 +1,7 @@
 function f = ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
 %
 %
+ 
 %
 %
 % NOTE: Starting points are tuned to the log10(force_in_nN). The units must
@@ -46,6 +47,8 @@ function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
 
     outs.Nmodes = Nmodes;
     outs.FitOptions = opts;
+    outs.FitObject = {''};
+    outs.GoodnessOfFit = struct('sse', NaN, 'rsquare', NaN, 'dfe', NaN, 'adjrsquare', NaN, 'rmse', NaN);
 
     NecessaryPointsN = (Nmodes*2 + 1) + 1;
     ft = fittype( f{Nmodes}, 'independent', 'Fd', 'dependent', 'y' );
@@ -59,8 +62,8 @@ function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
     else
         logentry('Not enough points to fit this model. Returning NaN.')
     
-        outs.FitObject = {};
-        outs.GoodnessOfFit = [];
+%         outs.FitObject = {};
+%         outs.GoodnessOfFit = [];
         
     end
 
@@ -91,7 +94,9 @@ function opts = setup_fitoptions(weights, Nmodes, startpoint)
     
     % Default starting points if none are available
     % p0 = [0.82582 0.07818 0.44268 0.10666 0.96190];
-    p0 = [0.85 -1.5 0.5 0.75 1];
+    if any(isnan(startpoint))
+        startpoint = [0.85 -1.5 0.5 0.75 1];
+    end
 
     k = Nmodes*2 + 1;
 
