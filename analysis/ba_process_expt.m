@@ -66,7 +66,7 @@ if ~isfield(Data, 'ForceTable')
 
     Data.ForceTable = ba_make_ForceTable(Data);
           
-    [Data.FileTable, Data.ForceTable] = ba_calc_BeadsLeft(Data, aggregating_variables);
+%     [Data.FileTable, Data.ForceTable] = ba_calc_BeadsLeft(Data, aggregating_variables);
     
     % filter out any forces less than 10 femtoNewtons
     TmpTable = Data.ForceTable(Data.ForceTable.Force > 10e-15,:);
@@ -92,20 +92,7 @@ cd(rootdir);
 end
 
 
-function outs = sa_fracleft(fid, spotid, force, startCount)
 
-    force = force(:);
-    Nforce = length(force);   
-    
-    % I do not really understand how this determines "rank" of force, but
-    % it does and outputs the fraction left attached
-    [~,Fidx] = sort(force, 'ascend');
-    [~,Frank] = sort(Fidx, 'ascend');    
-    
-    fracleft = 1-(Frank ./ startCount);
-
-    outs = [fid(:), spotid(:), force(:), fracleft(:)];
-end
 
 
 
