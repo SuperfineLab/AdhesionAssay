@@ -4,6 +4,10 @@ function outs = ba_fracleft(fileid, spotid, force, startCount)
         startCount = length(force);   
     end
 
+    [~,idx] = unique(fileid);
+
+    startCount = sum(startCount(idx));
+    
     force = force(:);
     
     % I do not really understand how this determines "rank" of force, but
