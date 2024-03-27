@@ -18,19 +18,27 @@ curvecountgroups = unique(Filtered_sim_data.CurveCount);
 
 idx = 1;
 
-        
-Filtered_sim_data.am_weights = ba_weights(Filtered_sim_data.amconf,0.95);
-Filtered_sim_data.bm_weights = ba_weights(Filtered_sim_data.bmconf,0.95);
+tmpT = Filtered_sim_data(:,{'PlateID','CurveCount','SimID','CurveID','am','amconf','bm','bmconf'});
+tmp_am_bm = stack(tmpT,{'am','bm'},'NewDataVariableName','m','IndexVariableName','ab');
+tmp_am_bm.amconf = [];
+tmp_am_bm.bmconf = [];
+tmpC = tmpT;
+tmpC.am = tmpC.amconf;
+tmpC.bm = tmpC.bmconf;
+tmpC.amconf = [];
+tmpC.bmconf = [];
+tmp_abconf = stack(tmpC,{'am','bm'},"NewDataVariableName",'conf','IndexVariableName','ab');
 
-am_and_bm = vertcat(Filtered_sim_data.am,Filtered_sim_data.bm);
+am_bm_table = innerjoin(tmp_am_bm, tmp_abconf,'Keys',{'PlateID','SimID','CurveID','CurveCount','ab'});
 
-weights = vertcat(Filtered_sim_data.am_weights,Filtered_sim_data.bm_weights);
+f = findgroups(am_bm_table(:,{'PlateID','CurveCount'}));
 
-am_bm_table.PlateID = vertcat(Filtered_sim_data.PlateID,Filtered_sim_data.PlateID);
-am_bm_table.curvecount = vertcat(Filtered_sim_data.CurveCount,Filtered_sim_data.CurveCount);
-am_bm_table.m = am_and_bm;
-am_bm_table.weights = weights;
-am_bm_table = struct2table(am_bm_table);
+foo = splitapply(@(x1){ba_weights(x1,0.95)},am_bm_table.conf,f);
+
+am_bm_table.weights = vertcat(foo{:});
+
+
+
 %combine all am's and bm's into single table with their corresponding
 %weights
 
@@ -50,7 +58,7 @@ nan_num = height(am_bm_table) - height(filtered_am_bm_table);
 
 idx = 1;
 plategroups = unique(filtered_am_bm_table.PlateID);
-curvecountgroups = unique(filtered_am_bm_table.curvecount);
+curvecountgroups = unique(filtered_am_bm_table.CurveCount);
 
 binWidth = 0.17;
 
@@ -58,7 +66,7 @@ binWidth = 0.17;
 
 %%%Plot histograms for am data
         for i = 1:length(plategroups) %%reversing loop was important to make the colors look right and match up with their legend color
-            hold off;
+            
             % Extract data corresponding to the current group
             current_plate = plategroups(i);
             groupData = filtered_am_bm_table(filtered_am_bm_table.PlateID == current_plate, :);
@@ -66,24 +74,34 @@ binWidth = 0.17;
             for  k = length(curvecountgroups):-1:1
                 
                 %extract data corresponding to the current subgroup
-                subgroupData = groupData(groupData.curvecount == curvecountgroups(k),:);
+                subgroupData = groupData(groupData.CurveCount == curvecountgroups(k),:);
                 subgroupData = subgroupData(subgroupData.m <= 10,:);
                 edges = -3:binWidth:max(subgroupData.m);
-                histogram(subgroupData.m, edges);
-             
-                legendStrings{k} = sprintf('%d curves', curvecountgroups(k));
+                figure(i);
                 hold on;
+                histogram(subgroupData.m, edges);
+
+                figure(100+i);
+                hold on;
+                ksdensity(subgroupData.m)%,"Weights",subgroupData.weights)
+       
+                hold off;
+
+                legendStrings{k} = sprintf('%d curves', curvecountgroups(k));
+                
               
             end
-            title(["Combined am and bm histogram for ", current_plate])
+            title(["Combined am and bm ksdensity for ", current_plate])
             legend(legendStrings);
 
             m_weighted_mean = sum((subgroupData.m.*subgroupData.weights))/sum(subgroupData.weights);
             
             yLimit = 150; % Get the current y-axis limits
-            
-            plot([m_weighted_mean,m_weighted_mean], [0,yLimit], 'k--', 'LineWidth', 1.5, 'DisplayName', 'Weighted Mean'); 
-            
+            figure(i)
+            hold on;
+            plot([m_weighted_mean,m_weighted_mean], [0,yLimit], 'k--', 'LineWidth', 1.5, 'DisplayName', 'Weighted Mean');
+            title(["Combined am and bm histogram for ", current_plate])
+            hold off;
         end
 
 
