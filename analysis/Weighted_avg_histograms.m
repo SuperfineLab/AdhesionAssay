@@ -30,7 +30,13 @@ tmpC.bmconf = [];
 tmp_abconf = stack(tmpC,{'am','bm'},"NewDataVariableName",'conf','IndexVariableName','ab');
 
 am_bm_table = innerjoin(tmp_am_bm, tmp_abconf,'Keys',{'PlateID','SimID','CurveID','CurveCount','ab'});
-
+tmptmp = splitvars(am_bm_table, 'conf');
+nanselected_ambm_rows = ~cellfun(@isnan, num2cell(tmptmp.conf_1));
+am_bm_table = am_bm_table(nanselected_ambm_rows,:);
+negvalselected_ambm_rows = am_bm_table.m > -10;
+am_bm_table = am_bm_table(negvalselected_ambm_rows,:);
+posvalselected_ambm_rows = am_bm_table.m < 10;
+am_bm_table = am_bm_table(posvalselected_ambm_rows,:);
 f = findgroups(am_bm_table(:,{'PlateID','CurveCount'}));
 
 foo = splitapply(@(x1){ba_weights(x1,0.95)},am_bm_table.conf,f);
@@ -83,8 +89,10 @@ binWidth = 0.17;
 
                 figure(100+i);
                 hold on;
-                ksdensity(subgroupData.m)%,"Weights",subgroupData.weights)
-       
+                ksdensity(subgroupData.m,'Weights',subgroupData.weights)
+                m_weighted_mean = sum((groupData.m.*groupData.weights))/sum(groupData.weights);
+                ksyLimit = 1;
+                plot([m_weighted_mean,m_weighted_mean], [0,ksyLimit], 'k--', 'LineWidth', 1.5, 'DisplayName', 'Weighted Mean');
                 hold off;
 
                 legendStrings{k} = sprintf('%d curves', curvecountgroups(k));
@@ -93,12 +101,15 @@ binWidth = 0.17;
             end
             title(["Combined am and bm ksdensity for ", current_plate])
             legend(legendStrings);
+            xlim([min(subgroupData.m)-1,max(subgroupData.m)]);
 
-            m_weighted_mean = sum((subgroupData.m.*subgroupData.weights))/sum(subgroupData.weights);
             
-            yLimit = 150; % Get the current y-axis limits
+            
+             % Get the current y-axis limits
             figure(i)
             hold on;
+            legend(legendStrings);
+            yLimit = 150;
             plot([m_weighted_mean,m_weighted_mean], [0,yLimit], 'k--', 'LineWidth', 1.5, 'DisplayName', 'Weighted Mean');
             title(["Combined am and bm histogram for ", current_plate])
             hold off;
