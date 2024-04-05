@@ -1,4 +1,5 @@
-function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating_variables, modeltype, weightTF, plotTF)
+function TableOut = ba_plate_detachmentforces(ba_process_data, aggregating_variables, modeltype, weightTF, plotTF)
+% function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating_variables, modeltype, weightTF, plotTF)
 
     if nargin < 4 || isempty(weightTF)
         weightTF = true;
@@ -19,7 +20,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     % "Fraction Left" plot is always going to be plotting the Fraction of beads
     % left to detach vs the force at which they detach. SO, that means all we
     % need are the aggregating variables AND those relevant columns    
-    FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', 'FirstFrameBeadCount'}, aggregating_variables(:)']);
+    FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', 'FirstFrameBeadCount', 'LastFrameBeadCount'}, aggregating_variables(:)']);
 %     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights', 'FractionLeft'};
     ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights'};
 
@@ -46,7 +47,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
     RelevantData = innerjoin(RelevantData, foo, 'Keys', {'Fid', 'SpotID'});
     clear foo
 
-    RelevantData = sortrows(RelevantData, [agglist "FractionLeft"], [repmat("ascend", Np, 1) "descend"]);
+    RelevantData = sortrows(RelevantData, [agglist "FractionLeft"], [repmat("ascend", 1, Np) "descend"]);
 
 
     % 0. Tack on the "IncludeinFit" Variable so we can filter some out later
@@ -92,7 +93,7 @@ function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating
                                RelevantData.Weights, ...
                                RelevantData.IncludeInFit, ...
                                g);
-%  ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
+
     % 5. Perform the One mode and Two mode fits and collect the fitting info
     foo{1} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,1), ...
                                                   RelevantData.Force, ...                                                  
@@ -145,6 +146,7 @@ end
 %
 function outs = sa_optimize_start(logforce_nN, fractionleft, weights, includetf, nterms)
 
+% (logforce_nN, factorLeft, weights, Nmodes)
     outs = ba_optimize_startpoint(logforce_nN(includetf), ...
                                  fractionleft(includetf), ...
                                  weights(includetf), ...
@@ -176,7 +178,6 @@ end
 
 
 function outs = sa_summarizefits(fitobject,goodness_of_fit)
-
 
     fo = fitobject{1};
 
