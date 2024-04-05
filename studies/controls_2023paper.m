@@ -14,8 +14,12 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 savedatafilesTF = true;
 
-aggregating_variables = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
+% aggregating_variables = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
+%                          'Media', 'pH'};
+
+aggregating_variables = {'SubstrateChemistry', 'BeadChemistry', ...
                          'Media', 'pH'};
+
 
 % all-data-path
 if ismac
@@ -97,7 +101,10 @@ xstrings = string(table2array(gxT));
 ystrings = string(plateNames);
 
 
-DetachVars = {'PlateID', 'PlateColumn', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
+% DetachVars = {'PlateID', 'PlateColumn', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
+%               'pH', 'DetachForce', 'confDetachForce'};
+
+DetachVars = {'PlateID',  'BeadChemistry', 'SubstrateChemistry', 'Media', ...
               'pH', 'DetachForce', 'confDetachForce'};
 
 Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', aggregating_variables);
