@@ -32,7 +32,7 @@ m.Mean_vel = mb(:,1) * calibum * 1e-6; % [m/s]
 m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6; % [m/s]
 m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval; % [N]
-m.ForceRelWidth = ba_relativewidthCI(m.Force, m.ForceInterval);
+m.ForceRelWidth = ba_relwidthCI(m.Force, m.ForceInterval);
 m.Weights = ba_weights(m.ForceInterval, 0.95);
 
 m = struct2table(m);
