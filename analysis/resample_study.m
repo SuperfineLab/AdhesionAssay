@@ -26,16 +26,10 @@ FileVarsToKeep = {'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', ...
                   'SubstrateChemistry', ...
                   'FirstFrameBeadCount', 'LastFrameBeadCount'};
 
-%%% I got rid of Bead Chemistry because in all of these plates, the bead
-%%% chemistry is the same as the substrate chemistry, so having both
-%%% variables is redundant.
-%%%I also got rid of Buffer, and PH, because for every observation they
-%%%were PBS, and 7, respectively
-
-% % % % % % % Important NOTE: Starting points in the fitting function are tuned to the 
-% % % % % % % **log10(force_in_nN)**. The units on the input MUST match exactly 
-% % % % % % % for the fitting function to operate in an expected fashion within the 
-% % % % % % % number of MaxEvals also established in the ba_fit_erf code.
+% % Important NOTE: Starting points in the fitting function are tuned to the 
+% % **log10(force_in_nN)**. The units on the input MUST match exactly 
+% % for the fitting function to operate in an expected fashion within the 
+% % number of MaxEvals also established in the ba_fit_erf code.
 
 %%% Master Curve Parameter Calculations
 mc_aggregating_variables = {'PlateID'};
