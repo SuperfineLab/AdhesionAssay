@@ -1,5 +1,5 @@
 function f = ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
-%
+% XXX @jeremy TODO: Add documentation text
 %
  
 %
