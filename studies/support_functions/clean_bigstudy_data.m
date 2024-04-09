@@ -3,9 +3,11 @@ function B = clean_bigstudy_data(B)
 % painfully specific to the datasets we've already collected and will not
 % scale well as the studies grow in size and complexity.
 
-    goodOrder = {'COOH', 'PEG', 'HBE'};
-%     goodOrder = {'PEG', 'WGA', 'HBE'};
-    
+%             goodOrder = {'PEG', 'WGA', 'HBE'};
+%             goodOrder = {'COOH', 'PEG', 'HBE'};
+            goodOrder = {'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
+%             goodOrder = {'COOH', 'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
+
     B.FileTable.BeadChemistry( B.FileTable.BeadChemistry == "mPEG" ) = "PEG";
     B.FileTable.BeadChemistry( B.FileTable.BeadChemistry == "RhoPEG" ) = "PEG";
     B.FileTable.BeadChemistry = removecats(B.FileTable.BeadChemistry);

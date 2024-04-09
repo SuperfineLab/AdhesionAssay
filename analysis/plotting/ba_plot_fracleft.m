@@ -25,7 +25,7 @@ for k = 1:height(Data)
     myfit = Data.FitObject{k};
     mylogforce = log10(Data.RawData{k}.Force);
     mylogforceCI = log10(Data.RawData{k}.ForceInterval);
-    mypctleft = Data.RawData{k}.PctLeft;
+    myfractionleft = Data.RawData{k}.FractionLeft;
     
     logerr = ba_ci2err(mylogforce, mylogforceCI, 'log', 'log');
     mylogforce_errlow = logerr(:,1);
@@ -34,17 +34,17 @@ for k = 1:height(Data)
     figure(f);
     hold on;
     if contains(class(Data.FitObject{k}), 'cfit')
-        h = plot(myfit, mylogforce, mypctleft);
+        h = plot(myfit, mylogforce, myfractionleft);
         set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), 'MarkerFaceColor', cmap(k,:))
         set(h(2), 'LineStyle', '-', 'LineWidth', 2, 'Color', cmap(k,:));
     else
-        h = plot(mylogforce, mypctleft, 'o');
+        h = plot(mylogforce, myfractionleft, 'o');
         set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), ...
                   'MarkerFaceColor', cmap(k,:));
     end
 
     if plotFerrTF
-        h = errorbar(mylogforce, mypctleft, mylogforce_errlow, mylogforce_errhigh);
+        h = errorbar(mylogforce, myfractionleft, mylogforce_errlow, mylogforce_errhigh);
 %             , 'horizontal', 'LineStyle','None','Color',cmap(k,:));
     end
 

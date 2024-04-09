@@ -55,6 +55,7 @@ function TableOut = ba_plate_detachmentforces(ba_process_data, aggregating_varia
 
     % 1. Put forces into the correct units (nanoNewtons) for fitting
     RelevantData.Force = RelevantData.Force * 1e9;
+    RelevantData.ForceInterval = RelevantData.ForceInterval * 1e9;
 
     % 2. Tag forces that extend below a lower threshold force (bead
     % force_gravity - buoyancy force = 0.014 nN.
@@ -120,8 +121,13 @@ function TableOut = ba_plate_detachmentforces(ba_process_data, aggregating_varia
                                          FitTable.Nmodes,  ...
                                          df);
     BestFitTable = horzcat(dfT, q);
-
-        
+    grpT = innerjoin(grpT, BestFitTable, 'Keys', unique(['PlateID', aggregating_variables]));
+%     foo = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,2), ...
+%                                       RelevantData.Force, ...                                                  
+%                                       RelevantData.FractionLeft, ...
+%                                       Weights, ...
+%                                       RelevantData.StartingPoint, ...
+%                                       g);     
     % 7. Summarize fitting data
     [sf, sfT] = findgroups(BestFitTable(:, unique(['PlateID', aggregating_variables, 'BestModel'])));
     q = splitapply(@(x1,x2)sa_summarizefits(x1,x2), BestFitTable.FitObject, BestFitTable.GoodnessOfFit, sf);
@@ -146,7 +152,7 @@ end
 %
 function outs = sa_optimize_start(logforce_nN, fractionleft, weights, includetf, nterms)
 
-% (logforce_nN, factorLeft, weights, Nmodes)
+% (logforce_nN, fractionLeft, weights, Nmodes)
     outs = ba_optimize_startpoint(logforce_nN(includetf), ...
                                  fractionleft(includetf), ...
                                  weights(includetf), ...
@@ -181,33 +187,40 @@ function outs = sa_summarizefits(fitobject,goodness_of_fit)
 
     fo = fitobject{1};
 
-    fco = coeffvalues(fo);
-    fci = confint(fo);
+    if ~contains(class(fo),'cfit')
+        [a, am, as, bm, bs] = deal(NaN);
+        [aconf, amconf, asconf, bmconf, bsconf] = deal(NaN(1,2));
+    else
 
-    % If the one-term fit was the best, pad bm and bs with NaN outputs
-    if numel(fco) == 3
-        fco(1,4:5) = NaN(1,2);
-        fci(1:2,4:5) = NaN(2,2);
+        fco = coeffvalues(fo);
+        fci = confint(fo);
+        
+        % If the one-term fit was the best, pad bm and bs with NaN outputs
+        if numel(fco) == 3
+            fco(1,4:5) = NaN(1,2);
+            fci(1:2,4:5) = NaN(2,2);
+        end
+    
+        fci = transpose(fci);
+    
+        a = fco(1);
+        am = fco(2);
+        as = fco(3);
+        bm = fco(4);
+        bs = fco(5);
+    
+    %     [a,am,as,bm,bs] = deal(fco(1:5))
+    
+        aconf = fci(1,:);
+        amconf = fci(2,:);
+        asconf = fci(3,:);
+        bmconf = fci(4,:);
+        bsconf = fci(5,:);
     end
 
-    fci = transpose(fci);
-
-    a = fco(1);
-    am = fco(2);
-    as = fco(3);
-    bm = fco(4);
-    bs = fco(5);
-
-%     [a,am,as,bm,bs] = deal(fco(1:5))
-
-    aconf = fci(1,:);
-    amconf = fci(2,:);
-    asconf = fci(3,:);
-    bmconf = fci(4,:);
-    bsconf = fci(5,:);
-
-    CoeffT = table(a, aconf, am, amconf, as, asconf, ...
-                             bm, bmconf, bs, bsconf);
+    CoeffT = table({fo}, a, aconf, am, amconf, as, asconf, bm, bmconf, bs, bsconf, ...
+                   'VariableNames', {'FitObject', 'a', 'aconf', 'am', 'amconf', 'as', 'asconf', ...
+                                                                'bm', 'bmconf', 'bs', 'bsconf'});
 
     gof = struct2table(goodness_of_fit);
 
@@ -218,6 +231,12 @@ end
 
 function [outforce, outci] = sa_choosedetachforce(fitobject,goodness_of_fit)
     fo = fitobject{1};
+    
+    if isa(fo,'char')
+        outforce = NaN;
+        outci = NaN(1,2);
+        return
+    end
     
     fco = coeffvalues(fo);
     ci = confint(fo)';
@@ -239,9 +258,9 @@ function [outforce, outci] = sa_choosedetachforce(fitobject,goodness_of_fit)
 end
 
 
-function outs = sa_assemble_rawdata(force, force_error_factor, force_interval, factorleft, weights, includetf)
+function outs = sa_assemble_rawdata(force, force_error_factor, force_interval, fractionleft, weights, includetf)
 
-    outs = table(force, force_error_factor, force_interval, factorleft, weights, includetf);
-    outs.Properties.VariableNames = {'Force', 'ForceRelWidth', 'ForceInterval', 'FactorLeft', 'Weights', 'IncludeInFit'};
+    outs = table(force, force_error_factor, force_interval, fractionleft, weights, includetf);
+    outs.Properties.VariableNames = {'Force', 'ForceRelWidth', 'ForceInterval', 'FractionLeft', 'Weights', 'IncludeInFit'};
     outs.Properties.VariableUnits = {'[nN]',  '[nN]',             '[nN]',          '[]',         '[]',      '[]'};
 end

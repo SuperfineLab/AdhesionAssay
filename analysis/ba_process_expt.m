@@ -67,7 +67,7 @@ if ~isfield(Data, 'ForceTable')
     Data.ForceTable = ba_make_ForceTable(Data);
           
     % Update FileTable with remaining bead count once pulls are completed
-    Data.FileTable = ba_calc_BeadsLeft(Data, aggregating_variables);
+    Data.FileTable = ba_calc_BeadsLeft(Data);
     
     % filter out any forces less than 10 femtoNewtons
     TmpTable = Data.ForceTable(Data.ForceTable.Force > 10e-15,:);

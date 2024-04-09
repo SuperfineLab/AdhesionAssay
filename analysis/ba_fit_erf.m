@@ -18,6 +18,10 @@ function f = ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
 %                       0.961898080855054 ];     % bs
     end
 
+    if size(startpoint,1) > 1
+        startpoint = startpoint(1,:);
+    end
+
     if nargin < 3 || isempty(weights)
         weights = ones(numel(logforce), 1);
     end
@@ -29,14 +33,15 @@ function f = ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
 
     [logforce, pct_left, weights] = prepareCurveData( logforce, pct_left, weights );
     
-    f = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint(1,:));
+    f = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint);
 
 end
 
 
 function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
 
-    opts = setup_fitoptions(weights, Nmodes, startpoint);
+    fout = ba_setup_fit('erf-old', weights, Nmodes, startpoint);
+%     opts = setup_fitoptions(weights, Nmodes, startpoint);
     
     f{1} = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as)))';
     f{2} = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as))+(1-a)*erfc(((Fd)-bm)/(sqrt(2)*bs)))';
@@ -46,15 +51,15 @@ function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
                  'VariableTypes', {'double', 'cell', 'struct', 'struct'});
 
     outs.Nmodes = Nmodes;
-    outs.FitOptions = opts;
+    outs.FitOptions = fout.opts;
     outs.FitObject = {''};
     outs.GoodnessOfFit = struct('sse', NaN, 'rsquare', NaN, 'dfe', NaN, 'adjrsquare', NaN, 'rmse', NaN);
 
-    NecessaryPointsN = (Nmodes*2 + 1) + 1;
+    NecessaryPointsN = fout.Nparams + 1;
     ft = fittype( f{Nmodes}, 'independent', 'Fd', 'dependent', 'y' );
 
     if numel(logforce) > NecessaryPointsN
-        [fitresult, gof] = fit( logforce, pct_left, ft, opts );
+        [fitresult, gof] = fit( logforce, pct_left, ft, fout.opts );
 
         outs.FitObject = {fitresult};
         outs.GoodnessOfFit = gof;
@@ -74,34 +79,34 @@ end
 
 
 
-function opts = setup_fitoptions(weights, Nmodes, startpoint)
-
-    opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-
-    opts.Display = 'Off';
-    opts.MaxFunEvals = 26000;
-    opts.MaxIter = 24000;
-    opts.Weights = weights;
-    opts.TolFun = 1e-07;
-    opts.TolX = 1e-07;
-    opts.DiffMinChange = 1e-08;
-    opts.DiffMaxChange = 0.01;
-
-    % Lower and upper bounds for each parameter
-    %    [a  am   as   bm   bs ]
-    lb = [0 -Inf  0   -Inf  0  ];
-    ub = [1  Inf  Inf  Inf  Inf];
-    
-    % Default starting points if none are available
-    % p0 = [0.82582 0.07818 0.44268 0.10666 0.96190];
-    if any(isnan(startpoint))
-        startpoint = [0.85 -1.5 0.5 0.75 1];
-    end
-
-    k = Nmodes*2 + 1;
-
-    opts.StartPoint = startpoint(1:k);
-    opts.Lower = lb(1:k);
-    opts.Upper = ub(1:k);
-
-end
+% function opts = setup_fitoptions(weights, Nmodes, startpoint)
+% 
+%     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
+% 
+%     opts.Display = 'Off';
+%     opts.MaxFunEvals = 26000;
+%     opts.MaxIter = 24000;
+%     opts.Weights = weights;
+%     opts.TolFun = 1e-07;
+%     opts.TolX = 1e-07;
+%     opts.DiffMinChange = 1e-08;
+%     opts.DiffMaxChange = 0.01;
+% 
+%     % Lower and upper bounds for each parameter
+%     %    [a  am   as   bm   bs ]
+%     lb = [0 -Inf  0   -Inf  0  ];
+%     ub = [1  Inf  Inf  Inf  Inf];
+%     
+%     % Default starting points if none are available
+%     % p0 = [0.82582 0.07818 0.44268 0.10666 0.96190];
+%     if any(isnan(startpoint))
+%         startpoint = [0.85 -1.5 0.5 0.75 1];
+%     end
+% 
+%     k = Nmodes*2 + 1;
+% 
+%     opts.StartPoint = startpoint(1:k);
+%     opts.Lower = lb(1:k);
+%     opts.Upper = ub(1:k);
+% 
+% end
