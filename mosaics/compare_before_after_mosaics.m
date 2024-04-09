@@ -77,14 +77,14 @@ for k = 1 : 15
         
         figure(h);
         subplot(3,5,k);[mytitle, ', N beads removed by distance, mm'];
-        h.Name = [mytitle, ', bead removal factor 1-(after/before)'];
+        h.Name = [mytitle, ', bead removal fraction 1-(after/before)'];
         plot(bins(1:end-1)*calibum/1000, 1-(hafter(:,k)./hbefore(:,k)));
         ylim([0 1.1]);        
         xlim([0 6.5]);
         fax = gca;
         fax.XTick = [1:6];
         if any(k == [1,6,11])            
-            ylabel('removal factor');
+            ylabel('removal fraction');
         end
 
         if any(k == 11:15)
@@ -107,7 +107,7 @@ end
 outs.bins(:,1) = bins(1:end-1);
 outs.histbefore = hbefore;
 outs.histafter = hafter;
-outs.removalfactor = 1-(hafter./hbefore);
+outs.removalfraction = 1-(hafter./hbefore);
 
 return
 
