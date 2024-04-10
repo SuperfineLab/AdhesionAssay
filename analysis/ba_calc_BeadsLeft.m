@@ -21,19 +21,3 @@ function newFileTable = ba_calc_BeadsLeft(Data)
     newFileTable.LastFrameBeadCount = LastFrameBeadCount;
 
 end
-
-
-function outs = sa_fracleft(fid, spotid, force, startCount)
-
-    force = force(:);
-    Nforce = length(force);   
-    
-    % I do not really understand how this determines "rank" of force, but
-    % it does and outputs the fraction left attached
-    [~,Fidx] = sort(force, 'ascend');
-    [~,Frank] = sort(Fidx, 'ascend');    
-    
-    fracleft = 1-(Frank ./ startCount);
-
-    outs = [fid(:), spotid(:), force(:), fracleft(:)];
-end
