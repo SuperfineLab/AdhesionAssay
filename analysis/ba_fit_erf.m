@@ -38,7 +38,7 @@ function f = ba_fit_erf(logforce, pct_left, weights, startpoint, Nmodes)
 end
 
 
-function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
+function outs = fit_erf_model(logforce, fractionLeft, Nmodes, weights, startpoint)
 
     fout = ba_setup_fit('erf-old', weights, Nmodes, startpoint);
 %     opts = setup_fitoptions(weights, Nmodes, startpoint);
@@ -59,7 +59,15 @@ function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
     ft = fittype( f{Nmodes}, 'independent', 'Fd', 'dependent', 'y' );
 
     if numel(logforce) > NecessaryPointsN
-        [fitresult, gof] = fit( logforce, pct_left, ft, fout.opts );
+
+%         fitresult = optimize_lsqcurvefit(fout.fcn, fout.StartPoint, logforce, fractionLeft, fout.lb, fout.ub);
+%         outs.FitCoeffValues = fitresult;
+%         outs.FitConfInt  = confint
+
+%         fout.opts.Lower = fout.opts.StartPoint - abs(fout.opts.StartPoint * 0.05);
+%         fout.opts.Upper = fout.opts.StartPoint + abs(fout.opts.StartPoint * 0.05);
+
+        [fitresult, gof] = fit( logforce, fractionLeft, ft, fout.opts );
 
         outs.FitObject = {fitresult};
         outs.GoodnessOfFit = gof;
@@ -71,12 +79,27 @@ function outs = fit_erf_model(logforce, pct_left, Nmodes, weights, startpoint)
 %         outs.GoodnessOfFit = [];
         
     end
-
+    outs = [];
 %     outs = table(Nmodes, {fitresult}, gof, opts, ...
 %                  'VariableNames', {'Nmodes', 'FitObject', 'GoodnessOfFit', 'FitOptions'});
 
 end
 
+
+% % function optstart = optimize_lsqcurvefit(fitfcn, p0, logforce_nN, fractionLeft, lb, ub)
+% % 
+% %     opts = optimset('Display', 'off');    
+% %     
+% %     probopts = optimoptions(@lsqcurvefit, 'Display', 'off');
+% % 
+% %     problem = createOptimProblem('lsqcurvefit','x0',p0,'objective',fitfcn,...
+% %         'lb',lb,'ub',ub,'xdata',logforce_nN,'ydata',fractionLeft, options=probopts);
+% %     
+% % %     ms = MultiStart('PlotFcns',@gsplotbestf);
+% %     ms = MultiStart("Display","off");
+% %     % [X,FVAL,EXITFLAG,OUTPUT,SOLUTIONS] = run(ms, problem, 100);
+% %     [optstart,errormulti] = run(ms,problem,100);
+% % end
 
 
 % function opts = setup_fitoptions(weights, Nmodes, startpoint)
