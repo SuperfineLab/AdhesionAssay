@@ -65,8 +65,9 @@ function TableOut = ba_plate_detachmentforces(ba_process_data, aggregating_varia
     % 3. Optimize starting points according to number of modes
     Nterms = 2;
     [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
-    grpT.StartingPoint = splitapply(@(x1,x2,x3,x4)sa_optimize_start(x1,x2,x3,x4,Nterms), ...
+    grpT.StartingPoint = splitapply(@(x1,x2,x3,x4,x5)sa_optimize_start(x1,x2,x3,x4,x5,Nterms), ...
                                                    log10(RelevantData.Force), ...
+                                                   log10(RelevantData.ForceInterval), ...
                                                    RelevantData.FractionLeft, ...
                                                    RelevantData.Weights, ...
                                                    RelevantData.IncludeInFit, ...
@@ -95,52 +96,66 @@ function TableOut = ba_plate_detachmentforces(ba_process_data, aggregating_varia
                                RelevantData.IncludeInFit, ...
                                g);
 
-    % 5. Perform the One mode and Two mode fits and collect the fitting info
-    foo{1} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,1), ...
-                                                  RelevantData.Force, ...                                                  
-                                                  RelevantData.FractionLeft, ...
-                                                  Weights, ...    
-                                                  RelevantData.StartingPoint, ...
-                                                  g);     
-    foo{1} = horzcat(grpT, foo{1});
-    foo{2} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,2), ...
-                                                  RelevantData.Force, ...                                                  
-                                                  RelevantData.FractionLeft, ...
-                                                  Weights, ...
-                                                  RelevantData.StartingPoint, ...
-                                                  g);     
-    foo{2} = horzcat(grpT, foo{2});
-    FitTable = vertcat(foo{:});
+%     % 5. Perform the One mode and Two mode fits and collect the fitting info
+%     foo{1} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,1), ...
+%                                                   RelevantData.Force, ...                                                  
+%                                                   RelevantData.FractionLeft, ...
+%                                                   Weights, ...    
+%                                                   RelevantData.StartingPoint, ...
+%                                                   g);     
+%     foo{1} = horzcat(grpT, foo{1});
+%     foo{2} = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,2), ...
+%                                                   RelevantData.Force, ...                                                  
+%                                                   RelevantData.FractionLeft, ...
+%                                                   Weights, ...
+%                                                   RelevantData.StartingPoint, ...
+%                                                   g);     
+%     foo{2} = horzcat(grpT, foo{2});
+%     FitTable = vertcat(foo{:});
+% 
+%     % 6. Compare fits and use the best (ONE or TWO modes)
+%     [df, dfT] = findgroups(FitTable(:, unique(['PlateID', aggregating_variables])));
+%     q = splitapply(@(x1,x2,x3,x4)sa_choosebestmodel(x1,x2,x3,x4), ...
+%                                          FitTable.FitObject, ...
+%                                          FitTable.GoodnessOfFit, ...
+%                                          FitTable.FitOptions, ...
+%                                          FitTable.Nmodes,  ...
+%                                          df);
+%     BestFitTable = horzcat(dfT, q);
+%     grpT = innerjoin(grpT, BestFitTable, 'Keys', unique(['PlateID', aggregating_variables]));
+    
+    fitfoo = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,2), ...
+                                      RelevantData.Force, ...                                                  
+                                      RelevantData.FractionLeft, ...
+                                      Weights, ...
+                                      RelevantData.StartingPoint, ...
+                                      g);     
+    grpT = horzcat(grpT, fitfoo);
+    grpT = movevars(grpT, 'PlateID', "Before", 1);
+    grpT = movevars(grpT, {'BeadChemistry', 'SubstrateChemistry', 'Media'}, "After", "PlateID");
 
-    % 6. Compare fits and use the best (ONE or TWO modes)
-    [df, dfT] = findgroups(FitTable(:, unique(['PlateID', aggregating_variables])));
-    q = splitapply(@(x1,x2,x3,x4)sa_choosebestmodel(x1,x2,x3,x4), ...
-                                         FitTable.FitObject, ...
-                                         FitTable.GoodnessOfFit, ...
-                                         FitTable.FitOptions, ...
-                                         FitTable.Nmodes,  ...
-                                         df);
-    BestFitTable = horzcat(dfT, q);
-    grpT = innerjoin(grpT, BestFitTable, 'Keys', unique(['PlateID', aggregating_variables]));
-%     foo = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,2), ...
-%                                       RelevantData.Force, ...                                                  
-%                                       RelevantData.FractionLeft, ...
-%                                       Weights, ...
-%                                       RelevantData.StartingPoint, ...
-%                                       g);     
-    % 7. Summarize fitting data
-    [sf, sfT] = findgroups(BestFitTable(:, unique(['PlateID', aggregating_variables, 'BestModel'])));
-    q = splitapply(@(x1,x2)sa_summarizefits(x1,x2), BestFitTable.FitObject, BestFitTable.GoodnessOfFit, sf);
-    FitSummaryTable = [sfT q];
+    TableOut = grpT;
 
-    % 8. Choose dominant detachment force
-    [df, dfT] = findgroups(FitSummaryTable(:, unique(['PlateID', aggregating_variables, 'BestModel'])));
-    [dfT.DetachForce, dfT.confDetachForce] = splitapply(@(x1,x2)sa_choosedetachforce(x1,x2), BestFitTable.FitObject, BestFitTable.GoodnessOfFit, df);
 
-    % 9. Merge in our RawData summarized before.
-    TableOut = innerjoin(dfT, grpT, 'Keys', unique(['PlateID', aggregating_variables]));
-    TableOut = movevars(TableOut, "PlateID", "Before", 2);
-%     TableOut = movevars(TableOut, {'BeadChemistry', 'SubstrateChemistry', 'Media', 'DetachForce', 'confDetachForce', 'RawData' }, "After", "PlateID");          
+%     df_foo = splitapply(@(x1)sa_extractdetachforce(x1), ...
+%                                   grpT.FitObject, ...                                                  
+%                                   g);  
+
+
+%     % 7. Summarize fitting data
+%     [sf, sfT] = findgroups(grpT(:, unique(['PlateID', aggregating_variables])));
+%     q = splitapply(@(x1,x2)sa_summarizefits(x1,x2), grpT.FitObject, grpT.GoodnessOfFit, sf);
+%     FitSummaryTable = [sfT q];
+
+
+%     % 8. Choose dominant detachment force
+%     [df, dfT] = findgroups(FitSummaryTable(:, unique(['PlateID', aggregating_variables])));
+%     [dfT.DetachForce, dfT.confDetachForce] = splitapply(@(x1,x2)sa_choosedetachforce(x1,x2), grpT.FitObject, grpT.GoodnessOfFit, df);
+% 
+%     % 9. Merge in our RawData summarized before.
+%     TableOut = innerjoin(dfT, grpT, 'Keys', unique(['PlateID', aggregating_variables]));
+%     TableOut = movevars(TableOut, "PlateID", "Before", 2);
+% %     TableOut = movevars(TableOut, {'BeadChemistry', 'SubstrateChemistry', 'Media', 'DetachForce', 'confDetachForce', 'RawData' }, "After", "PlateID");          
 
 end
 
@@ -150,10 +165,11 @@ end
 %
 % Support Functions
 %
-function outs = sa_optimize_start(logforce_nN, fractionleft, weights, includetf, nterms)
+function outs = sa_optimize_start(logforce_nN, logforceinterval, fractionleft, weights, includetf, nterms)
 
 % (logforce_nN, fractionLeft, weights, Nmodes)
     outs = ba_optimize_startpoint(logforce_nN(includetf), ...
+                                  logforceinterval(includetf,:), ...
                                  fractionleft(includetf), ...
                                  weights(includetf), ...
                                  nterms);
@@ -161,26 +177,26 @@ function outs = sa_optimize_start(logforce_nN, fractionleft, weights, includetf,
 end
 
 
-function outs = sa_choosebestmodel(fitobject, gof, opt, nmodes) 
-
-    rmse1 = gof(nmodes == 1).rmse;
-    rmse2 = gof(nmodes == 2).rmse;
-
-    if rmse1 < rmse2
-        disp(['Model One is better! One: ' num2str(rmse1) ' vs Two: ' num2str(rmse2)]);
-        best = 1;
-    else
-        disp(['Model Two is better! One: ' num2str(rmse1) ' vs Two: ' num2str(rmse2)]);
-        best = 2;
-    end
-
-    outs = table( fitobject(nmodes == best), ...
-                  gof(nmodes == best), ...
-                  opt(nmodes == best), ...
-                  best, ...
-                  'VariableNames', {'FitObject', 'GoodnessOfFit', 'FitOptions', 'BestModel'});
-        
-end
+% function outs = sa_choosebestmodel(fitobject, gof, opt, nmodes) 
+% 
+%     rmse1 = gof(nmodes == 1).rmse;
+%     rmse2 = gof(nmodes == 2).rmse;
+% 
+%     if rmse1 < rmse2
+%         disp(['Model One is better! One: ' num2str(rmse1) ' vs Two: ' num2str(rmse2)]);
+%         best = 1;
+%     else
+%         disp(['Model Two is better! One: ' num2str(rmse1) ' vs Two: ' num2str(rmse2)]);
+%         best = 2;
+%     end
+% 
+%     outs = table( fitobject(nmodes == best), ...
+%                   gof(nmodes == best), ...
+%                   opt(nmodes == best), ...
+%                   best, ...
+%                   'VariableNames', {'FitObject', 'GoodnessOfFit', 'FitOptions', 'BestModel'});
+%         
+% end
 
 
 function outs = sa_summarizefits(fitobject,goodness_of_fit)
@@ -238,7 +254,7 @@ function [outforce, outci] = sa_choosedetachforce(fitobject,goodness_of_fit)
         return
     end
     
-    fco = coeffvalues(fo);
+    fco = coeffvalues(fo)';
     ci = confint(fo)';
 
     % Hacked in for a single detachment force value. This
@@ -255,6 +271,21 @@ function [outforce, outci] = sa_choosedetachforce(fitobject,goodness_of_fit)
             outci(1,:) = ci(2,:);
         end
     end      
+end
+
+function [outforce, outci] = sa_extractdetachforce(fitobject)
+    fo = fitobject{1};
+    
+    if isa(fo,'char')
+        outforce = NaN;
+        outci = NaN(1,2);
+        return
+    end
+    
+    fco = coeffvalues(fo)';
+    ci = confint(fo)';
+
+ 
 end
 
 
