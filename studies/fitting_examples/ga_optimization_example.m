@@ -15,7 +15,6 @@ if ~exist('ga_summary', 'var')
                        'VariableNames', {'PlateID', 'Run', 'MaxGenerations', 'PopulationSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
 end
 
-fitname = 'erf-new';
 Nmodes = 2;
 Nruns = 3;
 
@@ -57,7 +56,7 @@ for m = 1:height(Data)
     e.Color = 'b';
     title(string(PlateID), 'Interpreter','none');
     
-    fout  = ba_setup_fit(fitname, weights, Nmodes);
+    fout  = ba_setup_fit(Nmodes, weights);
 
     % Some number (k) of subsampling fits to generate. This could also
     % be changed to monitor changes in algorithm style parameter sweeps,

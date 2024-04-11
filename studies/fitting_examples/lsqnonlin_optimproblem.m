@@ -7,8 +7,8 @@ if ~exist('lsq_summary', 'var')
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
                        'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
 end
-fitname = 'erf-new';
-Nmodes = 2;
+
+Nmodes = 4;
 Nsubsamples = 5;
 fig = figure;
 
@@ -19,34 +19,32 @@ for m = 1:height(Data)
     PlateID = Data.PlateID(m);
     rawdata = Data.RawData{m};
     
-    force = rawdata.Force;
-    errforce = diff(rawdata.ForceInterval,[],2)/2;
-    factorLeft = rawdata.FactorLeft; 
+    
+    logforce_nN = log10(rawdata.Force);
+    logforce_interval = log10(rawdata.ForceInterval);
+    fractionLeft = rawdata.FractionLeft; 
     weights = rawdata.Weights;
 
-    logforce_nN = log10(force);
-    errbarlength  = log10(force + errforce)-log10(force);
-
     % configure everything using current data (includes weights)
-    fout  = ba_setup_fit(fitname, weights, Nmodes);
-    costfunction = @(p) weights .* (fout.fcn(p,logforce_nN)-factorLeft);
+    fout  = ba_setup_fit(Nmodes, weights);
+    costfunction = @(p) weights .* (fout.fcn(p,logforce_nN)-fractionLeft);
 
-    opts = optimset('Display', 'off');
-    [myfit,myfiterror] = lsqnonlin(costfunction,fout.StartPoint,fout.lb,fout.ub,opts);
-    % [xfitted,errorfitted] = lsqcurvefit(fitfcn,fout.StartPoint,logforce_nN,factorLeft,lb,ub, opts);
+    fout.opts.Display = 'off';
+%     [myfit,myfiterror] = lsqnonlin(costfunction,fout.StartPoint,fout.lb,fout.ub,fout.opts);
+    [myfit,myfiterror] = lsqcurvefit(fout.fcn,fout.StartPoint,logforce_nN,fractionLeft,lb,ub, fout.opts);
 
-%     % Setting it up as a matlab "optimization problem"
-%     probopts = optimoptions(@lsqnonlin, 'Display', 'final');
-%     problem = createOptimProblem('lsqnonlin','x0',fout.StartPoint,'objective',costfunction,...
-%                                  'lb',fout.lb,'ub',fout.ub,options=probopts);
-%     ms = MultiStart
-%     [x,f] = run(ms,problem,20);
+    % Setting it up as a matlab "optimization problem"
+    probopts = optimoptions(@lsqnonlin, 'Display', 'final');
+    problem = createOptimProblem('lsqnonlin','x0',fout.StartPoint,'objective',costfunction,...
+                                 'lb',fout.lb,'ub',fout.ub,options=probopts);
+    ms = MultiStart("Display","off");
+    [x,f] = run(ms,problem,20);
 
 
     figure(fig); 
     subplot(2,2,1); 
     hold on
-    plot(logforce_nN, factorLeft, '.'); 
+    plot(logforce_nN, fractionLeft, '.'); 
     hold off
     title('rawdata: pctleft vs force'); 
     
@@ -68,7 +66,7 @@ for m = 1:height(Data)
     
     subplot(2,2,4); 
     hold on
-    plot(logforce_nN, factorLeft, '.', ...
+    plot(logforce_nN, fractionLeft, '.', ...
          logforce_nN, fout.fcn(myfit, logforce_nN), '--'); 
     hold off
     title('fits against rawdata');
