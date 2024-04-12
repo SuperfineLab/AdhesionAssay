@@ -1,4 +1,5 @@
 function opts = ba_fitoptions(method, weights, startpoint, lb, ub)
+% XXX @jeremy TODO: Write documentation
 % OPTIMOPTIONS    
 
     opts = optimoptions(method);
@@ -10,7 +11,7 @@ function opts = ba_fitoptions(method, weights, startpoint, lb, ub)
         case 'lsqcurvefit'
 
         case 'lsqnonlin'
-            opts.Display = 'Off';
+            opts.Display = 'Off'; % Display='final'
             opts.MaxFunEvals = 26000;
             opts.MaxIter = 24000;
 %             opts.Weights = weights;
@@ -23,7 +24,7 @@ function opts = ba_fitoptions(method, weights, startpoint, lb, ub)
 %             opts.Upper = ub;
         case 'ga'
             opts.MaxGenerations = 1500;
-            opts.PopulationSize = pop_size;
+            opts.PopulationSize = 10;
             opts.FunctionTolerance = 1e-7;
             opts.PlotFcn = {'gaplotscores','gaplotbestf'};
             opts.UseParallel = true;
@@ -31,7 +32,7 @@ function opts = ba_fitoptions(method, weights, startpoint, lb, ub)
             opts.HybridFcn = "fmincon";
             opts.SwarmSize = 100;
             opts.UseParallel = true;
-            opts.Display = 'final';
+            opts.Display = 'Off'; % Display='final'
         case 'patternsearch'            
             opts.StepTolerance = 1e-5;
             opts.MeshTolerance = 1e-5;
@@ -39,7 +40,7 @@ function opts = ba_fitoptions(method, weights, startpoint, lb, ub)
             opts.Cache = "on";
             opts.PlotFcn = {'psplotbestf'};
             opts.UseParallel = true;
-            opts.Display = 'final';
+            opts.Display = 'Off'; % Display='final';
         otherwise
             error('Fitting method type undefined.');            
     end
