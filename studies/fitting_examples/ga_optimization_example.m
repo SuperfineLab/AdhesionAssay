@@ -26,8 +26,8 @@ for m = 1:height(Data)
     rawdata = Data.RawData{m};
     
     force = rawdata.Force;
-    errforce = diff(rawdata.ForceInterval,[],2)/2;
-    factorLeft = rawdata.FactorLeft; 
+    errforce = rawdata.ForceError;
+    factorLeft = rawdata.PctLeft; 
     weights = rawdata.Weights;
 
     logforce_nN = log10(force);
