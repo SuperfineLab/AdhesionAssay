@@ -18,13 +18,7 @@ Nmodes = 2;
 Nsubsamples = 5;
 
 % Define "patternsearch" optimization options that do not change during run
-options = optimoptions("patternsearch"); 
-options.StepTolerance = 1e-5;
-options.MeshTolerance = 1e-5;
-options.Algorithm = 'nups-mads';
-options.Cache = "on";
-options.PlotFcn = {'psplotbestf'};
-options.UseParallel = true;
+options = ba_fitoptions("patternsearch"); 
 options.Display = 'final';
 
 

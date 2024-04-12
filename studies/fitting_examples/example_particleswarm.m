@@ -21,10 +21,7 @@ Nsubsamples = 5;
 swarm_sz = 100;
 
 % Define "particleswarm" optimization options that do not change during run
-options = optimoptions('particleswarm');
-options.HybridFcn = "fmincon";
-options.SwarmSize = swarm_sz;
-options.UseParallel = true;
+options = ba_fitoptions('particleswarm');
 options.Display = 'final';
 
 % Some number (m) of plates to process

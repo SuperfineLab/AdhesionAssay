@@ -18,6 +18,12 @@ end
 Nmodes = 4;
 Nruns = 3;
 
+% Define "ga" optimization options that do not change during run
+options = ba_fitoptions("ga");
+options.FunctionTolerance = 1e-7;
+options.PlotFcn = {'gaplotscores','gaplotbestf'};
+options.UseParallel = true;
+
 % Some number (m) of plates to process
 for m = 1:height(Data)
 
@@ -31,15 +37,8 @@ for m = 1:height(Data)
 
     % *** ga-specific options ***
     max_generations = 1500;
-    pop_size = floor(numel(logforce_nN)/2);
-    
-    % Define "ga" optimization options that do not change during run
-    options = optimoptions("ga");
     options.MaxGenerations = max_generations;
-    options.PopulationSize = pop_size;
-    options.FunctionTolerance = 1e-7;
-    options.PlotFcn = {'gaplotscores','gaplotbestf'};
-    options.UseParallel = true;
+    options.PopulationSize = floor(numel(logforce_nN)/2);
 
     fig = 1000+(100*Nmodes)+m;
     

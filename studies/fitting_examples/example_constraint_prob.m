@@ -33,9 +33,7 @@ title(join([string(PlateID) ', ' num2str(Nmodes) ' modes'], ''), 'Interpreter','
 drawnow
 
 
-opts = optimoptions(@fmincon,'Algorithm','interior-point', 'UseParallel', true);
-
-objectiveFcn = @(params) objectiveFunction(params, logforce_nN, fractionLeft, weights);
+opts = ba_fitoptions('fmincon');
 
 problem = createOptimProblem('fmincon', 'x0', fout.StartPoint, ...
           'objective',@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...

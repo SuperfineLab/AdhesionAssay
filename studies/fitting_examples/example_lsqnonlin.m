@@ -37,11 +37,13 @@ for m = 1:height(Data)
 %     [myfit,myfiterror] = lsqcurvefit(fout.fcn,fout.StartPoint,logforce_nN,fractionLeft,fout.lb,fout.ub, fout.opts);
 
     % Setting it up as a matlab "optimization problem"
-    probopts = optimoptions(@lsqnonlin, 'Display', 'off'); % Display='final'
-%     problem = createOptimProblem('lsqcurvefit','x0',fout.StartPoint,'objective',costfunction,...
-%                                  'lb',fout.lb,'ub',fout.ub,options=probopts);
+    probopts = ba_fitoptions("lsqnonlin");
     problem = createOptimProblem('lsqnonlin','x0',fout.StartPoint,'objective',costfunction,...
                                  'lb',fout.lb,'ub',fout.ub,options=probopts);
+%     probopts = ba_fitoptions("lsqcurvefit");
+%     problem = createOptimProblem('lsqcurvefit','x0',fout.StartPoint,'objective',costfunction,...
+%                                  'lb',fout.lb,'ub',fout.ub,options=probopts);
+
     ms = MultiStart("Display","off");
 
     tic
