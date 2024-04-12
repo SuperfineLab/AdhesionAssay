@@ -1,5 +1,5 @@
 clear lsq_summary
-
+addpath '/Users/stevesnare/code/AdhesionAssay/analysis'
 Data = B.DetachForceTable;
 
 if ~exist('lsq_summary', 'var')
@@ -16,17 +16,17 @@ fig = figure;
 % Some number (m) of plates to process
 for m = 1:height(Data)
 
-    PlateID = Data.PlateID(m);
+    PlateID = Data.PlateID(m); 
     rawdata = Data.RawData{m};
     
     force = rawdata.Force;
-    errforce = diff(rawdata.ForceInterval,[],2)/2;
-    factorLeft = rawdata.FactorLeft; 
+    %errforce = diff(rawdata.ForceInterval,[],2)/2;
+    errforce = rawdata.ForceError;
+    factorLeft = rawdata.PctLeft; 
     weights = rawdata.Weights;
 
     logforce_nN = log10(force);
     errbarlength  = log10(force + errforce)-log10(force);
-
     % configure everything using current data (includes weights)
     fout  = ba_setup_fit(fitname, weights, Nmodes);
     costfunction = @(p) weights .* (fout.fcn(p,logforce_nN)-factorLeft);
@@ -43,7 +43,7 @@ for m = 1:height(Data)
 %     [x,f] = run(ms,problem,20);
 
 
-    figure(fig); 
+    figure(); 
     subplot(2,2,1); 
     hold on
     plot(logforce_nN, factorLeft, '.'); 
