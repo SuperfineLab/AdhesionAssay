@@ -2,8 +2,6 @@ function fout = ba_fit_setup(Nmodes, weights, startpoint)
 % XXX @jeremy TODO: Write documentation
 %
 
-
-
     % new form
     fitfcn = ba_fitfcn(Nmodes);
     Nparams = Nmodes * 3;
@@ -25,8 +23,8 @@ function fout = ba_fit_setup(Nmodes, weights, startpoint)
     % Default parameters are set according to the number of modes and 
     % equally spaced from low-high limits, which are assumed to be 
     % between 10^-1.5 and 10^2 nanoNewtowns.
-    logforcelimitLow = -1.5;
-    logforcelimitHigh = 2;
+    logforcelimitLow  = -1.5;
+    logforcelimitHigh =  2.0;
     logforcerange = abs(logforcelimitHigh - logforcelimitLow);
     logforcestep = logforcerange / (Nmodes+1);
 
