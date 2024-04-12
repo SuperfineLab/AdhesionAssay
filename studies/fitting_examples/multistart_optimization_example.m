@@ -2,18 +2,13 @@
 % % Testing fitting with random data and our fitting equations
 %
 
-% Old model equation
-% p = [a am as bm bs]
-%                  1/2*(a   *erfc(((Fd)-am  )/(sqrt(2)*as  ))+(1-a   )*erfc(((Fd)-bm  )/(sqrt(2)*bs  )))
-% fitfcn1 = @(p, Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))));
-% fitfcn2 = @(p, Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))+(1-p(1))*erfc(((Fd)-p(4))/(sqrt(2)*p(5)))));
-
+% set randomizer to regular value for reproducibility
 rng default
 
 N = 50; % Number of data points
 
-fout1 = ba_setup_fit(1, [], []);
-fout2 = ba_setup_fit(2, [], []);
+fout1 = ba_fit_setup(1, [], []);
+fout2 = ba_fit_setup(2, [], []);
 
 % For this fitting study, we simulate based on model equation with *known*
 % parameter values, i.e., ground-truth parameters 
@@ -53,7 +48,6 @@ function beststart = optimize_startpoint(fitfcn2, p0, xdata, ydata, lb, ub)
         'lb',lb,'ub',ub,'xdata',xdata,'ydata',ydata);
     
     ms = MultiStart('PlotFcns',@gsplotbestf);
-    ms = MultiStart;
     [beststart,errormulti] = run(ms,problem,200);
 end
 

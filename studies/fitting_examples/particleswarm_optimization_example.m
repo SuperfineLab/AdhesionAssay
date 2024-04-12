@@ -54,7 +54,7 @@ for m = 1:height(Data)
     hold off
     
     % configure everything using current data (includes weights)
-    fout  = ba_setup_fit(Nmodes, weights);
+    fout  = ba_fit_setup(Nmodes, weights);
     
 
     % Some number (k) of subsampling fits to generate. This could also
@@ -68,7 +68,7 @@ for m = 1:height(Data)
         [optimized_params(k,:), fval(k,1), exitflag(k,1), output(k,1)] = particleswarm(@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...
                                         fout.Nparams, fout.lb, fout.ub, options);
         
-        rchisq(k,:) = reduced_chisquare(optimized_params(k,:), fout.fcn, logforce_nN, fractionLeft);
+        rchisq(k,:) = red_chisquare(optimized_params(k,:), fout.fcn, logforce_nN, fractionLeft);
         
         t = toc;
         
@@ -107,18 +107,5 @@ function error = objectiveFunction(params, fitfcn, logforce_nN, fractionLeft, we
     weighted_errors = weights .* (model_predictions - fractionLeft).^2;
 %     weighted_errors = smooth(weighted_errors,5);
     error = sum(weighted_errors);
-end
-
-
-function redcs = reduced_chisquare(params, fitfcn, logforce_nN, fractionLeft)
-    % Calculate model predictions using params and xdata
-    model_predictions = fitfcn(params, logforce_nN);
-
-    % Calculate weighted squared error
-    chisquare = sum( (model_predictions - fractionLeft).^2 ./  fractionLeft);
-
-    dof = numel(logforce_nN) - numel(params);
-
-    redcs = chisquare / dof;
 end
 
