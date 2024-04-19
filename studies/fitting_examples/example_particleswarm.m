@@ -13,7 +13,7 @@ if ~exist('ps_summary', 'var')
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
                        'VariableNames', {'PlateID', 'SwarmSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
 end
-fitname = 'erf-new';
+
 Nmodes = 2;
 Nsubsamples = 5;
 
@@ -21,9 +21,7 @@ Nsubsamples = 5;
 swarm_sz = 100;
 
 % Define "particleswarm" optimization options that do not change during run
-options = optimoptions('particleswarm', 'HybridFcn', @fmincon);
-options.SwarmSize = swarm_sz;
-options.UseParallel = true;
+options = ba_fitoptions('particleswarm');
 options.Display = 'final';
 
 % Some number (m) of plates to process
@@ -34,7 +32,7 @@ for m = 1:height(Data)
     
     force = rawdata.Force;
     errforce = diff(rawdata.ForceInterval,[],2)/2;
-    factorLeft = rawdata.FactorLeft; 
+    fractionLeft = rawdata.FractionLeft; 
     weights = rawdata.Weights;
 
     logforce_nN = log10(force);
@@ -44,16 +42,16 @@ for m = 1:height(Data)
     fig = 1000+(100*Nmodes)+m;
     figure(fig); 
     clf
-    plot(logforce_nN, factorLeft, 'b.');
+    plot(logforce_nN, fractionLeft, 'b.');
     hold on    
-        e = errorbar( gca, logforce_nN, factorLeft, errbarlength, 'horizontal', '.', 'CapSize',3);
+        e = errorbar( gca, logforce_nN, fractionLeft, errbarlength, 'horizontal', '.', 'CapSize',3);
         e.LineStyle = 'none';
         e.Color = 'b';
         title(string(PlateID), 'Interpreter','none');
     hold off
     
     % configure everything using current data (includes weights)
-    fout  = ba_setup_fit(fitname, weights, Nmodes);
+    fout  = ba_fit_setup(Nmodes, weights);
     
 
     % Some number (k) of subsampling fits to generate. This could also
@@ -64,10 +62,10 @@ for m = 1:height(Data)
         tic 
         
         % Call the global optimizer [x,fval,exitflag,output,population,scores] 
-        [optimized_params(k,:), fval(k,1), exitflag(k,1), output(k,1)] = particleswarm(@(p) objectiveFunction(p, fout.fcn, logforce_nN, factorLeft, weights), ...
+        [optimized_params(k,:), fval(k,1), exitflag(k,1), output(k,1)] = particleswarm(@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...
                                         fout.Nparams, fout.lb, fout.ub, options);
         
-        rchisq(k,:) = reduced_chisquare(optimized_params(k,:), fout.fcn, logforce_nN, factorLeft);
+        rchisq(k,:) = red_chisquare(optimized_params(k,:), fout.fcn, logforce_nN, fractionLeft);
         
         t = toc;
         
@@ -91,7 +89,7 @@ end
 
 
 
-function error = objectiveFunction(params, fitfcn, logforce_nN, factorLeft, weights)
+function error = objectiveFunction(params, fitfcn, logforce_nN, fractionLeft, weights)
     % params: Parameters to be optimized, [a am as bm bs]
     % fitfcn: function to be fitted
     % xdata: Independent variable data
@@ -103,21 +101,8 @@ function error = objectiveFunction(params, fitfcn, logforce_nN, factorLeft, weig
     model_predictions = fitfcn(params, logforce_nN);
 
     % Calculate weighted squared error
-    weighted_errors = weights .* (model_predictions - factorLeft).^2;
+    weighted_errors = weights .* (model_predictions - fractionLeft).^2;
 %     weighted_errors = smooth(weighted_errors,5);
     error = sum(weighted_errors);
-end
-
-
-function redcs = reduced_chisquare(params, fitfcn, logforce_nN, factorLeft)
-    % Calculate model predictions using params and xdata
-    model_predictions = fitfcn(params, logforce_nN);
-
-    % Calculate weighted squared error
-    chisquare = sum( (model_predictions - factorLeft).^2 ./  factorLeft);
-
-    dof = numel(logforce_nN) - numel(params);
-
-    redcs = chisquare / dof;
 end
 

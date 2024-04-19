@@ -8,10 +8,11 @@ function B = clean_bigstudy_data(B)
             goodOrder = {'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
 %             goodOrder = {'COOH', 'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
 
+% XXX @jeremy TODO: Fix the category reordering issue here. Consult control and paper studies to find compatible solution for all present cases.
     B.FileTable.BeadChemistry( B.FileTable.BeadChemistry == "mPEG" ) = "PEG";
     B.FileTable.BeadChemistry( B.FileTable.BeadChemistry == "RhoPEG" ) = "PEG";
     B.FileTable.BeadChemistry = removecats(B.FileTable.BeadChemistry);
-    B.FileTable.BeadChemistry = reordercats(B.FileTable.BeadChemistry, goodOrder);
+%     B.FileTable.BeadChemistry = reordercats(B.FileTable.BeadChemistry, goodOrder);
     
     B.FileTable.SubstrateChemistry( B.FileTable.SubstrateChemistry == "mPEG" ) = "PEG";
     B.FileTable.SubstrateChemistry( B.FileTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
@@ -20,7 +21,7 @@ function B = clean_bigstudy_data(B)
     B.DetachForceTable.BeadChemistry( B.DetachForceTable.BeadChemistry == "mPEG" ) = "PEG";
     B.DetachForceTable.BeadChemistry( B.DetachForceTable.BeadChemistry == "RhoPEG" ) = "PEG";
     B.DetachForceTable.BeadChemistry = removecats(B.DetachForceTable.BeadChemistry);
-    B.DetachForceTable.BeadChemistry = reordercats(B.DetachForceTable.BeadChemistry, goodOrder);    
+%     B.DetachForceTable.BeadChemistry = reordercats(B.DetachForceTable.BeadChemistry, goodOrder);    
     
     B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
     B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "mPEG" ) = "PEG";

@@ -8,7 +8,7 @@ function optstart = ba_optimize_startpoint(logforce_nN, logforceinterval, fracti
 % designed to use..
 %
 
-fout = ba_setup_fit('erf-old', weights, Nmodes);
+fout = ba_fit_setup(Nmodes, weights);
 
 % optstart = optimize_lsqcurvefit(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, fout.lb, fout.ub);
 optstart = optimize_lsqnonlin(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, weights, fout.lb, fout.ub);

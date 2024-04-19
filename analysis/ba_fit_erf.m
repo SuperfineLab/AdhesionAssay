@@ -40,7 +40,7 @@ end
 
 function outs = fit_erf_model(logforce, fractionLeft, Nmodes, weights, startpoint)
 
-    fout = ba_setup_fit('erf-old', weights, Nmodes, startpoint);
+    fout = ba_fit_setup(Nmodes, weights, startpoint);
 %     opts = setup_fitoptions(weights, Nmodes, startpoint);
     
     f{1} = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as)))';
