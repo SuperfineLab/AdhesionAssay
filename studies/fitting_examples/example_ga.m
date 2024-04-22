@@ -29,16 +29,10 @@ for m = 1:height(Data)
 
     PlateID = Data.PlateID(m);
     rawdata = Data.RawData{m};
-    
-%<<<<<<< HEAD:studies/fitting_examples/ga_optimization_example.m
-    force = rawdata.Force;
-    errforce = rawdata.ForceError;
-    factorLeft = rawdata.PctLeft; 
-%=======
+        
     logforce_nN = log10(rawdata.Force);
     logforceinterval = log10(rawdata.ForceInterval);
     fractionLeft = rawdata.FractionLeft; 
-%>>>>>>> 4909e350a3d77380b71c051f0f5b6d39b2f8d137:studies/fitting_examples/example_ga.m
     weights = rawdata.Weights;
 
     % *** ga-specific options ***
@@ -80,7 +74,7 @@ for m = 1:height(Data)
         
         rchisq(k,:) = red_chisquare(optimized_params(k,:), fout.fcn, logforce_nN, fractionLeft);
         
-        t=toc
+        t = toc;
         
         tmpga = table(PlateID, k, max_generations, pop_size, t, exitflag(k,1), optimized_params(k,:), error(k,1), rchisq(k,:), ...
                      'VariableNames', {'PlateID', 'Run', 'MaxGenerations', 'PopulationSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
