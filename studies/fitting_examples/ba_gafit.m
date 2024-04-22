@@ -32,15 +32,9 @@ for m = 1:height(Data)
     PlateID = Data.PlateID(m);
     rawdata = Data.RawData{m};
     
-%<<<<<<< HEAD:studies/fitting_examples/ga_optimization_example.m
-    force = rawdata.Force;
-    errforce = diff(rawdata.ForceInterval,[],2)/2;
-
-%=======
     logforce_nN = log10(rawdata.Force);
     logforceinterval = log10(rawdata.ForceInterval);
     fractionLeft = rawdata.FractionLeft; 
-%>>>>>>> 4909e350a3d77380b71c051f0f5b6d39b2f8d137:studies/fitting_examples/example_ga.m
     weights = rawdata.Weights;
 
     % *** ga-specific options ***
@@ -76,7 +70,7 @@ for m = 1:height(Data)
         
 
         
-        %figure(fig); 
+       % figure(fig); 
        % subplot(1,3,1); 
        % hold on;
        % plot(logforce_nN, fout.fcn(optimized_params(k,:), logforce_nN), 'r-'); 
@@ -87,7 +81,9 @@ for m = 1:height(Data)
 
    % legend(['data', 'error', 'error', compose('%02.6d',error(:)')]);
 
-end
+end % end for-loop
+
+end % end function
 
 
 function error = objectiveFunction(params, fitfcn, logforce_nN, fractionLeft, weights)
@@ -107,7 +103,4 @@ function error = objectiveFunction(params, fitfcn, logforce_nN, fractionLeft, we
 end
 
 
-
-
-end
 
