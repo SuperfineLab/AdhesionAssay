@@ -36,17 +36,19 @@ for m = 1:height(Data)
     logforce_nN = log10(rawdata.Force);
     logforceinterval = log10(rawdata.ForceInterval);
     fractionLeft = rawdata.FractionLeft; 
-%     weights = rawdata.Weights;
-    weights = ones(size(rawdata.Weights));
+    weights = rawdata.Weights;
+%     weights = ones(size(rawdata.Weights));
 
     Np = numel(logforce_nN);
 
     % *** ga-specific options ***
-    max_generations = 3000;
+    max_generations = 4000;
     popsize = floor(Np/2);
     elitecount = ceil(popsize * 0.333);
     if elitecount >= popsize, elitecount = popsize -1; end
     options.MaxGenerations = max_generations;
+    if sum(weights) == numel(weights), FuncTol = 1e-7; else FuncTol = 2e-9; end
+    options.FunctionTolerance = FuncTol;
     options.PopulationSize = popsize;   
     options.ConstraintTolerance = 1e-4;
     options.CrossoverFraction = 0.6;
@@ -56,6 +58,13 @@ for m = 1:height(Data)
 
 
     fig{m} = figure;
+    xlabel('log_{10}(Force [nN])');
+    ylabel('Fraction left');
+    title(string(PlateID), 'Interpreter','none');
+    title(join(string(Data{m,{'PlateID', 'BeadChemistry', 'SubstrateChemistry', 'Media', 'pH'}}), ', '), 'Interpreter','none');
+    fig{m}.Units = 'normalized';
+    fig{m}.Position = [0.6161    0.5185    0.2917    0.3889];
+
 
     fout  = ba_fit_setup(Nmodes, weights);
 
@@ -84,18 +93,12 @@ for m = 1:height(Data)
 
     if plotTF                
         figure(fig{m}); 
-        clf
         hold on
             plot( logforce_nN, fractionLeft, 'Color', [0.8 0.8 0.8], 'Marker', '.', 'LineStyle', 'none');
             plot( logforceinterval(:,1), fractionLeft, 'Color', [0.8 0.8 0.8], 'LineStyle', '-');
             plot( logforceinterval(:,2), fractionLeft, 'Color', [0.8 0.8 0.8], 'LineStyle', '-');      
             plot(logforce_nN, fout.fcn(optimized_params(k,:), logforce_nN), 'r-'); 
         hold off
-        xlabel('log_{10}(Force [nN])');
-        ylabel('Fraction left');
-        title(string(PlateID), 'Interpreter','none');
-        fig{m}.Units = 'normalized';
-        fig{m}.Position = [0.6161    0.5185    0.2917    0.3889];
     end
     
     end
