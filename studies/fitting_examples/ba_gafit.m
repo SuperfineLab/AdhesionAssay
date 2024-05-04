@@ -46,8 +46,9 @@ for m = 1:height(Data)
     popsize = floor(Np/2);
     elitecount = ceil(popsize * 0.333);
     if elitecount >= popsize, elitecount = popsize -1; end
-    options.MaxGenerations = max_generations;
     if sum(weights) == numel(weights), FuncTol = 1e-7; else FuncTol = 2e-9; end
+    
+    options.MaxGenerations = max_generations;
     options.FunctionTolerance = FuncTol;
     options.PopulationSize = popsize;   
     options.ConstraintTolerance = 1e-4;
