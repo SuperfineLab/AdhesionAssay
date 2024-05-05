@@ -1,4 +1,4 @@
-function optstart = ba_optimize_startpoint(logforce_nN, logforceinterval, fractionLeft, weights, Nmodes)
+function [optstart, diagT] = ba_optimize_startpoint(logforce_nN, logforceinterval, fractionLeft, weights, Nmodes)
 % XXX @jeremy TODO: Add documentation for this function.
 %
 % Assembles a "protofit" that optimizes the fitting startpoints for the
@@ -8,21 +8,19 @@ function optstart = ba_optimize_startpoint(logforce_nN, logforceinterval, fracti
 % designed to use..
 %
 
-fout = ba_fit_setup(Nmodes, weights);
+fout = ba_fit_setup(Nmodes);
 
 % optstart = optimize_lsqcurvefit(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, fout.lb, fout.ub);
-optstart = optimize_lsqnonlin(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, weights, fout.lb, fout.ub);
+% optstart = optimize_lsqnonlin(fout, logforce_nN, fractionLeft, weights);
 % optstart = optimize_lsqnonlin(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, [], fout.lb, fout.ub);
-% optstart = optimize_ga(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, weights, fout.lb, fout.ub);
+[optstart, diagT] = optimize_ga(fout, logforce_nN, fractionLeft, weights);
 
-gray = [0.5 0.5 0.5];
-
-f = figure;
+figure;
 hold on
-plot( logforce_nN, fractionLeft, 'Color', gray, 'Marker', '.', 'LineStyle', 'none');
-plot( logforceinterval(:,1), fractionLeft, 'Color', gray+0.3, 'LineStyle', '-');
-plot( logforceinterval(:,2), fractionLeft, 'Color', gray+0.3, 'LineStyle', '-');      
-plot( logforce_nN, fout.fcn(optstart, logforce_nN), 'Color', 'r', 'LineStyle', '-');
+    plot( logforce_nN, fractionLeft, 'Color', 'r', 'Marker', '.', 'LineStyle', 'none');
+    plot( logforceinterval(:,1), fractionLeft, 'Color', [0.8 0.8 0.8], 'LineStyle', '-');
+    plot( logforceinterval(:,2), fractionLeft, 'Color', [0.8 0.8 0.8], 'LineStyle', '-');      
+    plot( logforce_nN, fout.fcn(optstart, logforce_nN), 'Color', 'k', 'LineStyle', '-');
 hold off
 xlabel('log_{10}(Force [nN])');
 ylabel('Factor left');
@@ -34,18 +32,45 @@ end
 
 
 % Solve best fit using global optimization and genetic algorithm
-function optstart = optimize_ga(fitfcn, p0, logforce_nN, fractionLeft, weights, lb, ub)
+function [optstart, diagT] = optimize_ga(fout, logforce_nN, fractionLeft, weights)
 
-    [costfunction, costerror] = calculated_error(p0, fitfcn, logforce_nN, fractionLeft, weights);
+    Ns = numel(logforce_nN);
+    
+    % *** header for ga-specific options (tweaked for the input data) ***
+    max_generations = 6000;
+    popsize = floor(Ns/2);
+    elitecount = ceil(popsize * 0.28);
+    weights = ones(size(weights));
 
-    opts = optimoptions(@ga, 'Display', 'final');
-    problem = createOptimProblem('ga','x0',p0,'objective',costfunction,...
-        'lb',lb,'ub',ub,options=opts);
+    if elitecount >= popsize, elitecount = popsize-1; end
+    if sum(weights) == numel(weights), FuncTol = 1e-8; else FuncTol = 2e-10; end
+
+    % Define "ga" optimization options that do not change during run
+    options = ba_fitoptions("ga");
+    options.PlotFcn = {'gaplotscores','gaplotbestlogf'};
+    options.UseParallel = true;
+    options.MaxGenerations = max_generations;
+    options.MutationFcn = @mutationadaptfeasible;
+    options.FunctionTolerance = FuncTol;
+    options.PopulationSize = popsize;   
+    options.ConstraintTolerance = 1e-4;
+    options.CrossoverFraction = 0.49;
+    options.EliteCount = elitecount; 
+    options.HybridFcn = 'fmincon';
 
 
     % Call the global optimizer
-    [optstart, error] = ga(@(params) calculated_error(params, fitfcn, logforce_nN, fractionLeft, weights), ...
-                           numel(p0), [], [], [], [], lb, ub, [], opts);
+    tic
+    [optstart, error, exitflag, output] = ga(@(params) gafit_error(params, fout.fcn, logforce_nN, fractionLeft, weights), ...
+                           fout.Nparams, fout.Aineq, fout.bineq, [], [], fout.lb, fout.ub, [], options);
+    t = toc;
+
+    rchisq = red_chisquare(optstart, fout.fcn, logforce_nN, fractionLeft, weights);
+    
+    RawData = table(logforce_nN, fractionLeft, weights, ...
+                    'VariableNames', {'LogForce_nN', 'FractionLeft', 'Weights'});
+    diagT =  table(optstart, error, rchisq, t, exitflag, output.generations, max_generations, popsize, {RawData}, ...
+             'VariableNames', {'OptimizedParameters', 'TotalError', 'RedChiSq', 'SolveTime', 'ExitFlag', 'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', 'RawData'});
     
 end
 
@@ -68,26 +93,25 @@ end
 
 
 
-function optstart = optimize_lsqnonlin(fitfcn, p0, logforce_nN, fractionLeft, weights, lb, ub)
+function optstart = optimize_lsqnonlin(fout, logforce_nN, fractionLeft, weights)
 
     if isempty(weights)
         weights = ones(size(logforce_nN));
     end
 
-    costfunction = @(p) weights .* (fitfcn(p,logforce_nN)-fractionLeft).^2;
+    costfunction = @(p) weights .* (fout.fcn(p,logforce_nN)-fractionLeft).^2;
 
-    probopts = optimoptions(@lsqnonlin, 'Display', 'off'); % Display: 'final' or 'off'
+    probopts = optimoptions(@lsqnonlin, 'Display', 'off'); % Display: 'final' or 'off'    
+    problem = createOptimProblem('lsqnonlin','x0',fout.StartPoint,'objective',costfunction,...
+        'lb',fout.lb,'ub',fout.ub, options=probopts);
     
-    problem = createOptimProblem('lsqnonlin','x0',p0,'objective',costfunction,...
-        'lb',lb,'ub',ub,options=probopts);
-    
-    ms = MultiStart('PlotFcns',@gsplotbestf);
+%     ms = MultiStart('PlotFcns',@gsplotbestf);
     ms = MultiStart("Display","off");
     [optstart,errormulti] = run(ms,problem,200);
 end
 
 
-function [weighted_errors, error] = calculated_error(params, fitfcn, logforce_nN, fractionLeft, weights)
+function error = gafit_error(params, fitfcn, logforce_nN, fractionLeft, weights)
     % params: Parameters to be optimized, [a am as bm bs]
     % logforce_nN: detachment force in nN
     % fractionLeft: fraction of beads still attached
@@ -99,7 +123,7 @@ function [weighted_errors, error] = calculated_error(params, fitfcn, logforce_nN
 
     % Calculate weighted squared error
     weighted_errors = weights .* (predicted_fractionLeft - fractionLeft).^2;
-    error = sum(weighted_errors);
+    error = sum(weighted_errors, [], 'omitnan');
 end
 
 
