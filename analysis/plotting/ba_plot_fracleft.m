@@ -1,94 +1,82 @@
-function ba_plot_fracleft(ba_process_data, aggregating_variables, plotFerrTF)
+function ba_plot_fracleft(ba_process_data, plotFerrTF)
 
-if nargin < 3 || isempty(plotFerrTF)
+if nargin < 2 || isempty(plotFerrTF)
     plotFerrTF = false;
 end
 
 Data = ba_process_data.DetachForceTable;
 
 % "Fraction Left" plot is always going to be plotting the Fraction of beads
-% left to detach vs the force at which they detach. SO, that means all we
-% need are the aggregating variables AND those relevant columns
-ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'FractionLeft'};
-FileTableVars = [{'Fid'}, aggregating_variables(:)'];
-% FileTableVars = {'Fid', aggregating_variables{:}};
-
-
+% left to detach vs the force at which they detach. 
 
 cmap = lines(height(Data));
-
 
 f = figure;
 
 for k = 1:height(Data)
 
-    myfit = Data.FitObject{k};
+    fiteq = Data.fout(k).fcn;
+    p = Data.p(k,:);
+    
     mylogforce = log10(Data.RawData{k}.Force);
     mylogforceCI = log10(Data.RawData{k}.ForceInterval);
     myfractionleft = Data.RawData{k}.FractionLeft;
     
-    logerr = ba_ci2err(mylogforce, mylogforceCI, 'log', 'log');
-    mylogforce_errlow = logerr(:,1);
-    mylogforce_errhigh = logerr(:,2);
-
     figure(f);
     hold on;
-    if contains(class(Data.FitObject{k}), 'cfit')
-        h = plot(myfit, mylogforce, myfractionleft);
-        set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), 'MarkerFaceColor', cmap(k,:))
-        set(h(2), 'LineStyle', '-', 'LineWidth', 2, 'Color', cmap(k,:));
-    else
-        h = plot(mylogforce, myfractionleft, 'o');
-        set(h(1), 'Marker', 'o', 'MarkerEdgeColor', cmap(k,:), ...
-                  'MarkerFaceColor', cmap(k,:));
-    end
-
+    plot(mylogforce, fiteq(p, mylogforce), 'LineStyle', '-', ...
+                                           'LineWidth', 1, ...
+                                           'Color', cmap(k,:), ...
+                                           'Marker', 'none');
+    h = plot(mylogforce, myfractionleft, 'LineStyle', 'none', ...
+                                         'Marker', 'o', ...
+                                         'MarkerEdgeColor', cmap(k,:), ...
+                                         'MarkerFaceColor', cmap(k,:));
     if plotFerrTF
-        h = errorbar(mylogforce, myfractionleft, mylogforce_errlow, mylogforce_errhigh);
-%             , 'horizontal', 'LineStyle','None','Color',cmap(k,:));
-    end
+        % tweaking the errorbar color to be lower saturation and higher luminance 
+        hsv = rgb2hsv(cmap(k,:));
+        hsv(2:3) = [hsv(2)*0.6 hsv(3) * 1.1];
+        hsv(hsv>1) = 1;
+        quietrgb = hsv2rgb(hsv);
 
-    LineHandles(k,:) = h;
-    ystrings{k} = Data.BeadChemistry(k);
+%        % plotting as lines
+%        plot(mylogforceCI, myfractionleft, 'LineStyle', '-', ...
+%                                            'LineWidth', 0.5, ...
+%                                            'color', quietrgb)
+%        % plotting as bars only
+%        plot(mylogforceCI, myfractionleft, 'LineStyle', 'none', ...
+%                                            'Marker', '|', ...
+%                                            'MarkerEdgeColor', quietrgb, ...
+%                                            'MarkerFaceColor', quietrgb);                                               
+%       % "manual" error bars
+%         plot(mylogforceCI', repmat(myfractionleft,1,2)', 'LineStyle', '-', ...
+%                                            'Color', quietrgb, ...
+%                                            'Marker', '|', ...
+%                                            'MarkerEdgeColor', quietrgb, ...
+%                                            'MarkerFaceColor', quietrgb);                                               
+        % default errorbars
+        errorbar(mylogforce, myfractionleft, ...
+                 mylogforce-mylogforceCI(:,1), mylogforceCI(:,2)-mylogforce, ...
+                 'horizontal', 'LineStyle', 'None', 'Color', quietrgb);            
+    end
+    hold off;
+    LineHandles(k,:) = h; %#ok<AGROW> 
+    ystrings{k} = Data.BeadChemistry(k); %#ok<AGROW> 
 
 end
-
         
 ystrings = cellfun(@char, ystrings, 'UniformOutput', false);
 
 figure(f);
 xlabel('logForce [nN]', 'Interpreter', 'none' );
 ylabel('Fraction Left', 'Interpreter', 'none' );
-grid on
-
-ax = gca;
-% ax.XScale = 'log';
-
 legend( LineHandles(:,1), ystrings, 'Location', 'SouthWest', 'Interpreter', 'none' );
 ylim([0 1])
 xlim([-1.5 1.5])
 grid on
-
-% hold off;
-% figure(f)
-% ax = gca;
-% ax.XScale = 'log';
-% ax.YScale = 'linear';
-% ylim([0 1.02])
-% grid on
 
 
 
 
 end
 
-
-% function outs = sa_sortforce(forceANDfractionleft, direction)
-% 
-%     if nargin < 2 || isempty(direction)
-%         direction = 'ascend';
-%     end
-% 
-%     [outs,Fidx] = sortrows(forceANDfractionleft, direction);
-% 
-% end
