@@ -96,7 +96,7 @@ end
 
 
 function error = objectiveFunction(params, fitfcn, logforce_nN, fractionLeft, weights)
-    % params: Parameters to be optimized, [a am as bm bs]
+    % params: Parameters to be optimized, [a am as b bm bs c cm cs ...]
     % xdata: Independent variable data
     % ydata: Dependent variable data
     % weights: Weight values for each data point
