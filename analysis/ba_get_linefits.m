@@ -14,6 +14,9 @@ if isempty(TrackingTable)
     return
 end
 
+% lower threshold force (bead: force_gravity - buoyancy force = 0.014 nN.
+lowForceLimit = 0.014 * 1e-9; % [N]
+
 t = TrackingTable.Frame ./ TrackingTable.Fps; % [s]
 [g, ID] = findgroups(TrackingTable.ID);
 
@@ -32,6 +35,7 @@ m.Mean_vel = mb(:,1) * calibum * 1e-6; % [m/s]
 m.VelInterval = cell2mat(myfits(:,4)) * calibum * 1e-6; % [m/s]
 m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval; % [N]
+m.ForceInterval(m.ForceInterval <= lowForceLimit) = lowForceLimit;
 m.ForceRelWidth = ba_relwidthCI(m.Force, m.ForceInterval);
 m.Weights = ba_weights(m.ForceInterval, 0.95);
 
