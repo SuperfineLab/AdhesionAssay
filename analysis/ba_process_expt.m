@@ -1,4 +1,4 @@
-function Data = ba_process_expt(filepath, modeltype, aggregating_variables, savefileTF)
+function Data = ba_process_expt(filepath, fitmethod, aggregating_variables, savefileTF)
 % BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
 %
 % This function begins the process of analyzing the output of the bead
@@ -8,8 +8,8 @@ function Data = ba_process_expt(filepath, modeltype, aggregating_variables, save
 % 
 % Inputs:
 %  filepath   path location of the tracking results for an "experiment"/plate.
+%  fitmethod  fitting method used. Can be "fit" or "lsqcurvefit" (for now)
 %  PlateID    string indentifier for the plate used in the experiment
-%  modeltype  model used for fitting forces. Can be "linear", "erf", or "exponential"
 %  aggregating_variables   The list of index variables for the experiment,
 %                          e.g, "pH", "BeadChemistry", "SubstrateChemistry", etc.
 %
@@ -25,8 +25,8 @@ if nargin < 3 || isempty(aggregating_variables)
     error('Need aggregating variables for compiling results.');
 end
 
-if nargin < 2 || isempty(modeltype)
-    modeltype = 'erf';
+if nargin < 2 || isempty(fitmethod)
+    fitmethod = 'fit';
 end
 
 if nargin < 1 || isempty(filepath)
@@ -79,7 +79,9 @@ if ~isfield(Data, 'ForceTable')
     Data.ForceTable = TmpTable;
 end
 
-Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, modeltype, true, true);
+weightTF = false;
+plotTF = false;
+Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, fitmethod, weightTF, plotTF);
 
 if savefileTF
     PlateName = string(unique(Data.FileTable.PlateID));
