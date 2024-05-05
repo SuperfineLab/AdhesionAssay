@@ -4,6 +4,7 @@ clear ps
 Nmodes = 2;
 
 PlateID = 'ba_240125coohni';
+Data = Broot.DetachForceTable;
 cooh = Data.RawData(Data.PlateID == PlateID);
 cooh = cooh{1};
 
@@ -32,17 +33,23 @@ legend('data', 'fit');
 title(join([string(PlateID) ', ' num2str(Nmodes) ' modes'], ''), 'Interpreter','none'); 
 drawnow
 
+fitmethod = 'fmincon';
+% fitmethod = 'lsqnonlin';
+opts = ba_fitoptions(fitmethod);
 
-opts = ba_fitoptions('fmincon');
-
-problem = createOptimProblem('fmincon', 'x0', fout.StartPoint, ...
+problem = createOptimProblem(fitmethod, 'x0', fout.StartPoint, ...
           'objective',@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...
-          'lb', fout.lb, 'ub', fout.ub, 'Aineq', fout.Aeq, 'bineq', fout.beq, 'options', opts)
+          'lb', fout.lb, 'ub', fout.ub, 'Aeq', fout.Aeq, 'beq', fout.beq, 'options', opts);
 
-[x,fval,exitflag,output] = fmincon(problem);
+% [x,fval,exitflag,output] = fmincon(problem);
+% [x,fval,exitflag,output] = lsqnonlin(problem);
+
+ms = MultiStart("Display","off");
+[x,fval,exitflag,output] = run(ms,problem,200);
+
 
 hold on
-    plot(logforce_nN, fout.fcn(output.bestfeasible.x,logforce_nN), 'r--');
+    plot(logforce_nN, fout.fcn(x,logforce_nN), 'r--');
     drawnow
 hold off
 
