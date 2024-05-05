@@ -27,10 +27,13 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, savedatafilesTF
     end
 
 
-    model = 'erf';
+%     fitmethod = 'lsqnonlin';
+%     fitmethod = 'lsqcurvefit';
+    fitmethod = 'fit';
+%     fitmethod = 'fmincon';
 
     for k = 1:length(DataSetDirs)
-        q = ba_process_expt([adp, DataSetDirs{k}, filesep], model, aggvar, savedatafilesTF);
+        q = ba_process_expt([adp, DataSetDirs{k}, filesep], fitmethod, aggvar, savedatafilesTF);
         BigFileT{k,1} = q.FileTable;
         BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
         BigTrackingT{k,1} = q.TrackingTable;
