@@ -12,6 +12,7 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 % close all
 
+improveBadFitsTF = true;
 savedatafilesTF = true;
 
 % aggregating_variables = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
@@ -42,8 +43,8 @@ rootdir = pwd;
 % concatenate into one big table.
 %
 % ** The load_bigstudy_data function is at the very bottom of this file. **
-if ~exist('Broot', 'var')
-    Broot = load_bigstudy_data(adp, DataSetDirs, aggregating_variables, savedatafilesTF );    
+if ~exist('Broot', 'var')               
+    Broot = load_bigstudy_data(adp, DataSetDirs, aggregating_variables, improveBadFitsTF, savedatafilesTF );    
 end
 B = clean_bigstudy_data(Broot);
 
