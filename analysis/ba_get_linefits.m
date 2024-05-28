@@ -1,7 +1,12 @@
-function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid)
+function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid, weightstyle)
 % BA_GET_LINEFITS calculates bead velocity and force from displacement line fits.
 %
+% XXX @jeremy TODO: Add documentation for this function
+%
 
+if nargin < 6 || isempty(weightstyle)
+    weightstyle = 'unweighted';
+end
 
 if isempty(TrackingTable)
     m = table('Size', [0 11], ...
@@ -37,7 +42,7 @@ m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval; % [N]
 m.ForceInterval(m.ForceInterval <= lowForceLimit) = lowForceLimit;
 m.ForceRelWidth = ba_relwidthCI(m.Force, m.ForceInterval);
-m.Weights = ba_weights(m.ForceInterval, 0.95);
+m.Weights = ba_weights(m.ForceInterval, 0.95, weightstyle);
 
 m = struct2table(m);
 
