@@ -1,6 +1,15 @@
 function fitfcn = ba_fitfcn(Nmodes)
-% XXX TODO @jeremy document this function 
+% BA_FITFCN returns the fitting function for the requested number of modes.
 %
+% fitfcn = ba_fitfcn(Nmodes)
+%
+% Output:
+%    fitfcn is the outputted function object for Nmodes
+% 
+% Input:
+%    Nmodes is the number of modes for the standard erf fitting equation.
+%
+
 
     if Nmodes == 0
         fitfcn = '@(x)(0)';
