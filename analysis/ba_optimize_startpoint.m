@@ -10,11 +10,7 @@ function startfitT = ba_optimize_startpoint(logforce_nN, logforceinterval, fract
 
 fout = ba_fit_setup(Nmodes);
 
-% startfitT = optimize_lsqcurvefit(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, fout.lb, fout.ub);
-% startfitT = optimize_lsqnonlin(fout, logforce_nN, fractionLeft, weights);
-% startfitT = optimize_lsqnonlin(fout.fcn, fout.StartPoint, logforce_nN, fractionLeft, [], fout.lb, fout.ub);
 startfitT = optimize_ga(fout, logforce_nN, fractionLeft, weights);
-% optstart = cell2mat(startfitT.OptimizedParameters);
 
 % figure;
 % hold on
@@ -107,41 +103,6 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
                                       'FinalPop', 'FinalScore', 'RawData', 'gaOpts'});
     
 end
-
-
-% function optstart = optimize_lsqcurvefit(fitfcn, p0, logforce_nN, fractionLeft, lb, ub)
-% 
-%     opts = optimset('Display', 'off');    
-%     
-%     probopts = optimoptions(@lsqcurvefit, 'Display', 'off');
-% 
-%     problem = createOptimProblem('lsqcurvefit','x0',p0,'objective',fitfcn,...
-%         'lb',lb,'ub',ub,'xdata',logforce_nN,'ydata',fractionLeft, options=probopts);
-%     
-% %     ms = MultiStart('PlotFcns',@gsplotbestf);
-%     ms = MultiStart("Display","off");
-% 
-%     % [X,FVAL,EXITFLAG,OUTPUT,SOLUTIONS] = run(ms, problem, 100);
-%     [optstart,errormulti] = run(ms,problem,100);
-% end
-%
-%
-% function optstart = optimize_lsqnonlin(fout, logforce_nN, fractionLeft, weights)
-% 
-%     if isempty(weights)
-%         weights = ones(size(logforce_nN));
-%     end
-% 
-%     costfunction = @(p) weights .* (fout.fcn(p,logforce_nN)-fractionLeft).^2;
-% 
-%     probopts = optimoptions(@lsqnonlin, 'Display', 'off'); % Display: 'final' or 'off'    
-%     problem = createOptimProblem('lsqnonlin','x0',fout.StartPoint,'objective',costfunction,...
-%         'lb',fout.lb,'ub',fout.ub, options=probopts);
-%     
-% %     ms = MultiStart('PlotFcns',@gsplotbestf);
-%     ms = MultiStart("Display","off");
-%     [optstart,errormulti] = run(ms,problem,200);
-% end
 
 
 function error = gafit_error(params, fitfcn, logforce_nN, fractionLeft, weights)
