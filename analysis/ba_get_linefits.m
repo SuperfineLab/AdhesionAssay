@@ -1,11 +1,20 @@
-function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid, weightstyle)
+function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid, weightmethod)
 % BA_GET_LINEFITS calculates bead velocity and force from displacement line fits.
 %
+% m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid, weightmethod)
+%
+% Output:
+%   m - Table containing the results of the velocity computations
+%
+% Inputs:
+%   TrackingTable - Tracking data outputted by 
+%   weightmethod - one from the below list of weighting computation options
+%        [ {unweighted}, inverseconf, scaled-inversebin, quantile ]
 % XXX @jeremy TODO: Add documentation for this function
 %
 
-if nargin < 6 || isempty(weightstyle)
-    weightstyle = 'unweighted';
+if nargin < 6 || isempty(weightmethod)
+    weightmethod = 'unweighted';
 end
 
 if isempty(TrackingTable)
@@ -42,7 +51,7 @@ m.Force = 6 * pi * visc_Pas * (bead_diameter_um/2 * 1e-6) * m.Mean_vel; % [N]
 m.ForceInterval = 6 * pi * visc_Pas * bead_diameter_um/2 * 1e-6 * m.VelInterval; % [N]
 m.ForceInterval(m.ForceInterval <= lowForceLimit) = lowForceLimit;
 m.ForceRelWidth = ba_relwidthCI(m.Force, m.ForceInterval);
-m.Weights = ba_weights(m.ForceInterval, 0.95, weightstyle);
+m.Weights = ba_weights(m.ForceInterval, 0.95, weightmethod);
 
 m = struct2table(m);
 
