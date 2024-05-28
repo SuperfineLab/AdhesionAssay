@@ -10,8 +10,22 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 % 
 
 
+persistent Nrun
+
+if isempty(Nrun)
+    Nrun = 1;
+else
+    Nrun = Nrun + 1;
+end
+
+disp(['Nrun = ', num2str(Nrun)]);
+
     if size(startpoint,1) > 1
         startpoint = startpoint(1,:);
+    end
+
+    if iscell(startpoint)
+        startpoint = cell2mat(startpoint);
     end
 
     if nargin < 3 || isempty(weights)
@@ -25,10 +39,11 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
     [logforce_nN, fractionLeft, weights] = prepareCurveData( logforce_nN, fractionLeft, weights );
     
     T = table('Size', [1 10], ...
-                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe', 'sse', 'rmse', 'FitSetup', 'FitOptions', 'Bootstat'}, ...
+                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe', 'sse', 'rmse', 'FitSetup', 'FitOptions', 'BootstatT'}, ...
                  'VariableTypes', {'double', 'double', 'double', 'double', 'double', 'double', 'double', 'struct', 'struct', 'double'});
     
-    fout = ba_fit_setup(2);
+    AvailModes = numel(startpoint)/3;
+    fout = ba_fit_setup(AvailModes);
     fout.StartPoint = startpoint;
 
     opts = ba_fitoptions(fitmethod);
@@ -39,24 +54,16 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 
         switch fitmethod
             case 'fit'
-                fout.fcn = @(p,Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))+(1-p(1))*erfc(((Fd)-p(5))/(sqrt(2)*p(6)))));
-                [result, bootstat] = bootstrap_old_fit_method(logforce_nN, fractionLeft, weights, fout, opts);
-                Nb = size(bootstat,1);
-                qtmp = mat2cell(bootstat, Nb, [6 ones(1,12)]);
-                BootstatT = table(qtmp{:}, ...
-                            'VariableNames', { 'FitParams', ...
-                                               'sse', 'rsquare', 'dfe', 'adjrsquare', 'rmse', ...
-                                               'redchisq', ...
-                                               'numobs', 'numparam', 'exitflag', 'iterations', 'funcCount', 'stepsize'});
-%                             'VariableTypes', cellstr(repmat("double",1,12)));
-
-%                 result = use_old_fit_method(logforce_nN, fractionLeft, weights, fout, opts);
+                if AvailModes == 2
+                    fout.fcn = @(p,Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))+(1-p(1))*erfc(((Fd)-p(5))/(sqrt(2)*p(6)))));
+                end
+                [result, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, weights, fout, opts);
             case {'lsqcurvefit', 'lsqnonlin', 'fminunc'}
                 result = use_unconstrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
-                bootstat = {[]};
+                BootstatT = {[]};
             case {'fmincon'}
                 result = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
-                bootstat = {[]};
+                BootstatT = {[]};
             otherwise
                 error('Fit method not implemented.');
         end
@@ -73,7 +80,7 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
         T.redchisq = NaN;
         T.FitSetup = fout;
         T.FitOptions = opts;
-        T.Bootstat = {[]};
+        T.BootstatT = {[]};
         return
 %         TableOut.FitObject = {''};
 %         TableOut.GoodnessOfFit = struct('sse', NaN, 'rsquare', NaN, 'dfe', NaN, 'adjrsquare', NaN, 'rmse', NaN);
@@ -94,7 +101,7 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
     T.redchisq = result.redchisq;
     T.FitSetup = fout;
     T.FitOptions = opts;
-    T.Bootstat = {BootstatT};
+    T.BootstatT = {BootstatT};
 end
 
 
@@ -165,57 +172,6 @@ function outs = use_old_fit_method(logforce_nN, fractionLeft, weights, fout, opt
     
 end
 
-
-function [outs, bootstat] = bootstrap_old_fit_method(logforce_nN, fractionLeft, weights, fout, opts)
-    % Hacking the "curve-fitting toolbox" version of the equation here and
-    % then merging the parameter list into a more universal expression for
-    % later computational analysis downstream.
-
-    fiteq = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as))+(1-a)*erfc(((Fd)-bm)/(sqrt(2)*bs)))';
-    ft = fittype( fiteq, 'independent', 'Fd', 'dependent', 'y' );
-    
-%     opts.Normalize = 'On';    
-    opts.Weights = weights;
-    opts.Lower = fout.lb([1 2 3 5 6]);
-    opts.Upper = fout.ub([1 2 3 5 6]);
-    opts.StartPoint = fout.StartPoint([1 2 3 5 6]);
-%     opts.Robust = 'On';
-
-    Nboot = 200;
-    tic
-%     [bootstat, bootsam] = bootstrp(Nboot, @(x,y)mybootfun(x,y,ft,opts), logforce_nN, fractionLeft);
-    [bci, bootstat] = bootci(Nboot, {@(x,y)mybootfun(x,y,ft,opts), logforce_nN, fractionLeft}, 'Type', 'percentile'); %, 'Options', s);        
-    toc
-
-%     outs.p = mean(bci(:,1:6),1);
-%     outs.pconf = bci(:,1:6);
-%     outs.sse = mean(bci(:,7));
-%     outs.rsquare = mean(bci(:,8));
-%     outs.dfe = mean(bci(:,9));
-%     outs.adjrsquare = mean(bci(:,10));
-%     outs.rmse = mean(bci(:,11));
-
-    outs.p = median(bootstat(:,1:6),1,'omitnan');
-    outs.pconf = bci(:,1:6);
-    outs.sse = median(bootstat(:,7),1,'omitnan');
-    outs.rsquare = median(bootstat(:,8),1,'omitnan');
-    outs.dfe = median(bootstat(:,9),1,'omitnan');
-    outs.adjrsquare = median(bootstat(:,10),1,'omitnan');
-    outs.rmse = median(bootstat(:,11),1,'omitnan');
-    outs.redchisq = median(bootstat(:,12), 1, 'omitnan');
-
-% %     % pull out highest adjrsquare (this may not be fair :/)
-% %     [~,idx] = max(bootstat(:,10), [], 'omitnan');
-% % 
-% %     outs.p = bootstat(idx,1:6);
-% %     outs.pconf = bci(:,1:6);
-% %     outs.sse = bootstat(idx,7);
-% %     outs.rsquare = bootstat(idx,8);
-% %     outs.dfe = bootstat(idx,9);
-% %     outs.adjrsquare = bootstat(idx,10);
-% %     outs.rmse = bootstat(idx,11);
-
-end
 
 function outs = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod)
 
@@ -348,47 +304,3 @@ end
 
 
 
-function pge = mybootfun(logforce_nN, fractionLeft, ft, myopts)
-
-    [logforce_nN, idx] = sort(logforce_nN);
-    fractionLeft = fractionLeft(idx,:);
-
-    [fitresult, gof, xtra] = fit( logforce_nN, fractionLeft, ft, myopts );
-    ptmp = coeffvalues(fitresult);
-
-    % Weighted reduced chi-square computation https://en.wikipedia.org/wiki/Reduced_chi-squared_statistic
-    r = xtra.residuals; 
-    W = diag(myopts.Weights);
-    dfe = numel(logforce_nN) - numel(ptmp);
-    redchisq = r' * W * r / dfe;
-
-    % This two mode model is constrained by definition, but that doesn't
-    % mean that we cannot wrap the old-style TWO-MODE ONLY parameters into 
-    % the new-style parameter vector, i.e. [a am as b bm bs]. This will
-    % allow for more integrated analysis later in the toolchain if and when
-    % we choose to revisit multiple modes beyond Nmodes=2
-    p(1,:) = [ptmp(1:3), 1-ptmp(1), ptmp(4:5)];
-
-    % Reorganize the modes so that the smallest one goes first. Perhaps
-    % this should be changed to be something else, but I don't know what
-    % yet.
-    idx = p(:,2) >= p(:,5);
-    p(idx,1:6) = [p(idx,4:6), p(idx,1:3)];
-
-
-% %     % This doesn't work. Table output isn't defined, maybe?
-% %     p = table(p, 'VariableNames', {'FitParam'});
-% %     g = struct2table(gof);
-% %     xtra = struct2table(xtra_output, 'AsArray', true);
-
-%     % This also doesn't work. Still complains about an isfinite error
-%     g(1,:) = struct2cell(gof);
-%     extra(1,:) = struct2cell(xtra);
-%     pout = horzcat(p, g, extra);
-
-
-    g(1,:) = [gof.sse gof.rsquare gof.dfe gof.adjrsquare gof.rmse];
-    e(1,:) = [xtra.numobs, xtra.numparam, xtra.exitflag, xtra.iterations, xtra.funcCount, xtra.stepsize];
-
-    pge(1,:) = horzcat(p, g, redchisq, e);
-end
