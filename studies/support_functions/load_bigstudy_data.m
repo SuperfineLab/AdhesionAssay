@@ -1,4 +1,4 @@
-function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, savedatafilesTF)
+function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsTF, savedatafilesTF)
 
     % all-data-path
     if nargin < 1 || isempty(adp)
@@ -33,7 +33,7 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, savedatafilesTF
 %     fitmethod = 'fmincon';
 
     for k = 1:length(DataSetDirs)
-        q = ba_process_expt([adp, DataSetDirs{k}, filesep], fitmethod, aggvar, savedatafilesTF);
+        q = ba_process_expt([adp, DataSetDirs{k}, filesep], fitmethod, aggvar, improveBadFitsTF, savedatafilesTF);
         BigFileT{k,1} = q.FileTable;
         BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
         BigTrackingT{k,1} = q.TrackingTable;
