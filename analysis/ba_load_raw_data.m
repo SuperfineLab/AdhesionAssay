@@ -1,31 +1,19 @@
 function outs = ba_load_raw_data(filepath)
-% XXX @stephensnare TODO: Update the doctext for this function 
 % BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
+%
+% outs = ba_load_raw_data(filepath)
 %
 % This function begins the process of analyzing the output of the bead
 % adhesion experiment where the bead detaches from the surface and moves
 % through z while being tracked by vst. The z-velocity is then used to back
 % out the detachment force.
 % 
-% Inputs:
+% Input:
 %  filepath   path location of the tracking results for an "experiment"/plate.
-%  PlateID    string indentifier for the plate used in the experiment
-%  modeltype  model used for fitting forces. Can be "linear", "erf", or "exponential"
-%  aggregating_variables   The list of index variables for the experiment,
-%                          e.g, "pH", "BeadChemistry", "SubstrateChemistry", etc.
 %
 % Output:
 %  outs   structure containing tables of File, Bead/Tracking, and Force Data
 %
-
-% if nargin< 3 || isempty('modeltype')
-%     modeltype = 'erf';
-% end
-% 
-% if nargin < 2 || isempty('PlateID')
-%     logentry('No PlateID defined. Creating random one.');
-%     PlateID = ['PL-' num2str(randi(2^32,1,1))];
-% end
 
 rootdir = pwd;
 
