@@ -1,32 +1,43 @@
-function Data = ba_process_expt(filepath, fitmethod, aggregating_variables, savefileTF)
-% BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
+function Data = ba_process_expt(filepath, aggregating_variables, weightmethod, improveBadFitsTF, savefileTF)
+% BA_PROCESS_EXPT analyzes a bead adhesion experiment for detachment forces
 %
 % This function begins the process of analyzing the output of the bead
 % adhesion experiment where the bead detaches from the surface and moves
 % through z while being tracked by vst. The z-velocity is then used to back
 % out the detachment force.
 % 
-% Inputs:
-%  filepath   path location of the tracking results for an "experiment"/plate.
-%  fitmethod  fitting method used. Can be "fit" or "lsqcurvefit" (for now)
-%  PlateID    string indentifier for the plate used in the experiment
-%  aggregating_variables   The list of index variables for the experiment,
-%                          e.g, "pH", "BeadChemistry", "SubstrateChemistry", etc.
-%
 % Output:
 %  Data   structure containing tables of File, Bead/Tracking, and Force Data
 %
+% Inputs:
+%   filepath*   path location of the tracking results for an "experiment"/plate.
+%   aggregating_variables*   The list of index variables for the experiment,
+%     e.g, "pH", "BeadChemistry", "SubstrateChemistry", etc.
+%   weightmethod - one from the below list of weighting computation options
+%     [ unweighted, inverseconf, scaled-inversebin, {quantile} ]
+%   improveBadFitsTF - [{true} false] switch for using distribution of the 
+%       sum-square-error (SSE) to re-fit datasets with abnormally high SSE
+%   savefileTF - [true {false}] switch for saving results to the data
+%       directory
+%
+% Notes: (*) denotes required parameters (i.e., no default values)
+%
 
-if nargin < 4 || isempty(savefileTF)
+
+if nargin < 5 || isempty(savefileTF)
     savefileTF = false;
 end
 
-if nargin < 3 || isempty(aggregating_variables)
-    error('Need aggregating variables for compiling results.');
+if nargin < 4 || isempty(improveBadFitsTF)
+    improveBadFitsTF = true;
 end
 
-if nargin < 2 || isempty(fitmethod)
-    fitmethod = 'fit';
+if nargin < 3 || isempty(weightmethod)
+    weightmethod = 'quantile';
+end
+
+if nargin < 2 || isempty(aggregating_variables)
+    error('Need aggregating variables for compiling results.');
 end
 
 if nargin < 1 || isempty(filepath)
@@ -64,7 +75,9 @@ end
 
 if ~isfield(Data, 'ForceTable')
 
-    Data.ForceTable = ba_make_ForceTable(Data);
+%     Data.ForceTable = ba_make_ForceTable(Data, 'unweighted');
+    WeightMethod = 'quantile';
+    Data.ForceTable = ba_make_ForceTable(Data, WeightMethod);
           
     % Update FileTable with remaining bead count once pulls are completed
     Data.FileTable = ba_calc_BeadsLeft(Data);
@@ -79,9 +92,18 @@ if ~isfield(Data, 'ForceTable')
     Data.ForceTable = TmpTable;
 end
 
-weightTF = false;
-plotTF = false;
-Data.DetachForceTable = ba_plate_detachmentforces(Data, aggregating_variables, fitmethod, weightTF, plotTF);
+% weightmethod = 'quartile';
+% weightmethod = 'unweighted';
+[tmpDetachForceTable, optstartT] = ba_plate_detachmentforces(Data, aggregating_variables, fitmethod, weightmethod);
+
+if ~improveBadFitsTF
+    Data.DetachForceTable = tmpDetachForceTable;
+else
+    logentry('Improving bad fits...');
+    Data.DetachForceTable = ba_improve_bad_fits(tmpDetachForceTable, aggregating_variables, optstartT);
+end
+
+Data.aggregating_variables = aggregating_variables;
 
 if savefileTF
     PlateName = string(unique(Data.FileTable.PlateID));
