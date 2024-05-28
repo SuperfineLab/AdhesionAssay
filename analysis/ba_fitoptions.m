@@ -1,6 +1,14 @@
 function opts = ba_fitoptions(method)
-% XXX @jeremy TODO: Write documentation
-%  method: {fit}, fmincon, lsqcurvefit, lsqnonlin, ga, particleswarm, patternsearch
+% BA_FITOPTIONS sets default fit options for methods tested in the AdhesionAssay.
+% 
+%  opts = ba_fitoptions(method)
+%
+% Output:
+%   opts   options structure customized to method.
+%
+% Input:
+%   method: {fit}, fmincon, lsqcurvefit, lsqnonlin, ga, particleswarm, patternsearch
+%
 
     if nargin < 1 || isempty(method)
         method = 'fit';
