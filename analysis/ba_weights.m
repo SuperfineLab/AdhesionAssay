@@ -9,7 +9,7 @@ function weights = ba_weights(conf_lowhi, conflevel, weightmethod, nbins)
 % Inputs: 
 %   conf_lowhi* - two-column vector containing [low,high] conf intervals
 %   conflevel* - confidence level for "conf_lowhi" (likely 0.95)
-%   weightmethod - one of a few weighting options from the list below
+%   weightmethod - one from the below list of weighting computation options
 %        [ {unweighted}, inverseconf, scaled-inversebin, quantile ]
 %   nbins - number of bins available for weightmethod, default: 3
 %
