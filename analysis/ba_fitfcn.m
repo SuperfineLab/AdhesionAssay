@@ -2,6 +2,11 @@ function fitfcn = ba_fitfcn(Nmodes)
 % XXX TODO @jeremy document this function 
 %
 
+    if Nmodes == 0
+        fitfcn = '@(x)(0)';
+        return
+    end
+
     Nparams = Nmodes*3;
     plist = reshape(1:Nparams,3,[])';
     
