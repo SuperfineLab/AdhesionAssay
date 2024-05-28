@@ -15,8 +15,9 @@ f = figure;
 
 for k = 1:height(Data)
 
-    fiteq = Data.fout(k).fcn;
-    p = Data.p(k,:);
+    fiteq = Data.FitSetup(k).fcn;
+    p = Data.FitParams(k,:);
+    if iscell(p), p = p{1}; end
     
     mylogforce = log10(Data.RawData{k}.Force);
     mylogforceCI = log10(Data.RawData{k}.ForceInterval);
