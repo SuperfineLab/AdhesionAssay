@@ -1,5 +1,16 @@
 function fout = ba_fit_setup(Nmodes, startpoint)
-% XXX @jeremy TODO: Write documentation
+% BA_FIT_SETUP sets up the standard Adhesion Assay fitting equation (erf)
+% 
+%   fout = ba_fit_setup(Nmodes, startpoint)
+%
+% Output: 
+%   fout - output structure containing fitting equation object, upper and
+%          lower fitting bounds, parameter constraints, starting guesses, 
+%          and the numbers of fitting modes and equation parameters.
+%
+% Inputs:
+%   Nmodes - number of fitting modes (three fitting parameters per node.)
+%   startpoint - first guess for parameters in fitting function.
 %
 
     % new form
