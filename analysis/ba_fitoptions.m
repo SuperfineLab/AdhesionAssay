@@ -44,10 +44,14 @@ function opts = ba_fitoptions(method)
             opts.DiffMinChange = 1e-08;
             opts.DiffMaxChange = 0.01;
         case 'ga'
-            opts.MaxGenerations = 1500;
+            opts.MaxGenerations = 7000; % 6000;            
             opts.PopulationSize = 10;
             opts.FunctionTolerance = 1e-7;
-            opts.PlotFcn = {'gaplotscores','gaplotbestf'};
+            opts.MutationFcn = @mutationadaptfeasible;
+            opts.ConstraintTolerance = 1e-4;
+            opts.CrossoverFraction = 0.50;
+            opts.HybridFcn = 'fmincon';
+            opts.PlotFcn = {}; % {'gaplotscores','gaplotbestf'};
             opts.UseParallel = true;
         case 'particleswarm'
             opts.HybridFcn = "fmincon";
