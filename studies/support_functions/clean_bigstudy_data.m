@@ -27,8 +27,12 @@ function B = clean_bigstudy_data(B)
     B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "mPEG" ) = "PEG";
     B.DetachForceTable.SubstrateChemistry = removecats(B.DetachForceTable.SubstrateChemistry);
 
-%     B.DetachForceTable.DetachForce(abs(imag(B.DetachForceTable.DetachForce)) > ...
-%                                    0.1*abs(real(B.DetachForceTable.DetachForce))) = complex(NaN);
-%     B.DetachForceTable.DetachForce =  abs(B.DetachForceTable.DetachForce);
-%     B.DetachForceTable.DetachForce( isnan(B.DetachForceTable.DetachForce) ) = 111;
+    B.OptimizedStartTable.BeadChemistry( B.OptimizedStartTable.BeadChemistry == "RhoPEG" ) = "PEG";
+    B.OptimizedStartTable.BeadChemistry( B.OptimizedStartTable.BeadChemistry == "mPEG" ) = "PEG";
+    B.OptimizedStartTable.BeadChemistry = removecats(B.OptimizedStartTable.BeadChemistry);
+%     B.OptimizedStartTable.BeadChemistry = reordercats(B.OptimizedStartTable.BeadChemistry, goodOrder);    
+    
+    B.OptimizedStartTable.SubstrateChemistry( B.OptimizedStartTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
+    B.OptimizedStartTable.SubstrateChemistry( B.OptimizedStartTable.SubstrateChemistry == "mPEG" ) = "PEG";
+    B.OptimizedStartTable.SubstrateChemistry = removecats(B.OptimizedStartTable.SubstrateChemistry);
 end
