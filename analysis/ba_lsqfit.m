@@ -43,7 +43,7 @@ for m = 1:height(Data)
 
     temptable.PlateID = PlateID;
     temptable = struct2table(temptable);
-    temptable.OptimizedParameters = myfit;
+    temptable.OptimizedStartParameters = myfit;
     temptable = [temptable,array2table(myfiterror)];
     temptable.SolveTime = t;
     
@@ -63,7 +63,7 @@ for m = 1:height(Data)
 end
 
 lsqout = vertcat(lsqout{:});
-lsqout.Properties.VariableNames = {'PlateID', 'OptimizedParameters','fiterror','SolveTime','RedChisq'};
+lsqout.Properties.VariableNames = {'PlateID', 'OptimizedStartParameters','fiterror','SolveTime','RedChisq'};
 
 end
 
