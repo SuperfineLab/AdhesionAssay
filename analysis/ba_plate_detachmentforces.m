@@ -17,8 +17,11 @@ function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggr
     % "Fraction Left" plot is always going to be plotting the Fraction of beads
     % left to detach vs the force at which they detach. SO, that means all we
     % need are the aggregating variables AND those relevant columns    
-    FileTableVars = unique([{'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', 'FirstFrameBeadCount', 'LastFrameBeadCount'}, aggregating_variables(:)'], 'stable');
-    ForceTableVars = {'Fid', 'SpotID', 'Force', 'ForceInterval', 'ForceRelWidth', 'Weights'};
+    FileTableVars = unique([{'PlateID', 'Fid', 'Well', ...
+                             'PlateRow', 'PlateColumn', 'FirstFrameBeadCount', 'LastFrameBeadCount'}, ...
+                             aggregating_variables(:)'], 'stable');
+    ForceTableVars = {'Fid', 'SpotID', 'Force', ...
+                      'ForceInterval', 'ForceRelWidth', 'Weights'};
 
     RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
@@ -108,12 +111,11 @@ function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggr
 %     TableOut = horzcat(TableOut, optstartT(:, {''}));
 
     % 7. Do the final fits and bootstrapping for stats collection
-    % fitmethod = 'lsqcurvefit'; % fitmethod = 'fit';
     fitT = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,Nmodes,fitmethod), ...
                                       log10(RelevantData.Force), ...                                                  
                                       RelevantData.FractionLeft, ...
                                       RelevantData.Weights, ...
-                                      RelevantData.OptimizedParameters, ...
+                                      RelevantData.OptimizedStartParameters, ...
                                       g);     
     TableOut = horzcat(TableOut, fitT);
     TableOut = movevars(TableOut, 'PlateID', "Before", 1);
@@ -158,10 +160,9 @@ end
 %
 % Support Functions
 %
-function FitT = sa_optimize_start(logforce_nN, logforceinterval, fractionleft, weights, includetf, nmodes)
+function OptStartT = sa_optimize_start(logforce_nN, logforceinterval, fractionleft, weights, includetf, nmodes)
 
     Npoints = numel(logforce_nN);
-    Nparams = nmodes * 3;
     highestNmodes = floor((Npoints-1)/3);
     
     if highestNmodes < nmodes
@@ -171,11 +172,11 @@ function FitT = sa_optimize_start(logforce_nN, logforceinterval, fractionleft, w
 
 
 % (logforce_nN, fractionLeft, weights, Nmodes)
-    FitT = ba_optimize_startpoint(logforce_nN(includetf), ...
-                                  logforceinterval(includetf,:), ...
-                                  fractionleft(includetf), ...
-                                  weights(includetf), ...
-                                  nmodes);
+    OptStartT = ba_optimize_startpoint(logforce_nN(includetf), ...
+                                       logforceinterval(includetf,:), ...
+                                       fractionleft(includetf), ...
+                                       weights(includetf), ...
+                                       nmodes);
 end
 
 
@@ -267,8 +268,8 @@ end
 % end
 
 
-function outs = sa_assemble_rawdata(force, force_error_factor, force_interval, fractionleft, weights, includetf)
-    outs = table(force, force_error_factor, force_interval, fractionleft, weights, includetf);
+function outs = sa_assemble_rawdata(force, force_relwidth, force_interval, fractionleft, weights, includetf)
+    outs = table(force, force_relwidth, force_interval, fractionleft, weights, includetf);
     outs.Properties.VariableNames = {'Force', 'ForceRelWidth', 'ForceInterval', 'FractionLeft', 'Weights', 'IncludeInFit'};
-    outs.Properties.VariableUnits = {'[nN]',  '[nN]',             '[nN]',          '[]',         '[]',      '[]'};
+    outs.Properties.VariableUnits = {'[nN]',  '[nN]',          '[nN]',          '[]',           '[]',      '[]'};
 end
