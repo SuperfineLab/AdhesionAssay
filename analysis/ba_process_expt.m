@@ -94,13 +94,22 @@ end
 
 % weightmethod = 'quartile';
 % weightmethod = 'unweighted';
-[tmpDetachForceTable, optstartT] = ba_plate_detachmentforces(Data, aggregating_variables, fitmethod, weightmethod);
+fitmethod = 'fit';
 
-if ~improveBadFitsTF
-    Data.DetachForceTable = tmpDetachForceTable;
+[tmpDetachForceTable, tmpOptstartT] = ba_plate_detachmentforces(Data, aggregating_variables, fitmethod, weightmethod);
+
+% default case, i.e., when there's no-improvement of fits, the output's
+% DetachForceTable becomes equal to the the tmp variable. Change it later
+% when it matters...
+Data.DetachForceTable = tmpDetachForceTable;
+Data.OptimizedStartTable = tmpOptstartT;
+if improveBadFitsTF && height(tmpDetachForceTable) == 1
+    logentry('Cannot improve statistics on fits when only one fit exists.');
+%     Data.DetachForceTable = tmpDetachForceTable;
+%     Data.OptStartT = tmpOptstartT;
 else
     logentry('Improving bad fits...');
-    Data.DetachForceTable = ba_improve_bad_fits(tmpDetachForceTable, aggregating_variables, optstartT);
+    [Data.DetachForceTable, Data.OptimizedStartTable] = ba_improve_bad_fits(tmpDetachForceTable, tmpOptstartT, aggregating_variables);
 end
 
 Data.aggregating_variables = aggregating_variables;
@@ -115,6 +124,7 @@ end
 cd(rootdir);
 
 end
+
 
 
 
