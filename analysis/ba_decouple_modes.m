@@ -1,4 +1,4 @@
-function outs = ba_decouple_modes(DetachForceTable, groupvars)
+function outs = ba_decouple_modes(ForceFitTable, groupvars)
 % BA_DECOUPLE_MODES outputs fit parameters decoupled mode-by-mode from full fit equation
 %
 %
@@ -11,7 +11,7 @@ Ngroupvars = numel(groupvars);
 
 % Add the fitting parameters and their confidence intervals as variables
 % for the new table
-T = DetachForceTable(:, [groupvars, 'FitParams', 'confFitParams']);
+T = ForceFitTable(:, [groupvars, 'FitParams', 'confFitParams']);
 
 % Weirdness in code somewhere that embeds parameter list into a secondary
 % level cell class/type. Until I dig it out, this will extract the

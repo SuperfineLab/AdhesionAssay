@@ -6,7 +6,7 @@
 clear pstart optimized_params fval exitflag output
 clear pat_summary   % comment this out if comparing parameters across several runs
 
-Data = B.DetachForceTable;
+Data = B.ForceFitTable;
 
 if ~exist('pat_summary', 'var')
     pat_summary = table('Size', [0 7], ...

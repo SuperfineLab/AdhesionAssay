@@ -33,8 +33,8 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
         BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
         BigTrackingT{k,1} = q.TrackingTable;
         BigBeadInfoT{k,1} = q.BeadInfoTable;
-        BigForceT{k,1} = q.ForceTable;
-        BigForceFitT{k,1} = q.DetachForceTable;
+        BigForceT{k,1} = q.BeadForceTable;
+        BigForceFitT{k,1} = q.ForceFitTable;
         BigOptStartTable{k,1} = q.OptimizedStartTable;
     end
 
@@ -42,7 +42,7 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
     BigStudy.TimeHeightVidStatsTable = vertcat(BigTimeHeightVidStatsT{:});
     BigStudy.BeadInfoTable = vertcat(BigBeadInfoT{:});
     BigStudy.TrackingTable = vertcat(BigTrackingT{:});
-    BigStudy.ForceTable = vertcat(BigForceT{:});
+    BigStudy.BeadForceTable = vertcat(BigForceT{:});
     BigStudy.OptimizedStartTable = vertcat(BigOptStartTable{:});
 
     % This stupid try-catch block (and what comes in as contingency clean-up
@@ -50,7 +50,7 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
     % refuses to concatenate several single row table when
     % they contain a single fit-object.
     try
-        BigStudy.DetachForceTable = vertcat(BigForceFitT{:});
+        BigStudy.ForceFitTable = vertcat(BigForceFitT{:});
     catch
         for stupIDX = 1:length(DataSetDirs)
             tmp{stupIDX,1} = BigForceFitT{stupIDX};
@@ -60,7 +60,7 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
         tmpT = vertcat(tmp{:});
         tmpT.FitObject = tmpFits;
         tmpT = movevars(tmpT, "FitObject", "before", "sse");
-        BigStudy.DetachForceTable = tmpT;
+        BigStudy.ForceFitTable = tmpT;
     end
 end
 

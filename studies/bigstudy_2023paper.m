@@ -54,15 +54,15 @@ FidToKeep = FiltData.FileTable.Fid;
 idxTime     = ismember(B.TimeHeightVidStatsTable.Fid, FidToKeep);
 idxBead     = ismember(B.BeadInfoTable.Fid, FidToKeep);
 idxTracking = ismember(B.TrackingTable.Fid, FidToKeep);
-idxForce    = ismember(B.ForceTable.Fid, FidToKeep);
-idxDetach   = ismember(B.DetachForceTable.BeadChemistry, BeadChemsToKeep);
+idxForce    = ismember(B.BeadForceTable.Fid, FidToKeep);
+idxDetach   = ismember(B.ForceFitTable.BeadChemistry, BeadChemsToKeep);
 
 FiltData.TimeHeightVidStatsTable = B.TimeHeightVidStatsTable(idxTime,:);
 FiltData.BeadInfoTable = B.BeadInfoTable(idxBead,:);
 FiltData.TrackingTable = B.TrackingTable(idxTracking,:);
-FiltData.ForceTable    = B.ForceTable(idxForce,:);
-FiltData.DetachForceTable = B.DetachForceTable(idxDetach,:);
-FiltData.DetachForceTable.BeadChemistry = removecats(FiltData.DetachForceTable.BeadChemistry);
+FiltData.BeadForceTable    = B.BeadForceTable(idxForce,:);
+FiltData.ForceFitTable = B.ForceFitTable(idxDetach,:);
+FiltData.ForceFitTable.BeadChemistry = removecats(FiltData.ForceFitTable.BeadChemistry);
 
 OrigData = B;
 B = FiltData;
@@ -96,7 +96,7 @@ ystrings = string(plateNames);
 DetachVars = {'PlateID', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
               'pH', 'DetachForce', 'relwidthDetachForce'};
 
-Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', groupvars);
+Forces = innerjoin(B.ForceFitTable(:,DetachVars), PlateStatsT, 'Keys', groupvars);
 
 
 SummaryDataT = innerjoin(Forces, PlateStatsT);
@@ -226,7 +226,7 @@ plot_FuncSurface(mmat, pinefresh(255), 'Mean Pulloff Force [nN] across plates', 
 % % % % 
 % % %  Anova code
 % % % %
-% % BigT = innerjoin(B.FileTable, B.ForceTable);
+% % BigT = innerjoin(B.FileTable, B.BeadForceTable);
 % % hbeT = BigT( BigT.SubstrateChemistry == 'HBE', :);
 % % hbeT = hbeT( hbeT.Media == "IntNANA" | hbeT.Media == "NoInt", :);
 % % if iscategorical(hbeT.MediumNANAConc)

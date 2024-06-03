@@ -7,7 +7,7 @@
 clear ps optimized_params error exitflag 
 clear ga_summary
 
-Data = B.DetachForceTable;
+Data = B.ForceFitTable;
 
 if ~exist('ga_summary', 'var')
     ga_summary = table('Size', [0 9], ...

@@ -1,6 +1,6 @@
 clear lsq_summary
 
-Data = B.DetachForceTable;
+Data = B.ForceFitTable;
 
 if ~exist('lsq_summary', 'var')
     lsq_summary = table('Size', [0 7], ...

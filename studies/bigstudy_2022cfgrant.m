@@ -1,20 +1,40 @@
-addpath(genpath('D:\jcribb\src\3dfmAnalysis'));
-addpath(genpath('D:\jcribb\src\AdhesionAssay'));
+% This sets the path for addpath/genpath for Stephen's mac or Jeremy's 
+% pc depending on who is running the code
+if ismac
+    path_for_genpath = '/Users/stevesnare/code';
+else
+    path_for_genpath = 'D:\jcribb\src';
+end
+
+addpath(genpath([path_for_genpath, filesep, '3dfmAnalysis']));
+addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 % close all
 
+improveBadFitsTF = true;
+savedatafilesTF = true;
+
 groupvars = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'};
 
-rootdir = pwd;
+startdir = pwd;
+
+% all-data-path
+if ismac
+    adp = '/Users/stevesnare/adhesion_data/datasets_NOTvideo/';
+else
+    adp = 'K:\expts\AdhesionAssay\datasets_NOTvideo\';
+end
 
 % Load the data sources (one source per plate), attach the PlateID, and then 
 % concatenate into one big table.
 %
-% ** The load_bigstudy_data function is at the very bottom of this file. **
+% 
+DataSetDirs = get_dataset_list;
+
 if ~exist('B', 'var')
-    B = load_bigstudy_data(groupvars);
-    B = clean_bigstudy_data(B);
+    Broot = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF );    
 end
+B = clean_bigstudy_data(Broot);
     
 plateNames(:,1) = unique(B.FileTable.PlateID);
 
@@ -45,7 +65,7 @@ ystrings = string(plateNames);
 DetachVars = {'PlateID', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
               'pH', 'DetachForce'};
 
-Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', groupvars);
+Forces = innerjoin(B.ForceFitTable(:,DetachVars), PlateStatsT, 'Keys', groupvars);
 
 
 SummaryDataT = innerjoin(Forces, PlateStatsT);
@@ -162,7 +182,7 @@ zmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.
 % % 
 %  Anova code
 % %
-BigT = innerjoin(B.FileTable, B.ForceTable);
+BigT = innerjoin(B.FileTable, B.BeadForceTable);
 hbeT = BigT( BigT.SubstrateChemistry == 'HBE', :);
 hbeT = hbeT( hbeT.Media == "IntNANA" | hbeT.Media == "NoInt", :);
 if iscategorical(hbeT.MediumNANAConc)
@@ -401,37 +421,9 @@ end
 % end
 
 
-function B = clean_bigstudy_data(B)
     
-    goodOrder = {'PEG', 'PWM', 'WGA', 'SNA', 'HBE'};
-    
-    B.FileTable.BeadChemistry( B.FileTable.BeadChemistry == "mPEG" ) = "PEG";
-    B.FileTable.BeadChemistry( B.FileTable.BeadChemistry == "RhoPEG" ) = "PEG";
-    B.FileTable.BeadChemistry = removecats(B.FileTable.BeadChemistry);
-    B.FileTable.BeadChemistry = reordercats(B.FileTable.BeadChemistry, goodOrder);
-    
-    B.FileTable.SubstrateChemistry( B.FileTable.SubstrateChemistry == "mPEG" ) = "PEG";
-    B.FileTable.SubstrateChemistry( B.FileTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
-
-    B.DetachForceTable.BeadChemistry( B.DetachForceTable.BeadChemistry == "mPEG" ) = "PEG";
-    B.DetachForceTable.BeadChemistry( B.DetachForceTable.BeadChemistry == "RhoPEG" ) = "PEG";
-
-    B.DetachForceTable.BeadChemistry = removecats(B.DetachForceTable.BeadChemistry);
-    B.DetachForceTable.BeadChemistry = reordercats(B.DetachForceTable.BeadChemistry, goodOrder);
-    
-    
-    B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
-    B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
-
-%     B.DetachForceTable.DetachForce(abs(imag(B.DetachForceTable.DetachForce)) > ...
-%                                    0.1*abs(real(B.DetachForceTable.DetachForce))) = complex(NaN);
-%     B.DetachForceTable.DetachForce =  abs(B.DetachForceTable.DetachForce);
-%     B.DetachForceTable.DetachForce( isnan(B.DetachForceTable.DetachForce) ) = 111;
-end
-
-    
-function BigStudy = load_bigstudy_data(aggvar)
-
+% function BigStudy = load_bigstudy_data(aggvar)
+function DataSetDirs = get_dataset_list
     % all-data-path
     adp = 'K:\expts\AdhesionAssay\datasets_NOTvideo\';
     DataSrcs = { ...
@@ -470,26 +462,7 @@ function BigStudy = load_bigstudy_data(aggvar)
                  'ba_230925i5xPBS',       [adp, '2023.09.25__HBEslide_PBS5X_stdbeadset_parafilmpoletip\']; ... 
                  };
 
-%     plateNames = DataSrcs(:,1);
-    platepaths = DataSrcs(:,2);
-    
-    model = 'erf';
-    for k = 1:length(DataSrcs)
-        q = ba_process_expt(platepaths{k}, model, aggvar);        
-        BigFileT{k,1} = q.FileTable;
-        BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
-        BigTrackingT{k,1} = q.TrackingTable;
-        BigBeadInfoT{k,1} = q.BeadInfoTable;
-        BigForceT{k,1} = q.ForceTable;
-        BigForceFitT{k,1} = q.DetachForceTable;
-    end
-
-    BigStudy.FileTable = vertcat(BigFileT{:});
-    BigStudy.TimeHeightVidStatsTable = vertcat(BigTimeHeightVidStatsT{:});
-    BigStudy.BeadInfoTable = vertcat(BigBeadInfoT{:});
-    BigStudy.TrackingTable = vertcat(BigTrackingT{:});
-    BigStudy.ForceTable = vertcat(BigForceT{:});
-    BigStudy.DetachForceTable = vertcat(BigForceFitT{:});
+    DataSetDirs(:,1) = DataSrcs(:,2);
     
 end
 

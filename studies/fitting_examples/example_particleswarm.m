@@ -6,7 +6,7 @@
 clear pstart optimized_params fval exitflag output
 clear ps_summary
 
-Data = B.DetachForceTable;
+Data = B.ForceFitTable;
 
 if ~exist('ps_summary', 'var')
     ps_summary = table('Size', [0 7], ...

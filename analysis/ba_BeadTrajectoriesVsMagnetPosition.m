@@ -92,7 +92,7 @@ VideoTable = mk_video_table(filelist, 125, 0.692, 1024, 768, [], []);
     % bead diameter.
     thresh = 1; % measured in normalized bead diameters, e.g. "1" for xlations larger than bead diameter
     [g, DetachmentForces] = findgroups(TrackingTable(:,{'Fid', 'ID'}));
-    DetachmentForces.Force = splitapply(@(x1,x2)sa_pick_detachemnts(x1,x2,thresh), ...
+    DetachmentForces.Force = splitapply(@(x1,x2)sa_pick_detachments(x1,x2,thresh), ...
                                                            T.NormalizedR, ...
                                                            T.CalForce, ...
                                                            g);          
@@ -174,7 +174,7 @@ function outs = sa_calc_rad_vecs(fid, id, frame, XYZ, XYZorigin)
 end
 
 
-function outs = sa_pick_detachemnts(normR, calforce, threshold)
+function outs = sa_pick_detachments(normR, calforce, threshold)
 
     idx = normR > threshold;
     if any(idx)

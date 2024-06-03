@@ -7,7 +7,7 @@ clear patternfit
 
 initialstartpoint = [0.5,-1.5,0.5,0.5,-1/3,0.5];
 
-Data = B.DetachForceTable;
+Data = B.ForceFitTable;
 
 do_this = 0;
 
@@ -50,8 +50,8 @@ grouped_B = randrowcol(B);
 if do_this
 
 for m = 1:3
-   temp = grouped_B.DetachForceTable;
-    for n = 1:height(grouped_B.DetachForceTable) %loop thru each plate in detatch force table
+   temp = grouped_B.ForceFitTable;
+    for n = 1:height(grouped_B.ForceFitTable) %loop thru each plate in detatch force table
         %extract row data
         clear Raw_Row_Data
         
@@ -98,8 +98,8 @@ end
 pause(0.1)
 
 for m = 1:5
-   temp = grouped_B.DetachForceTable;
-    for n = 1:height(grouped_B.DetachForceTable) %loop thru each plate in detatch force table
+   temp = grouped_B.ForceFitTable;
+    for n = 1:height(grouped_B.ForceFitTable) %loop thru each plate in detatch force table
         %extract row data
         clear Raw_col_Data
         
@@ -185,19 +185,19 @@ end
 
 function newB = randrowcol(B)
 newB = B;
-        for row = 1:height(B.DetachForceTable)
-            currentplate = B.DetachForceTable(row,:);
+        for row = 1:height(B.ForceFitTable)
+            currentplate = B.ForceFitTable(row,:);
             currentdata = currentplate.RawData{:};
             numRows = height(currentdata);
             RowgroupNumbers = repmat([1, 2, 3], 1, ceil(numRows/3));
             RowgroupNumbers = RowgroupNumbers(1:numRows); 
             shuffledrowGroupNumbers = RowgroupNumbers(randperm(numRows))';
             currentdata.row = shuffledrowGroupNumbers;
-            newB.DetachForceTable(row, :).RawData = {currentdata};
+            newB.ForceFitTable(row, :).RawData = {currentdata};
             colgroupNumbers = repmat([1,2,3,4,5],1,ceil(numRows/5));
             colgroupNumbers = colgroupNumbers(1:numRows);
             shuffledcolGroupNumbers = colgroupNumbers(randperm(numRows))';
             currentdata.Col = shuffledcolGroupNumbers;
-            newB.DetachForceTable(row,:).RawData = {currentdata};
+            newB.ForceFitTable(row,:).RawData = {currentdata};
         end
 end

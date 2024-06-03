@@ -1,4 +1,4 @@
-function [SimOut, MasterCurveDetachForceTable] = resample_study(Broot, NSims, NCurves, WithReplacementTF)
+function [SimOut, MasterCurveForceFitTable] = resample_study(Broot, NSims, NCurves, WithReplacementTF)
 %%% SamplingN - how many beads do you want to sample from each plate?
 %%% WithReplacementTF - A Boolean; true means with replacement, false means
 %%% without replacement
@@ -33,14 +33,14 @@ FileVarsToKeep = {'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', ...
 
 %%% Master Curve Parameter Calculations
 mc_groupvars = {'PlateID'};
-MasterCurveDetachForceTable = ba_force_curve_fits(Broot, mc_groupvars, 'erf', true, false);
+MasterCurveForceFitTable = ba_force_curve_fits(Broot, mc_groupvars, 'erf', true, false);
 
 
 % % % % magic numbers
 % % % [nWells, nCols, nRows] = deal(15, 5, 3);
 % % % NCurves = nWells;
 
-RawForceDataT = innerjoin(Broot.FileTable(:,FileVarsToKeep), Broot.ForceTable, 'Keys', {'Fid'}); %% keeps only relevant columns
+RawForceDataT = innerjoin(Broot.FileTable(:,FileVarsToKeep), Broot.BeadForceTable, 'Keys', {'Fid'}); %% keeps only relevant columns
 
 for c = 1:length(NCurves)
     for s = 1:NSims

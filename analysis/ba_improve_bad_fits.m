@@ -1,11 +1,11 @@
-function [DetachOut, OptimizedOut] = ba_improve_bad_fits(DetachForceTable, OptimizedStartTable, groupvars)
+function [ForceFitOut, OptimizedOut] = ba_improve_bad_fits(ForceFitTable, OptimizedStartTable, groupvars)
 
     groupvars = unique(['PlateID', groupvars], 'stable');
 
-    DetachVars = DetachForceTable.Properties.VariableNames;
+    ForceFitVars = ForceFitTable.Properties.VariableNames;
     OptimizedVars = OptimizedStartTable.Properties.VariableNames;
 
-    Q = innerjoin(DetachForceTable, OptimizedStartTable, 'Keys', groupvars);
+    Q = innerjoin(ForceFitTable, OptimizedStartTable, 'Keys', groupvars);
     figh = plot_sse(Q);
 
     [idx, thresh] = fits_to_fix(Q, []);   
@@ -35,7 +35,7 @@ function [DetachOut, OptimizedOut] = ba_improve_bad_fits(DetachForceTable, Optim
         end
     end
 
-    DetachOut = Q(:,DetachVars);
+    ForceFitOut = Q(:,ForceFitVars);
     OptimizedOut = Q(:,OptimizedVars);
 
 end

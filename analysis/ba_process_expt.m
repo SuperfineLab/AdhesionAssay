@@ -73,43 +73,43 @@ switch class(filepath)
 end
 
 
-if ~isfield(Data, 'ForceTable')
+if ~isfield(Data, 'BeadForceTable')
 
-%     Data.ForceTable = ba_make_ForceTable(Data, 'unweighted');
+%     Data.BeadForceTable = ba_beadforces(Data, 'unweighted');
     WeightMethod = 'quantile';
-    Data.ForceTable = ba_make_ForceTable(Data, WeightMethod);
+    Data.BeadForceTable = ba_beadforces(Data, WeightMethod);
           
     % Update FileTable with remaining bead count once pulls are completed
     Data.FileTable = ba_calc_BeadsLeft(Data);
     
     % filter out any forces less than 10 femtoNewtons
-    TmpTable = Data.ForceTable(Data.ForceTable.Force > 10e-15,:);
+    TmpTable = Data.BeadForceTable(Data.BeadForceTable.Force > 10e-15,:);
     
-    if height(TmpTable) ~= height(Data.ForceTable)
-        logentry(['Removed ' num2str(height(TmpTable) - height(Data.ForceTable)) ' force measurement(s). Below 10 fN threshold.']);
+    if height(TmpTable) ~= height(Data.BeadForceTable)
+        logentry(['Removed ' num2str(height(TmpTable) - height(Data.BeadForceTable)) ' force measurement(s). Below 10 fN threshold.']);
     end
     
-    Data.ForceTable = TmpTable;
+    Data.BeadForceTable = TmpTable;
 end
 
 % weightmethod = 'quartile';
 % weightmethod = 'unweighted';
 fitmethod = 'fit';
 
-[tmpDetachForceTable, tmpOptstartT] = ba_force_curve_fits(Data, groupvars, fitmethod, weightmethod);
+[tmpForceFitTable, tmpOptstartT] = ba_force_curve_fits(Data, groupvars, fitmethod, weightmethod);
 
 % default case, i.e., when there's no-improvement of fits, the output's
-% DetachForceTable becomes equal to the the tmp variable. Change it later
+% ForceFitTable becomes equal to the tmp variable. Change it later
 % when it matters...
-Data.DetachForceTable = tmpDetachForceTable;
+Data.ForceFitTable = tmpForceFitTable;
 Data.OptimizedStartTable = tmpOptstartT;
-if improveBadFitsTF && height(tmpDetachForceTable) == 1
+if improveBadFitsTF && height(tmpForceFitTable) == 1
     logentry('Cannot improve statistics on fits when only one fit exists.');
-%     Data.DetachForceTable = tmpDetachForceTable;
+%     Data.ForceFitTable = tmpForceFitTable;
 %     Data.OptStartT = tmpOptstartT;
 else
     logentry('Improving bad fits...');
-    [Data.DetachForceTable, Data.OptimizedStartTable] = ba_improve_bad_fits(tmpDetachForceTable, tmpOptstartT, groupvars);
+    [Data.ForceFitTable, Data.OptimizedStartTable] = ba_improve_bad_fits(tmpForceFitTable, tmpOptstartT, groupvars);
 end
 
 Data.groupvars = groupvars;

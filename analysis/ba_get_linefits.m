@@ -96,10 +96,10 @@ function m = fleshout_table_metadata(m)
             'Mean_time',     '[s]',   'Average time point from cleaned trajectory'; 
             'Mean_vel',      '[m/s]', 'Average velocity during cleaned trajectory'; 
             'VelInterval',   '[m/s]', 'Confidence interval for velocity fit'; 
-            'Force',         '[N]',   'Detachment force applied to tracked SpotID'; 
+            'Force',         '[N]',   'Bead detachment force applied to tracked SpotID'; 
             'ForceInterval', '[N]',   'Confidence interval for Detachment force'; 
             'ForceRelWidth', '[]',    'Breadth of Force Interval normalized by measured Force'; 
-            'Weights',       '[]',    'Weight of Detachment Force, given Interval size'; 
+            'Weights',       '[]',    'Weight of Bead detachment force, given Interval size'; 
            };
     
     m.Properties.VariableNames = meta(:,1);

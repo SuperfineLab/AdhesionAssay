@@ -25,7 +25,7 @@ function grpF = ba_get_force_distribution_data(ba_process_data, maxforce, groupv
     BeadCountTable.TotalBeadCount = splitapply(@sum, Data.FileTable.FirstFrameBeadCount, g);
 
     FileVars(1,:) = [{'Fid'}, aggVars];
-    a = Data.ForceTable;
+    a = Data.BeadForceTable;
     b = Data.FileTable(:,FileVars);
     FTable = join(a, b, 'Keys', {'Fid'});
     FTable = innerjoin(FTable, BeadCountTable, 'Keys', aggVars);

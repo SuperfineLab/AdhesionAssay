@@ -4,7 +4,7 @@ if nargin < 2 || isempty(plotFerrTF)
     plotFerrTF = false;
 end
 
-Data = ba_process_data.DetachForceTable;
+Data = ba_process_data.ForceFitTable;
 
 % "Fraction Left" plot is always going to be plotting the Fraction of beads
 % left to detach vs the force at which they detach. 

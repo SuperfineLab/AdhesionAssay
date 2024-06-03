@@ -75,7 +75,7 @@ for k = 1:length(evtfilelist)
    % Number of stuck beads is equal to the starting number of beads minus
    % the number of Force approximations we made during our tracking
    % clean-up for the velocity calculation.
-   % FileTable{k}.LastFrameBeadCount = FirstFrameBeadCount - height(ForceTable{k});   
+   % FileTable{k}.LastFrameBeadCount = FirstFrameBeadCount - height(BeadForceTable{k});   
 
 % 
 end

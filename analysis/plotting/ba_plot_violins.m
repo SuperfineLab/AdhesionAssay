@@ -15,7 +15,7 @@ end
     BeadCountTable.TotalBeads = splitapply(@sum, Data.FileTable.FirstFrameBeadCount, g);
 
     FileVars(1,:) = [{'Fid'}; aggVars];
-    FTable = join(Data.ForceTable, Data.FileTable(:,FileVars));
+    FTable = join(Data.BeadForceTable, Data.FileTable(:,FileVars));
     FTable = innerjoin(FTable, BeadCountTable, 'Keys', aggVars);
     FTable(FTable.Force <= 0,:) = [];
 

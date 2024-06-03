@@ -219,9 +219,9 @@ end
 
 % % % function sum_square_error = objective_sse(params, logforce_nN, fractionLeft, weights, fitfcn)
 % % %     % params: Parameters to be optimized, [a am as bm bs]
-% % %     % logforce_nN: detachment force in nN
+% % %     % logforce_nN: bead detachment forces in nN
 % % %     % fractionLeft: fraction of beads still attached
-% % %     % weights: Weight values for each DETACHMENT FORCE
+% % %     % weights: Weight values for BEAD DETACHMENT FORCES
 % % % 
 % % % 
 % % %     % Calculate model predictions using params and xdata

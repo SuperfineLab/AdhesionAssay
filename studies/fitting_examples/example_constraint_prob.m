@@ -4,7 +4,7 @@ clear ps
 Nmodes = 2;
 
 PlateID = 'ba_240125coohni';
-Data = Broot.DetachForceTable;
+Data = Broot.ForceFitTable;
 cooh = Data.RawData(Data.PlateID == PlateID);
 cooh = cooh{1};
 

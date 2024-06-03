@@ -18,14 +18,14 @@ function B = clean_bigstudy_data(B)
     B.FileTable.SubstrateChemistry( B.FileTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
     B.FileTable.SubstrateChemistry = removecats(B.FileTable.SubstrateChemistry);
 
-    B.DetachForceTable.BeadChemistry( B.DetachForceTable.BeadChemistry == "mPEG" ) = "PEG";
-    B.DetachForceTable.BeadChemistry( B.DetachForceTable.BeadChemistry == "RhoPEG" ) = "PEG";
-    B.DetachForceTable.BeadChemistry = removecats(B.DetachForceTable.BeadChemistry);
-%     B.DetachForceTable.BeadChemistry = reordercats(B.DetachForceTable.BeadChemistry, goodOrder);    
+    B.ForceFitTable.BeadChemistry( B.ForceFitTable.BeadChemistry == "mPEG" ) = "PEG";
+    B.ForceFitTable.BeadChemistry( B.ForceFitTable.BeadChemistry == "RhoPEG" ) = "PEG";
+    B.ForceFitTable.BeadChemistry = removecats(B.ForceFitTable.BeadChemistry);
+%     B.ForceFitTable.BeadChemistry = reordercats(B.ForceFitTable.BeadChemistry, goodOrder);    
     
-    B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
-    B.DetachForceTable.SubstrateChemistry( B.DetachForceTable.SubstrateChemistry == "mPEG" ) = "PEG";
-    B.DetachForceTable.SubstrateChemistry = removecats(B.DetachForceTable.SubstrateChemistry);
+    B.ForceFitTable.SubstrateChemistry( B.ForceFitTable.SubstrateChemistry == "RhoPEG" ) = "PEG";
+    B.ForceFitTable.SubstrateChemistry( B.ForceFitTable.SubstrateChemistry == "mPEG" ) = "PEG";
+    B.ForceFitTable.SubstrateChemistry = removecats(B.ForceFitTable.SubstrateChemistry);
 
     B.OptimizedStartTable.BeadChemistry( B.OptimizedStartTable.BeadChemistry == "RhoPEG" ) = "PEG";
     B.OptimizedStartTable.BeadChemistry( B.OptimizedStartTable.BeadChemistry == "mPEG" ) = "PEG";

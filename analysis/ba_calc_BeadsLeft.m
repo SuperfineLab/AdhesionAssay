@@ -6,7 +6,7 @@ function newFileTable = ba_calc_BeadsLeft(Data)
 % clean-up for the velocity calculation.
 
     newFileTable = Data.FileTable;
-    ForceTable = Data.ForceTable;
+    BeadForceTable = Data.BeadForceTable;
 
     LastFrameBeadCount = NaN(height(newFileTable),1);
 
@@ -14,7 +14,7 @@ function newFileTable = ba_calc_BeadsLeft(Data)
         Fid = newFileTable.Fid(k);
         FirstFrameBeadCount = newFileTable.FirstFrameBeadCount(k);
     
-        myForceTable = ForceTable( ForceTable.Fid == Fid, :);
+        myForceTable = BeadForceTable( BeadForceTable.Fid == Fid, :);
         LastFrameBeadCount(k,1) = FirstFrameBeadCount - height(myForceTable);       
     end
 
