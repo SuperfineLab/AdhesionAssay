@@ -18,7 +18,7 @@ savedatafilesTF = true;
 % aggregating_variables = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
 %                          'Media', 'pH'};
 
-aggregating_variables = {'SubstrateChemistry', 'BeadChemistry', ...
+aggregating_variables = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', ...
                          'Media', 'pH'};
 
 
@@ -43,10 +43,13 @@ rootdir = pwd;
 % concatenate into one big table.
 %
 % ** The load_bigstudy_data function is at the very bottom of this file. **
-if ~exist('Broot', 'var')               
+if ~exist('Broot', 'var')       
     Broot = load_bigstudy_data(adp, DataSetDirs, aggregating_variables, improveBadFitsTF, savedatafilesTF );    
 end
 B = clean_bigstudy_data(Broot);
+
+% Improve fits based on all fits statistics...
+[NewDetachForceTable, NewOptimizedStartTable] = ba_improve_bad_fits(B.DetachForceTable, B.OptimizedStartTable, aggregating_variables);
 
 %
 % % Clean out the PWM and SNA
