@@ -1,8 +1,11 @@
-function outs = ba_improve_bad_fits(DetachForceTable, aggregating_variables, optstartT)
+function [DetachOut, OptimizedOut] = ba_improve_bad_fits(DetachForceTable, OptimizedStartTable, aggregating_variables)
 
     aggregating_variables = unique(['PlateID', aggregating_variables], 'stable');
 
-    Q = innerjoin(DetachForceTable, optstartT(:,[aggregating_variables, 'FinalPop', 'FinalScore', 'gaOpts']));       
+    DetachVars = DetachForceTable.Properties.VariableNames;
+    OptimizedVars = OptimizedStartTable.Properties.VariableNames;
+
+    Q = innerjoin(DetachForceTable, OptimizedStartTable, 'Keys', aggregating_variables);
     figh = plot_sse(Q);
 
     [idx, thresh] = fits_to_fix(Q, []);   
@@ -14,7 +17,7 @@ function outs = ba_improve_bad_fits(DetachForceTable, aggregating_variables, opt
     while (Nfix > 0) && (count < Nchk)
         Qbad = Q(idx,:);
         Qgood = Q(~idx,:);
-    
+        
         logentry(['Sum-squared error on ', num2str(Nfix), ' fit(s) exceeds limit. Refitting.']);
         [Qimproved, DiagT] = ba_gafit(Qbad, false);
         improvedSSE(1,:) = Qimproved.sse;
@@ -32,7 +35,8 @@ function outs = ba_improve_bad_fits(DetachForceTable, aggregating_variables, opt
         end
     end
 
-    outs = Q;
+    DetachOut = Q(:,DetachVars);
+    OptimizedOut = Q(:,OptimizedVars);
 
 end
 
