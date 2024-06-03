@@ -11,7 +11,7 @@ end
 if ~exist('pat_summary', 'var')
     pat_summary = table('Size', [0 7], ...
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'RedChiSq'});
+                       'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'RedChiSq'});
 end
 
 Data = dftable;
@@ -93,7 +93,7 @@ for m = 1:height(Data)
         t(k,1) = toc;
         
         tmp_ps = table(PlateID, startpoint, t, exitflag(k,1), optimized_params(k,:), fval(k,1), rchisq(k,:), ...
-                     'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'RedChiSq'});
+                     'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'RedChiSq'});
         
         pat_summary = vertcat(pat_summary, tmp_ps);
         

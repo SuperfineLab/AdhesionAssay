@@ -162,7 +162,7 @@ for i = 1:length(plategroups)
 
 %% could pass another argument into function to select spread metric that we want
 %% For now just using SD.          
-            temp{i} = platedata.OptimizedParameters;
+            temp{i} = platedata.OptimizedStartParameters;
             temp = array2table(vertcat(temp{:}));
             
             prec_table{i}.PlateID = current_plate;

@@ -12,7 +12,7 @@ Data = B.DetachForceTable;
 if ~exist('ga_summary', 'var')
     ga_summary = table('Size', [0 9], ...
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'Run', 'MaxGenerations', 'PopulationSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
+                       'VariableNames', {'PlateID', 'Run', 'MaxGenerations', 'PopulationSize', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'ReducedChiSq'});
 end
 
 Nmodes = 4;
@@ -77,7 +77,7 @@ for m = 1:height(Data)
         t = toc;
         
         tmpga = table(PlateID, k, max_generations, pop_size, t, exitflag(k,1), optimized_params(k,:), error(k,1), rchisq(k,:), ...
-                     'VariableNames', {'PlateID', 'Run', 'MaxGenerations', 'PopulationSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
+                     'VariableNames', {'PlateID', 'Run', 'MaxGenerations', 'PopulationSize', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'ReducedChiSq'});
         
         ga_summary = vertcat(ga_summary, tmpga);
         

@@ -13,7 +13,7 @@ Data = dftable;
 if ~exist('ps_summary', 'var')
     ps_summary = table('Size', [0 7], ...
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'SwarmSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'RedChiSq'});
+                       'VariableNames', {'PlateID', 'SwarmSize', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'RedChiSq'});
 end
 
 Nmodes = 2;
@@ -72,7 +72,7 @@ for m = 1:height(Data)
         t = toc;
         
         tmp_ps = table(PlateID, swarm_sz, t, exitflag(k,1), optimized_params(k,:), fval(k,1), rchisq(k,:), ...
-                     'VariableNames', {'PlateID', 'SwarmSize', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'RedChiSq'});
+                     'VariableNames', {'PlateID', 'SwarmSize', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'RedChiSq'});
         
         
         ps_summary = vertcat(ps_summary, tmp_ps);

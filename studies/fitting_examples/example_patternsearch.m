@@ -11,7 +11,7 @@ Data = B.DetachForceTable;
 if ~exist('pat_summary', 'var')
     pat_summary = table('Size', [0 7], ...
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
+                       'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'ReducedChiSq'});
 end
 
 Nmodes = 2;
@@ -71,7 +71,7 @@ for m = 1:height(Data)
         t = toc;
         
         tmp_ps = table(PlateID, fout.StartPoint, t, exitflag(k,1), optimized_params(k,:), fval(k,1), rchisq(k,:), ...
-                     'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
+                     'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'ReducedChiSq'});
         
         pat_summary = vertcat(pat_summary, tmp_ps);
         

@@ -1,4 +1,17 @@
 function [DataOut, ga_summary] = ba_gafit(dftable, plotTF)
+% BA_GAFIT fits adhesion force data using genetic algorithm
+%
+%   [DataOut, ga_summary] = ba_gafit(dftable, plotTF)
+%
+% Inputs: 
+%   dftable
+%   plotTF
+%
+% Outputs:
+%   DataOut
+%   ga_summary
+%
+
 
 % Global optimization fitting routine for Adhesion Assay using the
 % genetic algorithm. This algorithm serves as a good choice over 
@@ -14,7 +27,7 @@ if ~exist('ga_summary', 'var')
                        'VariableTypes', {'categorical', 'double', 'double', 'double', ...
                                          'double', 'double', 'double', 'double', 'double', ...
                                          'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'SolveTime', 'OptimizedParameters', 'TotalError', ...
+                       'VariableNames', {'PlateID', 'SolveTime', 'OptimizedStartParameters', 'TotalError', ...
                                          'RedChiSq', 'ExitFlag', 'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', ...
                                          'FinalPop','FinalScore'});
 end
@@ -26,9 +39,7 @@ Nmodes = 2;
 % for plotting
 stdclr = lines(7);
 
-% Define "ga" optimization options that do not change during run
-% ga_opts = ba_fitoptions("ga");
-isTableCol = @(t, thisCol) ismember(thisCol, t.Properties.VariableNames);
+
 
 % Some number (m) of plates to process
 for m = 1:height(DataOut)
@@ -55,7 +66,7 @@ for m = 1:height(DataOut)
 %     if sum(weights) == numel(weights), ga_opts.FunctionTolerance = 3e-8; end    
 %     ga_opts.PopulationSize = popsize;   
 %     ga_opts.EliteCount = elitecount; 
-%     ga_opts.MaxGenerations = 400;
+    ga_opts.MaxGenerations = 400;
     if isTableCol(dftable, 'FinalPop') && ~isempty(dftable.FinalPop) 
         ga_opts.InitialPopulationMatrix = dftable.FinalPop{m};
     end
@@ -74,7 +85,7 @@ for m = 1:height(DataOut)
     ga_summary = table(PlateID, t, {optimized_params}, error, rchisq, exitflag, ...
                        ga_opts.MaxGenerations, ga_opts.PopulationSize, ...
                        output.generations, {finalpop}, {finalscore}, ga_opts, ...
-                       'VariableNames', {'PlateID', 'SolveTime', 'OptimizedParameters', 'TotalError', 'RedChiSq', 'ExitFlag', ...
+                       'VariableNames', {'PlateID', 'SolveTime', 'OptimizedStartParameters', 'TotalError', 'RedChiSq', 'ExitFlag', ...
                                          'MaxGenerations', 'PopulationSize', ...
                                          'GenerationSolveCount', 'FinalPop', 'FinalScore', 'gaOpts'});
       

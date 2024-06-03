@@ -5,7 +5,7 @@ Data = B.DetachForceTable;
 if ~exist('lsq_summary', 'var')
     lsq_summary = table('Size', [0 7], ...
                        'VariableTypes', {'categorical', 'double', 'double', 'double', 'double', 'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
+                       'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'ReducedChiSq'});
 end
 
 Nmodes = 2;
@@ -52,7 +52,7 @@ for m = 1:height(Data)
 
     rchisq = red_chisquare(myfit, fout.fcn, logforce_nN, fractionLeft);
 
-    lqtmp = table(PlateID, fout.StartPoint, solvetime, exitflag, myfit, myfiterror, rchisq, 'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedParameters', 'TotalError', 'ReducedChiSq'});
+    lqtmp = table(PlateID, fout.StartPoint, solvetime, exitflag, myfit, myfiterror, rchisq, 'VariableNames', {'PlateID', 'StartPoint', 'SolveTime', 'ExitFlag', 'OptimizedStartParameters', 'TotalError', 'ReducedChiSq'});
     
     lsq_summary = vertcat(lsq_summary, lqtmp);
 
