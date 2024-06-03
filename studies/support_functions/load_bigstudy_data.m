@@ -26,20 +26,16 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
         savedatafilesTF = true;
     end
 
-
-%     fitmethod = 'lsqnonlin';
-%     fitmethod = 'lsqcurvefit';
-    fitmethod = 'fit';
-%     fitmethod = 'fmincon';
-
+    weightmethod = 'quantile';
     for k = 1:length(DataSetDirs)
-        q = ba_process_expt([adp, DataSetDirs{k}, filesep], fitmethod, aggvar, improveBadFitsTF, savedatafilesTF);
+        q = ba_process_expt([adp, DataSetDirs{k}, filesep], aggvar, weightmethod, improveBadFitsTF, savedatafilesTF);
         BigFileT{k,1} = q.FileTable;
         BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
         BigTrackingT{k,1} = q.TrackingTable;
         BigBeadInfoT{k,1} = q.BeadInfoTable;
         BigForceT{k,1} = q.ForceTable;
         BigForceFitT{k,1} = q.DetachForceTable;
+        BigOptStartTable{k,1} = q.OptimizedStartTable;
     end
 
     BigStudy.FileTable = vertcat(BigFileT{:});
@@ -47,7 +43,8 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
     BigStudy.BeadInfoTable = vertcat(BigBeadInfoT{:});
     BigStudy.TrackingTable = vertcat(BigTrackingT{:});
     BigStudy.ForceTable = vertcat(BigForceT{:});
-    
+    BigStudy.OptimizedStartTable = vertcat(BigOptStartTable{:});
+
     % This stupid try-catch block (and what comes in as contingency clean-up
     % in the catch block) is necessary because, for whatever reason, matlab 
     % refuses to concatenate several single row table when
