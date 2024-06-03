@@ -96,7 +96,7 @@ end
 % weightmethod = 'unweighted';
 fitmethod = 'fit';
 
-[tmpDetachForceTable, tmpOptstartT] = ba_plate_detachmentforces(Data, groupvars, fitmethod, weightmethod);
+[tmpDetachForceTable, tmpOptstartT] = ba_force_curve_fits(Data, groupvars, fitmethod, weightmethod);
 
 % default case, i.e., when there's no-improvement of fits, the output's
 % DetachForceTable becomes equal to the the tmp variable. Change it later

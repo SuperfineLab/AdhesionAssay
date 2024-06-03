@@ -33,7 +33,7 @@ FileVarsToKeep = {'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', ...
 
 %%% Master Curve Parameter Calculations
 mc_groupvars = {'PlateID'};
-MasterCurveDetachForceTable = ba_plate_detachmentforces(Broot, mc_groupvars, 'erf', true, false);
+MasterCurveDetachForceTable = ba_force_curve_fits(Broot, mc_groupvars, 'erf', true, false);
 
 
 % % % % magic numbers
