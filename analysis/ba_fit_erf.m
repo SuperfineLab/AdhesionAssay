@@ -10,15 +10,15 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 % 
 
 
-persistent Nrun
-
-if isempty(Nrun)
-    Nrun = 1;
-else
-    Nrun = Nrun + 1;
-end
-
-disp(['Nrun = ', num2str(Nrun)]);
+% persistent Nrun
+% 
+% if isempty(Nrun)
+%     Nrun = 1;
+% else
+%     Nrun = Nrun + 1;
+% end
+% 
+% disp(['Nrun = ', num2str(Nrun)]);
 
     if size(startpoint,1) > 1
         startpoint = startpoint(1,:);
@@ -39,8 +39,8 @@ disp(['Nrun = ', num2str(Nrun)]);
     [logforce_nN, fractionLeft, weights] = prepareCurveData( logforce_nN, fractionLeft, weights );
     
     T = table('Size', [1 10], ...
-                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe', 'sse', 'rmse', 'FitSetup', 'FitOptions', 'BootstatT'}, ...
-                 'VariableTypes', {'double', 'double', 'double', 'double', 'double', 'double', 'double', 'struct', 'struct', 'double'});
+                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe',    'sse',    'rmse',   'FitSetup', 'FitOptions', 'BootstatT'}, ...
+                 'VariableTypes', {'cell',      'cell',          'double',  'double',     'double', 'double', 'double', 'struct',   'struct',     'double'});
     
     AvailModes = numel(startpoint)/3;
     fout = ba_fit_setup(AvailModes);
@@ -54,7 +54,7 @@ disp(['Nrun = ', num2str(Nrun)]);
 
         switch fitmethod
             case 'fit'
-                if AvailModes == 2
+                if Nmodes == 2
                     fout.fcn = @(p,Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))+(1-p(1))*erfc(((Fd)-p(5))/(sqrt(2)*p(6)))));
                 end
                 [result, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, weights, fout, opts);
@@ -70,8 +70,8 @@ disp(['Nrun = ', num2str(Nrun)]);
     
     else
         logentry('Not enough points to fit this model. Empty results.');  
-        T.FitParams = {NaN(1,6)};
-        T.confFitParams = {NaN(2,6)};
+        T.FitParams{1} = NaN(1,6);
+        T.confFitParams{1} = NaN(2,6);
         T.rsquare = NaN; 
         T.adjrsquare = NaN;        
         T.dfe = NaN;
@@ -90,9 +90,8 @@ disp(['Nrun = ', num2str(Nrun)]);
 %     from xtra: numobs, numparam, exitflag, iterations, funcCount, stepsize
 
 
-
-    T.FitParams = {result.p};
-    T.confFitParams = {result.pconf};
+    T.FitParams{1} = result.p{1};
+    T.confFitParams{1} = result.pconf{1};
     T.rsquare = result.rsquare; 
     T.adjrsquare = result.adjrsquare;
     T.dfe  = result.dfe;
@@ -106,132 +105,133 @@ end
 
 
 
-function outs = use_old_fit_method(logforce_nN, fractionLeft, weights, fout, opts)
-    % Hacking the "curve-fitting toolbox" version of the equation here and
-    % then merging the parameter list into a more universal expression for
-    % later computational analysis downstream.
-
-    fiteq1 = '1/2*(erfc(((Fd)-am)/(sqrt(2)*as)))';
-    ft1 = fittype( fiteq1, 'independent', 'Fd', 'dependent', 'y' );
-
-    options1 = opts;
-    options1.Normalize = 'On';    
-    options1.Weights = weights;
-    options1.Lower = fout.lb([2 3]);
-    options1.Upper = fout.ub([2 3]);
-    options1.StartPoint = fout.StartPoint([2 3]);
-    options1.Robust = 'On';
-
-    [fitresult1, gof1] = fit( logforce_nN, fractionLeft, ft1, options1 );
-
-    fiteq2 = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as))+(1-a)*erfc(((Fd)-bm)/(sqrt(2)*bs)))';
-    ft2 = fittype( fiteq2, 'independent', 'Fd', 'dependent', 'y' );
-
-    options2 = opts;
-    options2.Normalize = 'On';
-    options2.Weights = weights;
-    options2.Lower = fout.lb([1 2 3 5 6]);
-    options2.Upper = fout.ub([1 2 3 5 6]);
-    options2.StartPoint = fout.StartPoint([1 2 3 5 6]);
-    options2.Robust = 'On';
-    
-    [fitresult2, gof2] = fit( logforce_nN, fractionLeft, ft2, options2 );
-
-    p1= coeffvalues(fitresult1);
-    pconf1 = confint(fitresult1);
-
-    p2 = coeffvalues(fitresult2);
-    pconf2 = confint(fitresult2);
-
-    pause(0.1);
-%     if any(isnan(pconf))
-%         opts.Lower = fout.lb([2 3]);
-%         opts.Upper = fout.ub([2 3]);
-%         opts.StartPoint = fout.StartPoint([2 3]);
-% 
-%         [fitresult, gof] = fit( logforce_nN, fractionLeft, ft{1}, opts );
-%         p = coeffvalues(fitresult);
-%         pconf = confint(fitresult);
-%     end
-
-    % This two mode model is constrained by definition, but that doesn't
-    % mean that we cannot wrap the old-style TWO-MODE ONLY parameters into 
-    % the new-style parameter vector, i.e. [a am as b bm bs]. This will
-    % allow for more integrated analysis later in the toolchain if and when
-    % we choose to revisit multiple modes beyond Nmodes=2
-    p4 = 1-p(1);
-    confp4 = flipud(1-pconf(:,1));
-
-    outs.p = [p(1:3) p4 p(4:5)];
-    outs.pconf = [pconf(:,1:3) confp4 pconf(:,4:5)];
-    outs.sse = gof.sse;
-    outs.rsquare = gof.rsquare;
-    outs.dfe = gof.dfe;
-    outs.adjrsquare = gof.adjrsquare;
-    outs.rmse = gof.rmse;
-    
-end
-
-
-function outs = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod)
-
-    % constrained
-    opts.Display = 'off';
-
-    objective = @(p)objective_sse(p, logforce_nN, fractionLeft, weights, fout.fcn);
-    problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',objective,...
-                                 'lb', fout.lb,'ub', fout.ub, ...
-                                 'Aineq', fout.Aineq, 'bineq', fout.bineq, ...
-                                 'xdata',logforce_nN,'ydata',fractionLeft, ...
-                                 options=opts);
+% % % function outs = use_old_fit_method(logforce_nN, fractionLeft, weights, fout, opts)
+% % %     % Hacking the "curve-fitting toolbox" version of the equation here and
+% % %     % then merging the parameter list into a more universal expression for
+% % %     % later computational analysis downstream.
+% % % 
+% % %     fiteq1 = '1/2*(erfc(((Fd)-am)/(sqrt(2)*as)))';
+% % %     ft1 = fittype( fiteq1, 'independent', 'Fd', 'dependent', 'y' );
+% % % 
+% % %     options1 = opts;
+% % %     options1.Normalize = 'On';    
+% % %     options1.Weights = weights;
+% % %     options1.Lower = fout.lb([2 3]);
+% % %     options1.Upper = fout.ub([2 3]);
+% % %     options1.StartPoint = fout.StartPoint([2 3]);
+% % %     options1.Robust = 'On';
+% % % 
+% % %     [fitresult1, gof1] = fit( logforce_nN, fractionLeft, ft1, options1 );
+% % % 
+% % %     fiteq2 = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as))+(1-a)*erfc(((Fd)-bm)/(sqrt(2)*bs)))';
+% % %     ft2 = fittype( fiteq2, 'independent', 'Fd', 'dependent', 'y' );
+% % % 
+% % %     options2 = opts;
+% % %     options2.Normalize = 'On';
+% % %     options2.Weights = weights;
+% % %     options2.Lower = fout.lb([1 2 3 5 6]);
+% % %     options2.Upper = fout.ub([1 2 3 5 6]);
+% % %     options2.StartPoint = fout.StartPoint([1 2 3 5 6]);
+% % %     options2.Robust = 'On';
+% % %     
+% % %     [fitresult2, gof2] = fit( logforce_nN, fractionLeft, ft2, options2 );
+% % % 
+% % %     p1= coeffvalues(fitresult1);
+% % %     pconf1 = confint(fitresult1);
+% % % 
+% % %     p2 = coeffvalues(fitresult2);
+% % %     pconf2 = confint(fitresult2);
+% % % 
+% % %     pause(0.1);
+% % % %     if any(isnan(pconf))
+% % % %         opts.Lower = fout.lb([2 3]);
+% % % %         opts.Upper = fout.ub([2 3]);
+% % % %         opts.StartPoint = fout.StartPoint([2 3]);
+% % % % 
+% % % %         [fitresult, gof] = fit( logforce_nN, fractionLeft, ft{1}, opts );
+% % % %         p = coeffvalues(fitresult);
+% % % %         pconf = confint(fitresult);
+% % % %     end
+% % % 
+% % %     % This two mode model is constrained by definition, but that doesn't
+% % %     % mean that we cannot wrap the old-style TWO-MODE ONLY parameters into 
+% % %     % the new-style parameter vector, i.e. [a am as b bm bs]. This will
+% % %     % allow for more integrated analysis later in the toolchain if and when
+% % %     % we choose to revisit multiple modes beyond Nmodes=2
+% % %     p4 = 1-p(1);
+% % %     confp4 = flipud(1-pconf(:,1));
+% % % 
+% % %     outs.p = [p(1:3) p4 p(4:5)];
+% % %     outs.pconf = [pconf(:,1:3) confp4 pconf(:,4:5)];
+% % %     outs.sse = gof.sse;
+% % %     outs.rsquare = gof.rsquare;
+% % %     outs.dfe = gof.dfe;
+% % %     outs.adjrsquare = gof.adjrsquare;
+% % %     outs.rmse = gof.rmse;
+% % %     
+% % % end
 
 
-%     problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',objective,...
-%         'lb',fout.lb,'ub',fout.ub,'xdata',logforce_nN,'ydata',fractionLeft, options=opts);
-
-    ms = MultiStart("Display","off");
-    [x,fval,exitflag,output] = run(ms,problem,200);
-
-    outs = fitstats(logforce_nN, fractionLeft, fout.fcn(x,fractionLeft), x, fval);
-
-end
-
-
-function outs = use_unconstrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod)
-
-    % unconstrained (no Aeq, beq, Aineq, or bineq)
-    opts.Display = 'off';
-    problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',fout.fcn,...
-                                 'lb', fout.lb,'ub', fout.ub, ...
-                                 'xdata',logforce_nN,'ydata',fractionLeft, ...
-                                 options=opts);
-
-%     objective = @(p,fractionLeft) sqrt(weights) .* (fout.fcn(p,fractionLeft)-fractionLeft);
-%     problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',objective,...
-%         'lb',fout.lb,'ub',fout.ub,'xdata',logforce_nN,'ydata',fractionLeft, options=opts);
-
-    ms = MultiStart("Display","off");
-    [p,fval,exitflag,output] = run(ms,problem,200);
-
-    outs = fitstats(logforce_nN, fractionLeft, fout.fcn(p,logforce_nN), p, fval);
-   
-end
+% % % function outs = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod)
+% % % 
+% % %     % constrained
+% % %     opts.Display = 'off';
+% % % 
+% % %     objective = @(p)objective_sse(p, logforce_nN, fractionLeft, weights, fout.fcn);
+% % %     problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',objective,...
+% % %                                  'lb', fout.lb,'ub', fout.ub, ...
+% % %                                  'Aineq', fout.Aineq, 'bineq', fout.bineq, ...
+% % %                                  'xdata',logforce_nN,'ydata',fractionLeft, ...
+% % %                                  options=opts);
+% % % 
+% % % 
+% % % %     problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',objective,...
+% % % %         'lb',fout.lb,'ub',fout.ub,'xdata',logforce_nN,'ydata',fractionLeft, options=opts);
+% % % 
+% % %     ms = MultiStart("Display","off");
+% % %     [x,fval,exitflag,output] = run(ms,problem,200);
+% % % 
+% % %     outs = fitstats(logforce_nN, fractionLeft, fout.fcn(x,fractionLeft), x, fval);
+% % % 
+% % % end
 
 
-function sum_square_error = objective_sse(params, logforce_nN, fractionLeft, weights, fitfcn)
-    % params: Parameters to be optimized, [a am as bm bs]
-    % logforce_nN: detachment force in nN
-    % fractionLeft: fraction of beads still attached
-    % weights: Weight values for each DETACHMENT FORCE
+% % % function outs = use_unconstrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod)
+% % % 
+% % %     % unconstrained (no Aeq, beq, Aineq, or bineq)
+% % %     opts.Display = 'off';
+% % %     problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',fout.fcn,...
+% % %                                  'lb', fout.lb,'ub', fout.ub, ...
+% % %                                  'xdata',logforce_nN,'ydata',fractionLeft, ...
+% % %                                  options=opts);
+% % % 
+% % % %     objective = @(p,fractionLeft) sqrt(weights) .* (fout.fcn(p,fractionLeft)-fractionLeft);
+% % % %     problem = createOptimProblem(fitmethod,'x0',fout.StartPoint,'objective',objective,...
+% % % %         'lb',fout.lb,'ub',fout.ub,'xdata',logforce_nN,'ydata',fractionLeft, options=opts);
+% % % 
+% % %     ms = MultiStart("Display","off");
+% % %     [p,fval,exitflag,output] = run(ms,problem,200);
+% % % 
+% % %     outs = fitstats(logforce_nN, fractionLeft, fout.fcn(p,logforce_nN), p, fval);
+% % %    
+% % % end
 
 
-    % Calculate model predictions using params and xdata
-    predicted_fractionLeft = fitfcn(params, logforce_nN);
+% % % function sum_square_error = objective_sse(params, logforce_nN, fractionLeft, weights, fitfcn)
+% % %     % params: Parameters to be optimized, [a am as bm bs]
+% % %     % logforce_nN: detachment force in nN
+% % %     % fractionLeft: fraction of beads still attached
+% % %     % weights: Weight values for each DETACHMENT FORCE
+% % % 
+% % % 
+% % %     % Calculate model predictions using params and xdata
+% % %     predicted_fractionLeft = fitfcn(params, logforce_nN);
+% % % 
+% % %     % Calculate weighted squared error
+% % %     weighted_errors = weights .* (predicted_fractionLeft - fractionLeft).^2;
+% % %     sum_square_error = sum(weighted_errors);
+% % % end
 
-    % Calculate weighted squared error
-    weighted_errors = weights .* (predicted_fractionLeft - fractionLeft).^2;
-    sum_square_error = sum(weighted_errors);
-end
 
 function outs = fitstats(xdata, ydata, yfit, params, sse)
 % A fair amount of the code below was lifted and modified from mathworks' 
