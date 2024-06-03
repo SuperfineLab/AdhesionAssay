@@ -49,20 +49,27 @@ function [StatOutT, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, wei
                                    'numobs', 'numparam', 'exitflag', 'iterations', 'funcCount', 'stepsize'});
     
     % To convert the FitParams into a cell array of 1xNparams for each fit...
-    BootstatT.FitParams = arrayfun(@(x){BootstatT.FitParams(x,:)}, (1:height(BootstatT))', 'UniformOutput', false);
+    tmp = arrayfun(@(x)BootstatT.FitParams(x,:), (1:height(BootstatT))', 'UniformOutput', false);
 
-    p = {median(bootstat(:,1:Nparams),1,'omitnan')};
-    pconf = {bci(:,1:Nparams)};
-    sse = median(bootstat(:,Nparams+1),1,'omitnan');
-    rsquare = median(bootstat(:,Nparams+2),1,'omitnan');
-    dfe = median(bootstat(:,Nparams+3),1,'omitnan');
-    adjrsquare = median(bootstat(:,Nparams+4),1,'omitnan');
-    rmse = median(bootstat(:,Nparams+5),1,'omitnan');
-    redchisq = median(bootstat(:,Nparams+6), 1, 'omitnan');
+    BootstatT.FitParams = tmp;
 
-    StatOutT = table(p, pconf, sse, rsquare, adjrsquare, dfe, rmse, redchisq, ...
-        'VariableNames', {'p', 'pconf', 'sse', 'rsquare', 'adjrsquare', 'dfe', 'rmse', 'redchisq'});
+    StatOutT = table('Size', [1 8], ...
+                     'VariableTypes', ["cell", "cell", repmat("double",1,6)], ...
+                     'VariableNames', ["p", "pconf", "sse", "rsquare", "adjrsquare", "dfe", "rmse", "redchisq"]);
 
+    % XXX @jeremy TODO: Fix the outputs starting from sse and ending with
+    % redchisq because right now they are reporting the median of
+    % everything outputted from the Bootstat table, which is mathetically
+    % nonsensical. Instead, use the median parameters to compute the difference 
+    % between data and fout.fiteq(data) and derive further values from there.    
+    StatOutT.p{1} = median(bootstat(:,1:Nparams),1,'omitnan');
+    StatOutT.pconf{1} = bci(:,1:Nparams);
+    StatOutT.sse = median(bootstat(:,Nparams+1),1,'omitnan');
+    StatOutT.rsquare = median(bootstat(:,Nparams+2),1,'omitnan');
+    StatOutT.dfe = median(bootstat(:,Nparams+3),1,'omitnan');
+    StatOutT.adjrsquare = median(bootstat(:,Nparams+4),1,'omitnan');
+    StatOutT.rmse = median(bootstat(:,Nparams+5),1,'omitnan');
+    StatOutT.redchisq = median(bootstat(:,Nparams+6), 1, 'omitnan');
 
 end
 
