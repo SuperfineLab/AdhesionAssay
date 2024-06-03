@@ -1,4 +1,4 @@
-function Data = ba_process_expt(filepath, aggregating_variables, weightmethod, improveBadFitsTF, savefileTF)
+function Data = ba_process_expt(filepath, groupvars, weightmethod, improveBadFitsTF, savefileTF)
 % BA_PROCESS_EXPT analyzes a bead adhesion experiment for detachment forces
 %
 % This function begins the process of analyzing the output of the bead
@@ -11,7 +11,7 @@ function Data = ba_process_expt(filepath, aggregating_variables, weightmethod, i
 %
 % Inputs:
 %   filepath*   path location of the tracking results for an "experiment"/plate.
-%   aggregating_variables*   The list of index variables for the experiment,
+%   groupvars*   The list of index variables for the experiment,
 %     e.g, "pH", "BeadChemistry", "SubstrateChemistry", etc.
 %   weightmethod - one from the below list of weighting computation options
 %     [ unweighted, inverseconf, scaled-inversebin, {quantile} ]
@@ -36,7 +36,7 @@ if nargin < 3 || isempty(weightmethod)
     weightmethod = 'quantile';
 end
 
-if nargin < 2 || isempty(aggregating_variables)
+if nargin < 2 || isempty(groupvars)
     error('Need aggregating variables for compiling results.');
 end
 
@@ -96,7 +96,7 @@ end
 % weightmethod = 'unweighted';
 fitmethod = 'fit';
 
-[tmpDetachForceTable, tmpOptstartT] = ba_plate_detachmentforces(Data, aggregating_variables, fitmethod, weightmethod);
+[tmpDetachForceTable, tmpOptstartT] = ba_plate_detachmentforces(Data, groupvars, fitmethod, weightmethod);
 
 % default case, i.e., when there's no-improvement of fits, the output's
 % DetachForceTable becomes equal to the the tmp variable. Change it later
@@ -109,10 +109,10 @@ if improveBadFitsTF && height(tmpDetachForceTable) == 1
 %     Data.OptStartT = tmpOptstartT;
 else
     logentry('Improving bad fits...');
-    [Data.DetachForceTable, Data.OptimizedStartTable] = ba_improve_bad_fits(tmpDetachForceTable, tmpOptstartT, aggregating_variables);
+    [Data.DetachForceTable, Data.OptimizedStartTable] = ba_improve_bad_fits(tmpDetachForceTable, tmpOptstartT, groupvars);
 end
 
-Data.aggregating_variables = aggregating_variables;
+Data.groupvars = groupvars;
 
 if savefileTF
     PlateName = string(unique(Data.FileTable.PlateID));

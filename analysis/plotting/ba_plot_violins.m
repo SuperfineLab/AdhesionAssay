@@ -1,11 +1,11 @@
-function ba_plot_violins(ba_process_data, aggregating_variables, plotorder, includeMaxTF)
+function ba_plot_violins(ba_process_data, groupvars, plotorder, includeMaxTF)
 
 if nargin < 4 || isempty(includeMaxTF)
     includeMaxTF = false;
 end
 
     Data = ba_process_data;
-    aggVars = aggregating_variables(:);
+    aggVars = groupvars(:);
 
     if ~iscell(aggVars)
         error('Need cell array of aggregating variables');

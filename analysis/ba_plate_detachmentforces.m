@@ -1,8 +1,8 @@
-function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggregating_variables, fitmethod, weightmethod)
+function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, groupvars, fitmethod, weightmethod)
 % XXX @jeremy TODO: Add documentation for this function
 %
 
-% function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, aggregating_variables, modeltype, weightTF, plotTF)
+% function [TableOut, fr] = ba_plate_detachmentforces(ba_process_data, groupvars, modeltype, weightTF, plotTF)
 
     if nargin < 4 || isempty(weightmethod)
         weightmethod = 'unweighted';
@@ -19,7 +19,7 @@ function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggr
     % need are the aggregating variables AND those relevant columns    
     FileTableVars = unique([{'PlateID', 'Fid', 'Well', ...
                              'PlateRow', 'PlateColumn', 'FirstFrameBeadCount', 'LastFrameBeadCount'}, ...
-                             aggregating_variables(:)'], 'stable');
+                             groupvars(:)'], 'stable');
     ForceTableVars = {'Fid', 'SpotID', 'Force', ...
                       'ForceInterval', 'ForceRelWidth', 'Weights'};
 
@@ -30,7 +30,7 @@ function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggr
     %
     % Calculate fraction left according to aggregation parameters
     %
-    agglist(1,:) = unique(['PlateID' aggregating_variables(:)'], 'stable');
+    agglist(1,:) = unique(['PlateID' groupvars(:)'], 'stable');
     Np = numel(agglist);
 
     [g, ~] = findgroups(RelevantData(:, agglist));
@@ -72,7 +72,7 @@ function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggr
     % 4. Optimize starting points according to number of modes
     Nmodes = 2;
     [g, tmpT] = findgroups(RelevantData(:, agglist));
-%     [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
+%     [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', groupvars])));
     optstartT = splitapply(@(x1,x2,x3,x4,x5)sa_optimize_start(x1,x2,x3,x4,x5,Nmodes), ...
                                                          log10(RelevantData.Force), ...
                                                          log10(RelevantData.ForceInterval), ...
@@ -123,7 +123,7 @@ function [TableOut, optstartT] = ba_plate_detachmentforces(ba_process_data, aggr
 
     % 8. Extract detachment forces and their relative certainty
 
-%     g = findgroups(RelevantData(:, unique(['PlateID', aggregating_variables])));
+%     g = findgroups(RelevantData(:, unique(['PlateID', groupvars])));
 %     [tmpa, tmpb] = splitapply(@(x1,x2)calcdetachforce_CFTBXmethod(x1,x2), fitfoo.FitParams, fitfoo.confFitParams, g);
     filterTF = false;
     [tmpa, tmpb] = cellfun(@(x1,x2)calcdetachforce_CFTBXmethod(x1,x2), fitT.FitParams, fitT.confFitParams, 'UniformOutput',false);

@@ -1,4 +1,4 @@
-function grpF = ba_get_force_distribution_data(ba_process_data, maxforce, aggregating_variables)
+function grpF = ba_get_force_distribution_data(ba_process_data, maxforce, groupvars)
 
     if nargin < 1 || isempty(ba_process_data)
         error('No data on input.');
@@ -8,13 +8,13 @@ function grpF = ba_get_force_distribution_data(ba_process_data, maxforce, aggreg
         maxforce = NaN;
     end    
     
-    if nargin < 3 || isempty(aggregating_variables)
-        aggregating_variables = {'Fid'};
+    if nargin < 3 || isempty(groupvars)
+        groupvars = {'Fid'};
     end
     
     
     Data = ba_process_data;
-    aggVars = aggregating_variables(:)';
+    aggVars = groupvars(:)';
 
     if ~iscell(aggVars)
         error('Need cell array of aggregating variables');

@@ -1,4 +1,4 @@
-function outs = ba_BeadTrajectoriesVsMagnetPosition(filepath, aggregating_variables, calfit)
+function outs = ba_BeadTrajectoriesVsMagnetPosition(filepath, groupvars, calfit)
 % BA_PROCESS_EXPT analzes the output of a bead adhesion experiment.
 %
 

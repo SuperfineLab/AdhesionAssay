@@ -18,7 +18,7 @@ startdir = pwd;
 improveBadFitsTF = true;
 savedatafilesTF = true;
 
-aggregating_variables = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', ...
+groupvars = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', ...
                          'Media', 'pH'};
 
 % all-data-path
@@ -35,7 +35,7 @@ DataSetDirs = get_dataset_list;
 %
 % ** The load_bigstudy_data function is at the very bottom of this file. **
 if ~exist('Broot', 'var')
-    Broot = load_bigstudy_data(adp, DataSetDirs, aggregating_variables, improveBadFitsTF, savedatafilesTF );    
+    Broot = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF );    
 end
 B = clean_bigstudy_data(Broot);
 
@@ -74,7 +74,7 @@ plateNames(:,1) = unique(B.FileTable.PlateID);
 % measurements within a plate. The protocol right now is to run each
 % condition in triplicate. This aggregates each set of replicates into a
 % single dataset/sample in each plate for each test condition.
-[g, PlateStatsT] = findgroups(B.FileTable(:,aggregating_variables));
+[g, PlateStatsT] = findgroups(B.FileTable(:,groupvars));
 PlateStatsT.Nvideos    = splitapply(@numel, B.FileTable.Fid, g);
 PlateStatsT.FirstBeads = splitapply(@sum, B.FileTable.FirstFrameBeadCount, g);
 PlateStatsT.LastBeads  = splitapply(@sum, B.FileTable.LastFrameBeadCount, g);
@@ -89,14 +89,14 @@ PlateStatsT.VisRow = grp2idx(PlateStatsT.PlateID);
 % and put them in the "right" places on the xaxis and yaxis, respectively. 
 [~, gxT] = findgroups(PlateStatsT(:,{'BeadChemistry'}));
 xstrings = string(table2array(gxT));
-[~, gyT] = findgroups(PlateStatsT(:,aggregating_variables));
+[~, gyT] = findgroups(PlateStatsT(:,groupvars));
 % gyT.PlateID = reordercats(gyT.PlateID, plateNames');
 ystrings = string(plateNames);
 
 DetachVars = {'PlateID', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
               'pH', 'DetachForce', 'relwidthDetachForce'};
 
-Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', aggregating_variables);
+Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', groupvars);
 
 
 SummaryDataT = innerjoin(Forces, PlateStatsT);

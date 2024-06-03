@@ -1,7 +1,7 @@
-function ba_plot_forcehist(ba_process_data, aggregating_variables, plotorder)
+function ba_plot_forcehist(ba_process_data, groupvars, plotorder)
 
     Data = ba_process_data;
-    aggVars = aggregating_variables(:);
+    aggVars = groupvars(:);
 
     if ~iscell(aggVars)
         error('Need cell array of aggregating variables');

@@ -1,4 +1,4 @@
-function [ForceMatrix, ystrings, p] = ba_plot_boxplots(ba_process_data, aggregating_variables, plotorder)
+function [ForceMatrix, ystrings, p] = ba_plot_boxplots(ba_process_data, groupvars, plotorder)
 
 Data = ba_process_data;
 
@@ -6,14 +6,14 @@ Data = ba_process_data;
 % left to detach vs the force at which they detach. SO, that means all we
 % need are the aggregating variables AND those relevant columns
 ForceTableVars = {'Fid', 'Force'};
-FileTableVars = [{'Fid'}, aggregating_variables(:)'];
+FileTableVars = [{'Fid'}, groupvars(:)'];
 
 
 RelevantData = innerjoin(Data.ForceTable(:,ForceTableVars), ...
                          Data.FileTable(:, FileTableVars), ...
                          'Keys', 'Fid');
 
-[g, grpF] = findgroups(RelevantData(:,aggregating_variables));
+[g, grpF] = findgroups(RelevantData(:,groupvars));
 grpFstr = string(table2array(grpF));
 ystrings = join(grpFstr, '_');
 

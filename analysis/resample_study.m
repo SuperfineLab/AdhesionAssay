@@ -32,8 +32,8 @@ FileVarsToKeep = {'PlateID', 'Fid', 'Well', 'PlateRow', 'PlateColumn', ...
 % % number of MaxEvals also established in the ba_fit_erf code.
 
 %%% Master Curve Parameter Calculations
-mc_aggregating_variables = {'PlateID'};
-MasterCurveDetachForceTable = ba_plate_detachmentforces(Broot, mc_aggregating_variables, 'erf', true, false);
+mc_groupvars = {'PlateID'};
+MasterCurveDetachForceTable = ba_plate_detachmentforces(Broot, mc_groupvars, 'erf', true, false);
 
 
 % % % % magic numbers

@@ -1,11 +1,11 @@
-function [DetachOut, OptimizedOut] = ba_improve_bad_fits(DetachForceTable, OptimizedStartTable, aggregating_variables)
+function [DetachOut, OptimizedOut] = ba_improve_bad_fits(DetachForceTable, OptimizedStartTable, groupvars)
 
-    aggregating_variables = unique(['PlateID', aggregating_variables], 'stable');
+    groupvars = unique(['PlateID', groupvars], 'stable');
 
     DetachVars = DetachForceTable.Properties.VariableNames;
     OptimizedVars = OptimizedStartTable.Properties.VariableNames;
 
-    Q = innerjoin(DetachForceTable, OptimizedStartTable, 'Keys', aggregating_variables);
+    Q = innerjoin(DetachForceTable, OptimizedStartTable, 'Keys', groupvars);
     figh = plot_sse(Q);
 
     [idx, thresh] = fits_to_fix(Q, []);   

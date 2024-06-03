@@ -15,11 +15,10 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 improveBadFitsTF = true;
 savedatafilesTF = true;
 
-% aggregating_variables = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
-%                          'Media', 'pH'};
+% groupvars = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
+%              'Media', 'pH'};
 
-aggregating_variables = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', ...
-                         'Media', 'pH'};
+groupvars = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'};
 
 
 % all-data-path
@@ -44,12 +43,12 @@ rootdir = pwd;
 %
 % ** The load_bigstudy_data function is at the very bottom of this file. **
 if ~exist('Broot', 'var')       
-    Broot = load_bigstudy_data(adp, DataSetDirs, aggregating_variables, improveBadFitsTF, savedatafilesTF );    
+    Broot = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF );    
 end
 B = clean_bigstudy_data(Broot);
 
 % Improve fits based on all fits statistics...
-[NewDetachForceTable, NewOptimizedStartTable] = ba_improve_bad_fits(B.DetachForceTable, B.OptimizedStartTable, aggregating_variables);
+[NewDetachForceTable, NewOptimizedStartTable] = ba_improve_bad_fits(B.DetachForceTable, B.OptimizedStartTable, groupvars);
 
 %
 % % Clean out the PWM and SNA
@@ -85,7 +84,7 @@ plateNames(:,1) = unique(B.FileTable.PlateID);
 % The assay protocol for a plate runs each condition in triplicate. This 
 % aggregates each set of replicates into a single dataset/sample in each 
 % plate for each test condition.
-[g, PlateStatsT] = findgroups(B.FileTable(:,['PlateID', aggregating_variables]));
+[g, PlateStatsT] = findgroups(B.FileTable(:,['PlateID', groupvars]));
 PlateStatsT.Nvideos    = splitapply(@numel, B.FileTable.Fid, g);
 PlateStatsT.FirstBeads = splitapply(@sum, B.FileTable.FirstFrameBeadCount, g);
 PlateStatsT.LastBeads  = splitapply(@sum, B.FileTable.LastFrameBeadCount, g);
@@ -100,7 +99,7 @@ PlateStatsT.VisRow = grp2idx(PlateStatsT.PlateID);
 % and put them in the "right" places on the xaxis and yaxis, respectively. 
 [~, gxT] = findgroups(PlateStatsT(:,{'BeadChemistry'}));
 xstrings = string(table2array(gxT));
-[~, gyT] = findgroups(PlateStatsT(:,aggregating_variables));
+[~, gyT] = findgroups(PlateStatsT(:,groupvars));
 % gyT.PlateID = reordercats(gyT.PlateID, plateNames');
 ystrings = string(plateNames);
 
@@ -111,7 +110,7 @@ ystrings = string(plateNames);
 DetachVars = {'PlateID',  'BeadChemistry', 'SubstrateChemistry', 'Media', ...
               'pH', 'DetachForce', 'relwidthDetachForce'};
 
-Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', ['PlateID' aggregating_variables]);
+Forces = innerjoin(B.DetachForceTable(:,DetachVars), PlateStatsT, 'Keys', ['PlateID' groupvars]);
 
 
 SummaryDataT = innerjoin(Forces, PlateStatsT);
