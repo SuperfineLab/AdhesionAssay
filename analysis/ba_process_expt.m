@@ -44,7 +44,7 @@ if nargin < 1 || isempty(filepath)
     error('No input data. Needs a B-style struct or a filepath on the input.');
 end
 
-rootdir = pwd;
+startdir = pwd;
 
 switch class(filepath)
     case 'char'
@@ -75,7 +75,6 @@ end
 
 if ~isfield(Data, 'BeadForceTable')
 
-%     Data.BeadForceTable = ba_beadforces(Data, 'unweighted');
     WeightMethod = 'quantile';
     Data.BeadForceTable = ba_beadforces(Data, WeightMethod);
           
@@ -92,7 +91,7 @@ if ~isfield(Data, 'BeadForceTable')
     Data.BeadForceTable = TmpTable;
 end
 
-% weightmethod = 'quartile';
+% weightmethod = 'quantile';
 % weightmethod = 'unweighted';
 fitmethod = 'fit';
 
@@ -112,6 +111,15 @@ else
     [Data.ForceFitTable, Data.OptimizedStartTable] = ba_improve_bad_fits(tmpForceFitTable, tmpOptstartT, groupvars);
 end
 
+% 
+% DO THE DETACHMENT FORCE MAGIC HERE. WHAT GUIDELINES DO WE FOLLOW FOR
+% SELECTING THE DETACHMENT FORCE FROM THE LIST OF FORCES GARNERED BY THE
+% FITS, OR HOW DO WE FILTER OUT FORCES THAT DON'T (OR SHOULDN'T) MATTER?
+% 
+warning("You still have work to do here."); 
+
+%
+% Wrapping up the output and saving (if desired)
 Data.groupvars = groupvars;
 
 if savefileTF
@@ -121,7 +129,7 @@ if savefileTF
     end
 end
 
-cd(rootdir);
+cd(startdir);
 
 end
 
