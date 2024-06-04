@@ -66,7 +66,7 @@ for m = 1:height(DataOut)
 %     if sum(weights) == numel(weights), ga_opts.FunctionTolerance = 3e-8; end    
 %     ga_opts.PopulationSize = popsize;   
 %     ga_opts.EliteCount = elitecount; 
-    ga_opts.MaxGenerations = 400;
+    ga_opts.MaxGenerations = 700;
     if isTableCol(dftable, 'FinalPop') && ~isempty(dftable.FinalPop) 
         ga_opts.InitialPopulationMatrix = dftable.FinalPop{m};
     end
