@@ -42,7 +42,7 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
     logentry(['Nparams = ' num2str(fout.Nparams)]);
     if Ns < (fout.Nparams+1) || fout.Nmodes == 0
         optstart = -Inf(1,6);
-        gafitT = table('Size', [1 13], ...
+        gafitT = table('Size', [1 12], ...
             'VariableTypes', {'double', 'double', 'double', 'double', 'double', 'struct', ...
                               'double', 'double', 'double', 'double', 'double', 'struct'}, ...
             'VariableNames', {'OptimizedStartParameters', 'TotalError', 'RedChiSq', 'SolveTime', 'ExitFlag', 'RngState', ...
@@ -56,7 +56,7 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
     end
 
     % *** header for ga-specific options (tweaked for the input data) ***
-    max_generations = 400;
+    max_generations = 700;
     popsize = floor(Ns/2);
     elitecount = ceil(popsize * 0.3);
     FuncTol = 2e-10; 
