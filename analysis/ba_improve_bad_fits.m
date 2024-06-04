@@ -6,7 +6,7 @@ function [ForceFitOut, OptimizedOut] = ba_improve_bad_fits(ForceFitTable, Optimi
     OptimizedVars = OptimizedStartTable.Properties.VariableNames;
 
     Q = innerjoin(ForceFitTable, OptimizedStartTable, 'Keys', groupvars);
-    figh = plot_sse(Q);
+    figh = plot_data(Q);
 
     [idx, thresh] = fits_to_fix(Q, []);   
 
@@ -25,7 +25,7 @@ function [ForceFitOut, OptimizedOut] = ba_improve_bad_fits(ForceFitTable, Optimi
         
         Q = vertcat(Qgood, Qimproved);
         
-        plot_sse(Q, figh);
+        plot_data(Q, figh);
 
         idx = fits_to_fix(Q, thresh);
         Nfix = sum(idx);
@@ -79,7 +79,7 @@ end
 % end
 
 
-function figh = plot_sse(Q, figh)
+function figh = plot_data(Q, figh)
     
     BootstatsT = vertcat(Q.BootstatT{:}); 
 
@@ -88,16 +88,25 @@ function figh = plot_sse(Q, figh)
     end
 
     data = BootstatsT.sse;
-    [~, centralval, uncertainty] = calc_threshold(data);
     
-
     figure(figh);
+    subplot(1,2,1);
+    myhisto(BootstatsT.sse, 'sse', 'Sum-squared error', gca);
+    subplot(1,2,2); 
+    myhisto(BootstatsT.rmse, 'rmse', 'RMS error', gca);
+
+end
+
+
+function myhisto(data, myxlabel, mytitle, ax)
+    [~, centralval, uncertainty] = calc_threshold(data);
+
     hold on
     histogram(data);
 
-    colororder = get(gca, 'ColorOrder');
+    colororder = get(ax, 'ColorOrder');
     Ncolors = size(colororder,1);
-    ch = get(gca,'Children');
+    ch = get(ax,'Children');
     Nhists = sum(arrayfun(@(x1)contains(class(x1), 'Histogram'),ch));    
     ColorN = mod(Nhists,Ncolors); 
     ColorN(ColorN == 0) = 7;
@@ -106,8 +115,8 @@ function figh = plot_sse(Q, figh)
     plot(centralval, 0, 'Marker', '*', 'MarkerEdgeColor',mycolor);
     plot(centralval+uncertainty, 0, 'Marker', '<', 'MarkerEdgeColor',mycolor);
     hold off
-    xlabel('sse');
+    xlabel(myxlabel);
     ylabel('counts');
-    title('Sum-squared error');
+    title(mytitle);
     drawnow
 end
