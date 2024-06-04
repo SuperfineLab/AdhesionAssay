@@ -104,21 +104,18 @@ xstrings = string(table2array(gxT));
 ystrings = string(plateNames);
 
 
-% ForceFitVars = {'PlateID', 'PlateColumn', 'BeadChemistry', 'SubstrateChemistry', 'Media', ...
-%               'pH', 'DetachForce', 'confDetachForce'};
-
-ForceFitVars = {'PlateID',  'BeadChemistry', 'SubstrateChemistry', 'Media', ...
-              'pH', 'DetachForce', 'relwidthDetachForce'};
-
-Forces = innerjoin(B.ForceFitTable(:,ForceFitVars), PlateStatsT, 'Keys', ['PlateID' groupvars]);
-
-
-SummaryDataT = innerjoin(Forces, PlateStatsT);
-sz = [max(SummaryDataT.VisRow), max(SummaryDataT.VisCol)];
-fmat = OrganizeSurfaceData(sz, SummaryDataT.VisRow, SummaryDataT.VisCol, abs(SummaryDataT.DetachForce));
-fmat(isnan(fmat)) = 0;
-plot_FuncSurface(fmat, pinefresh(255), 'Pulloff Force [nN]', xstrings, ystrings);
-clim([0 15]);
+% % % ForceFitVars = {'PlateID',  'BeadChemistry', 'SubstrateChemistry', 'Media', ...
+% % %               'pH', 'DetachForce', 'relwidthDetachForce'};
+% % % 
+% % % Forces = innerjoin(B.ForceFitTable(:,ForceFitVars), PlateStatsT, 'Keys', ['PlateID' groupvars]);
+% % % 
+% % % 
+% % % SummaryDataT = innerjoin(Forces, PlateStatsT);
+% % % sz = [max(SummaryDataT.VisRow), max(SummaryDataT.VisCol)];
+% % % fmat = OrganizeSurfaceData(sz, SummaryDataT.VisRow, SummaryDataT.VisCol, abs(SummaryDataT.DetachForce));
+% % % fmat(isnan(fmat)) = 0;
+% % % plot_FuncSurface(fmat, pinefresh(255), 'Pulloff Force [nN]', xstrings, ystrings);
+% % % clim([0 15]);
 
 
 
