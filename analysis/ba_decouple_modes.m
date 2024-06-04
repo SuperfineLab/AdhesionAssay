@@ -13,15 +13,15 @@ Ngroupvars = numel(groupvars);
 % for the new table
 T = ForceFitTable(:, [groupvars, 'FitParams', 'confFitParams']);
 
-% Weirdness in code somewhere that embeds parameter list into a secondary
-% level cell class/type. Until I dig it out, this will extract the
-% parameters from the secondary level.
-for k = 1:height(T)
-    if contains(class(T.FitParams{k}), 'cell')
-        T.FitParams{k} = T.FitParams{k}{1}; 
-        T.confFitParams{k} = T.confFitParams{k}{1};
-    end
-end
+% % Weirdness in code somewhere that embeds parameter list into a secondary
+% % level cell class/type. Until I dig it out, this will extract the
+% % parameters from the secondary level.
+% for k = 1:height(T)
+%     if contains(class(T.FitParams{k}), 'cell')
+%         T.FitParams{k} = T.FitParams{k}{1}; 
+%         T.confFitParams{k} = T.confFitParams{k}{1};
+%     end
+% end
 
 % Declare and copy class types for the new table
 Nvars = size(T,2);
