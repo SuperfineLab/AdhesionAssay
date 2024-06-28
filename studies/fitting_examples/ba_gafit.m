@@ -22,15 +22,15 @@ if nargin < 2 || isempty(plotTF)
     plotTF = false;
 end
 
-if ~exist('ga_summary', 'var')
-    ga_summary = table('Size', [0 11], ...
-                       'VariableTypes', {'categorical', 'double', 'double', 'double', ...
-                                         'double', 'double', 'double', 'double', 'double', ...
-                                         'double', 'double'}, ...
-                       'VariableNames', {'PlateID', 'SolveTime', 'OptimizedStartParameters', 'TotalError', ...
-                                         'RedChiSq', 'ExitFlag', 'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', ...
-                                         'FinalPop','FinalScore'});
-end
+% if ~exist('ga_summary', 'var')
+%     ga_summary = table('Size', [0 11], ...
+%                        'VariableTypes', {'categorical', 'double', 'double', 'double', ...
+%                                          'double', 'double', 'double', 'double', 'double', ...
+%                                          'double', 'double'}, ...
+%                        'VariableNames', {'PlateID', 'SolveTime', 'OptimizedStartParameters', 'TotalError', ...
+%                                          'RedChiSq', 'ExitFlag', 'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', ...
+%                                          'FinalPop','FinalScore'});
+% end
 
 DataOut = dftable;
 
@@ -44,7 +44,6 @@ stdclr = lines(7);
 % Some number (m) of plates to process
 for m = 1:height(DataOut)
 
-    ga_opts = dftable.gaOpts(m);
     if plotTF
         ga_opts.PlotFcn = {'gaplotscores','gaplotbestlogf'};
     end
@@ -59,24 +58,55 @@ for m = 1:height(DataOut)
 
     Ns = numel(logforce_nN); % Ns = number of samples
 
+    ga_opts = DataOut.gaOpts(m);
+    fout = DataOut.gaFitSetup(m);
+    
+
     % *** ga-specific options ***
-%     popsize = floor(Ns/2);
+    % popsize = floor(Ns/2)-2;
 %     elitecount = ceil(popsize * 0.28);
 %     if elitecount >= popsize, elitecount = popsize-1; end
 %     if sum(weights) == numel(weights), ga_opts.FunctionTolerance = 3e-8; end    
-%     ga_opts.PopulationSize = popsize;   
+    % ga_opts.PopulationSize = popsize;   
 %     ga_opts.EliteCount = elitecount; 
-    ga_opts.MaxGenerations = 700;
-    if isTableCol(dftable, 'FinalPop') && ~isempty(dftable.FinalPop) 
-        ga_opts.InitialPopulationMatrix = dftable.FinalPop{m};
+    % ga_opts.MaxGenerations = 3500;
+
+    % set up the earlier run if there is one...
+    if isTableCol(DataOut, 'FinalPop') && ~isempty(DataOut.FinalPop) 
+        oldp = DataOut.FitParams{m};
+        oldsse = DataOut.sse(m);
+
+        oldpopmatrix = DataOut.FinalPop{m};
+        oldscores = DataOut.FinalScore{m};
+
+        [oldscores, idx] = sortrows(oldscores);
+        oldpopmatrix = oldpopmatrix(idx,:);
+
+        newpopmatrix = [oldp; oldpopmatrix(1:end-1,:)];
+        newscores = [oldsse; oldscores(1:end-1,:)];
+        ga_opts.InitialPopulationMatrix = newpopmatrix;
+        ga_opts.InitialScoresMatrix = newscores;
     end
 
-    fout  = ba_fit_setup(Nmodes);
+    % fout  = ba_fit_setup(Nmodes);
+
+
+    rng("shuffle");
+    rngState = rng;
 
     % Call the global optimizer [x,fval,exitflag,output,population,scores] 
     tic 
-    [optimized_params, error, exitflag, output, finalpop, finalscore] = ga(@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...
+    try
+        [optimized_params, error, exitflag, output, finalpop, finalscore] = ga(@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...
                                     fout.Nparams, fout.Aineq, fout.bineq, [], [], fout.lb, fout.ub, [], ga_opts);
+    catch
+        warning('First time fitting this dataset failed. Trying again.');
+        rng("shuffle");
+        rngState = rng;
+
+        [optimized_params, error, exitflag, output, finalpop, finalscore] = ga(@(p) objectiveFunction(p, fout.fcn, logforce_nN, fractionLeft, weights), ...
+                                    fout.Nparams, fout.Aineq, fout.bineq, [], [], fout.lb, fout.ub, [], ga_opts);
+    end
     t=toc;
 
     rchisq = red_chisquare(optimized_params, fout.fcn, logforce_nN, fractionLeft, weights);
@@ -84,27 +114,28 @@ for m = 1:height(DataOut)
     % Set up the output diagnostic/summary table for the run
     ga_summary = table(PlateID, t, {optimized_params}, error, rchisq, exitflag, ...
                        ga_opts.MaxGenerations, ga_opts.PopulationSize, ...
-                       output.generations, {finalpop}, {finalscore}, ga_opts, ...
+                       output.generations, {finalpop}, {finalscore}, fout, ga_opts, ...
                        'VariableNames', {'PlateID', 'SolveTime', 'OptimizedStartParameters', 'TotalError', 'RedChiSq', 'ExitFlag', ...
                                          'MaxGenerations', 'PopulationSize', ...
-                                         'GenerationSolveCount', 'FinalPop', 'FinalScore', 'gaOpts'});
+                                         'GenerationSolveCount', 'FinalPop', 'FinalScore', 'gaFitSetup', 'gaOpts'});
       
     cftbx_opts = ba_fitoptions('fit');    
     [StatT, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, weights, fout, cftbx_opts);
 
-    DataOut.FitParams(m) = {StatT.p};
-    DataOut.confFitParams(m) = {StatT.pconf};
+    DataOut.FitParams(m) = StatT.p;
+    DataOut.confFitParams(m) = StatT.pconf;
     DataOut.sse(m) = StatT.sse;
     DataOut.rsquare(m) = StatT.rsquare;
     DataOut.adjrsquare(m) = StatT.adjrsquare;
     DataOut.dfe(m) = StatT.dfe;
     DataOut.rmse(m) = StatT.rmse;
     DataOut.redchisq(m) = StatT.redchisq;
-    DataOut.FitSetup(m) = fout;
-    DataOut.FitOptions(m) = cftbx_opts;
+    % DataOut.BootFitSetup(m) 
+    DataOut.BootFitOptions(m) = cftbx_opts;
     DataOut.BootstatT{m} = BootstatT;
     DataOut.FinalPop{m} = finalpop;
     DataOut.FinalScore{m} = finalscore;
+    DataOut.gaFitSetup(m) = fout;
     DataOut.gaOpts(m) = ga_opts;
 
     % Assign new parameters to the (modified and then ultimately outputted) data table
