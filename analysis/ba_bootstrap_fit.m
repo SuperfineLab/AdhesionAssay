@@ -19,8 +19,8 @@ function [StatOutT, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, wei
 
     switch fout.Nmodes
         case 1
-            fiteq = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as)))';
-            usethese = [1 2 3];
+            fiteq = '1/2*(erfc(((Fd)-am)/(sqrt(2)*as)))';
+            usethese = [2 3];
         case 2
             fiteq = '1/2*(a*erfc(((Fd)-am)/(sqrt(2)*as))+(1-a)*erfc(((Fd)-bm)/(sqrt(2)*bs)))';
             usethese = [1 2 3 5 6];
@@ -74,7 +74,7 @@ function [StatOutT, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, wei
 end
 
 
-function pge = ba_bootstat_fun(logforce_nN, fractionLeft, ft, myopts)
+function pge = ba_bootstat_fun(logforce_nN, fractionLeft, ftfcn, myopts)
 % ba_bootstat_fun dictates the procedure used on the data chosen by
 % matlab's bootstrp and bootci functions. Herein lies the fitting for
 % individual subsets and the reporting of those fitting results. Matlab
@@ -87,21 +87,28 @@ function pge = ba_bootstat_fun(logforce_nN, fractionLeft, ft, myopts)
     fractionLeft = fractionLeft(idx,:);
 
     % Perform the fit and extract the best fitting parameters for each
-    [fitresult, gof, xtra] = fit( logforce_nN, fractionLeft, ft, myopts );
+    [fitresult, gof, xtra] = fit( logforce_nN, fractionLeft, ftfcn, myopts );
     ptmp = coeffvalues(fitresult);
 
     %
     % Weighted reduced chi-square computation https://en.wikipedia.org/wiki/Reduced_chi-squared_statistic
     % XXX @jeremy TODO: Another function in the AdhesionAssay codebase also does 
-    % the reduced chi-square computation. Should we use it here instead?
+    % the reduced chi-square computation. Should we use it here instead? If
+    % we do, then our redchisquare will need to change such that its inputs
+    % require the already calculated residuals (to avoid weird differences
+    % between fit objects for "fit" versus anonymous fitting functions used
+    % everywhere else.
     r = xtra.residuals; 
     W = diag(myopts.Weights);
     dfe = numel(logforce_nN) - numel(ptmp);
     redchisq = r' * W * r / dfe;
 
     switch numel(ptmp)
+        case 2  
+            % The one mode, constrained, i.e., ModeScale = 1
+            p(1,:) = [1 ptmp];
         case 3
-            % The one mode results should just report what it sees.
+            % The one mode, unconstrained, results should just report what it sees.
             p(1,:) = ptmp;
         case 5
             % This two mode model is constrained by definition (because of 
