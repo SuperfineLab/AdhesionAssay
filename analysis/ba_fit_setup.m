@@ -15,8 +15,8 @@ function fout = ba_fit_setup(Nmodes, startpoint)
 
     % new form
     fitfcn = ba_fitfcn(Nmodes);
-    Nparams = Nmodes * 3;
-
+    Nparams = Nmodes * 3; 
+    Nfreeterms = Nparams - 1; % The "- 1" comes from the sum(ModeScale)=1 constraint
 
     % Upper and Lower bounds for *ONE MODE* parameter fitting
     %     [a,   am,  as]
@@ -68,6 +68,7 @@ function fout = ba_fit_setup(Nmodes, startpoint)
     fout.fcn = fitfcn;    
     fout.Nmodes = Nmodes;
     fout.Nparams = Nparams;
+    fout.Nfreeterms = Nfreeterms;
     fout.logforcelimitHigh = logforcelimitHigh;
     fout.logforcelimitLow = logforcelimitLow;
     fout.StartPoint = pstart;
