@@ -5,18 +5,18 @@ if nargin < 2 || isempty(plotFerrTF)
 end
 
 Data = ba_process_data.ForceFitTable;
-
+Nd = height(Data);
 % "Fraction Left" plot is always going to be plotting the Fraction of beads
 % left to detach vs the force at which they detach. 
 
-cmap = lines(height(Data));
+cmap = lines(Nd);
 
 f = figure;
 
 for k = 1:height(Data)
 
-    fiteq = Data.FitSetup(k).fcn;
-    p = Data.FitParams(k,:);
+    fiteq = Data.BootFitSetup(k).fcn;
+    p = Data.FitParams{k,:};
     if iscell(p), p = p{1}; end
     
     mylogforce = log10(Data.RawData{k}.Force);
