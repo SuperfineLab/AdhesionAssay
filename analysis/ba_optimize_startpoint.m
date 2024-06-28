@@ -1,4 +1,4 @@
-function startfitT = ba_optimize_startpoint(logforce_nN, logforceinterval, fractionLeft, weights, Nmodes)
+function startfitT = ba_optimize_startpoint(logforce_nN, fractionLeft, weights, Nmodes)
 % XXX @jeremy TODO: Add documentation for this function.
 %
 % Assembles a "protofit" that optimizes the fitting startpoints for the
@@ -39,30 +39,31 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
     Ns = numel(logforce_nN);   
 
     % Handle the case where there's not enough data to fit the model.
-    logentry(['Nparams = ' num2str(fout.Nparams)]);
-    if Ns < (fout.Nparams+1) || fout.Nmodes == 0
+    % logentry(['Nparams = ' num2str(fout.Nparams)]);
+    if fout.Nmodes == 0
         optstart = -Inf(1,6);
-        gafitT = table('Size', [1 12], ...
+        gafitT = table('Size', [1 13], ...
             'VariableTypes', {'double', 'double', 'double', 'double', 'double', 'struct', ...
-                              'double', 'double', 'double', 'double', 'double', 'struct'}, ...
+                              'double', 'double', 'double', 'double', 'double', 'struct', 'struct'}, ...
             'VariableNames', {'OptimizedStartParameters', 'TotalError', 'RedChiSq', 'SolveTime', 'ExitFlag', 'RngState', ...
-                              'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', 'FinalPop', 'FinalScore', 'gaOpts'});
+                              'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', 'FinalPop', 'FinalScore', 'gaFitSetup', 'gaOpts'});
         gafitT = standardizeMissing(gafitT, {0, NaN});
         gafitT.RngState = rng('default');
         gafitT.OptimizedStartParameters = {optstart};
+        % gafitT.fout = fout;
         gafitT.gaOpts = ba_fitoptions("ga");
         logentry('Returning no fit parameters (not enough datapoints to fit the model.');
         return
     end
 
     % *** header for ga-specific options (tweaked for the input data) ***
-    max_generations = 700;
-    popsize = floor(Ns/2);
+    max_generations = 3500;
+    popsize = floor(Ns/2)-1;
     elitecount = ceil(popsize * 0.3);
     FuncTol = 2e-10; 
 
     if elitecount >= popsize
-        elitecount = popsize-1; 
+        elitecount = max(popsize-1, 1); % the min elitecount is 1
     end
 
     % Define "ga" optimization options that do not change during run
@@ -77,18 +78,29 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
         options.PopulationSize = popsize;   
     end
 
-    options.ConstraintTolerance = 0.5e-5;
+%     options.ConstraintTolerance = 0.5e-5;
     options.CrossoverFraction = 0.5;
     options.EliteCount = elitecount; 
     options.HybridFcn = 'fmincon';
 
+    disp(['PopSize: ', num2str(popsize), ',  EliteCount: ', num2str(elitecount)]);
+
     rng("shuffle");
     rngState = rng;
 
+    % persistent c
+    % if isempty(c)
+    %     c = 1;
+    % else        
+    %     c = c+1;
+    % end
+    % disp(['c = ', num2str(c)]);
     % Call the global optimizer
     tic
-    [optstart, error, exitflag, output, finalpop, finalscore] = ga(@(params) gafit_error(params, fout.fcn, logforce_nN, fractionLeft, weights), ...
-                           fout.Nparams, fout.Aineq, fout.bineq, [], [], fout.lb, fout.ub, [], options);
+    [optstart, error, exitflag, output, finalpop, finalscore] = ...
+        ga(@(params) gafit_error(params, fout.fcn, logforce_nN, fractionLeft, weights), ...
+                           fout.Nparams, fout.Aineq, fout.bineq, [], [], ...
+                           fout.lb, fout.ub, [], [], options);
     t = toc;
 
     rchisq = red_chisquare(optstart, fout.fcn, logforce_nN, fractionLeft, weights);
@@ -96,10 +108,10 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
 
     gafitT =  table({optstart}, error, rchisq, t, exitflag, rngState, ...
                      output.generations, max_generations, popsize, ...
-                    {finalpop}, {finalscore}, options, ...
+                    {finalpop}, {finalscore}, fout, options, ...
                     'VariableNames', {'OptimizedStartParameters', 'TotalError', 'RedChiSq', 'SolveTime', 'ExitFlag', 'RngState', ...
                                       'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', ...
-                                      'FinalPop', 'FinalScore', 'gaOpts'});
+                                      'FinalPop', 'FinalScore', 'gaFitSetup', 'gaOpts'});
     
 end
 
