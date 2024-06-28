@@ -3,7 +3,7 @@ function [ForceFitOut, OptimizedOut] = ba_improve_bad_fits(ForceFitTable, Optimi
     groupvars = unique(['PlateID', groupvars], 'stable');
 
     ForceFitVars = ForceFitTable.Properties.VariableNames;
-    OptimizedVars = OptimizedStartTable.Properties.VariableNames;
+    OptimizedStartVars = OptimizedStartTable.Properties.VariableNames;
 
     Q = innerjoin(ForceFitTable, OptimizedStartTable, 'Keys', groupvars);
     figh = plot_data(Q);
@@ -11,17 +11,17 @@ function [ForceFitOut, OptimizedOut] = ba_improve_bad_fits(ForceFitTable, Optimi
     [idx, thresh] = fits_to_fix(Q, []);   
 
     count = 0;
-    Nchk = 3;
+    Nchk = 3; % Number of times to check for better fit
 
     Nfix = sum(idx);
     while (Nfix > 0) && (count < Nchk)
         Qbad = Q(idx,:);
         Qgood = Q(~idx,:);
         
-        logentry(['Sum-squared error on ', num2str(Nfix), ' fit(s) exceeds limit. Refitting.']);
+        logentry(['Root-mean-squared error on ', num2str(Nfix), ' fit(s) exceeds limit. Refitting.']);
         [Qimproved, DiagT] = ba_gafit(Qbad, false);
-        improvedSSE(1,:) = Qimproved.sse;
-        logentry(['New SSE for fit(s) is: ', num2str(improvedSSE), '.']);
+        improvedRMSE = transpose(Qimproved.rmse(:));
+        logentry(['New RMSE for fit(s) is: ', num2str(improvedRMSE), '.']);
         
         Q = vertcat(Qgood, Qimproved);
         
@@ -36,7 +36,7 @@ function [ForceFitOut, OptimizedOut] = ba_improve_bad_fits(ForceFitTable, Optimi
     end
 
     ForceFitOut = Q(:,ForceFitVars);
-    OptimizedOut = Q(:,OptimizedVars);
+    OptimizedOut = Q(:,OptimizedStartVars);
 
 end
 
@@ -44,39 +44,42 @@ end
 function [idx, thresh_out] = fits_to_fix(Q, thresh_in)
 
     % Operate on bootstats data to get a cleaner value on the median/mad
+    
     BootstatsT = vertcat(Q.BootstatT{:});   
 
     if isempty(thresh_in)    
-        bad_fit_threshold = calc_threshold(BootstatsT.sse);
+        bad_fit_threshold = calc_iqr_threshold(BootstatsT.rmse);
     else
         bad_fit_threshold = thresh_in;
     end
 
-    idx = ( Q.sse >= bad_fit_threshold );
-    badfits(1,:) = Q.sse(idx);
-    logentry(['Fit error (sse) ' num2str(badfits) ' is greater than threshold, ' num2str(bad_fit_threshold) '.']);
-
+    idx = ( Q.rmse >= bad_fit_threshold );
+    badfits(1,:) = Q.rmse(idx);
+    if any(idx)
+        logentry(['Fit error (rmse) ' num2str(badfits) ' is greater than threshold, ' num2str(bad_fit_threshold) '.']);
+    end
     thresh_out = bad_fit_threshold;
 end
 
 
-function [threshout, centralval, uncertainty] = calc_threshold(sse)
-        ssemed = median(sse);
-        ssemad = mad(sse);       
+function [threshout, centralval, uncertainty] = calc_threshold(datain)
+        datamed = median(datain);
+        datamad = mad(datain);       
     
-        threshout = ssemed + ssemad;
-        centralval = ssemed;
-        uncertainty = ssemad;
+        threshout = datamed + datamad;
+        centralval = datamed;
+        uncertainty = datamad;
 end
 
-% function [threshout, centralval, uncertainty] = calc_threshold(sse)
-%         ssemed = median(sse);
-%         sseiqr = iqr(sse);       
-%     
-%         threshout = ssemed + 1.5 * sseiqr;
-%         centralval = ssemed;
-%         uncertainty = sseiqr;
-% end
+
+function [threshout, centralval, uncertainty] = calc_iqr_threshold(datain)
+        datamed = median(datain);
+        dataiqr = iqr(datain);       
+
+        threshout = datamed + 1.5 * dataiqr;
+        centralval = datamed;
+        uncertainty = dataiqr;
+end
 
 
 function figh = plot_data(Q, figh)
@@ -87,8 +90,6 @@ function figh = plot_data(Q, figh)
         figh = figure;
     end
 
-    data = BootstatsT.sse;
-    
     figure(figh);
     subplot(1,2,1);
     myhisto(BootstatsT.sse, 'sse', 'Sum-squared error', gca);
