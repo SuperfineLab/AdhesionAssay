@@ -19,6 +19,9 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 % end
 % 
 % disp(['Nrun = ', num2str(Nrun)]);
+    if numel(Nmodes) > 1
+        Nmodes = Nmodes(1);
+    end
 
     if size(startpoint,1) > 1
         startpoint = startpoint(1,:);
@@ -39,8 +42,8 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
     [logforce_nN, fractionLeft, weights] = prepareCurveData( logforce_nN, fractionLeft, weights );
     
     T = table('Size', [1 10], ...
-                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe',    'sse',    'rmse',   'FitSetup', 'FitOptions', 'BootstatT'}, ...
-                 'VariableTypes', {'cell',      'cell',          'double',  'double',     'double', 'double', 'double', 'struct',   'struct',     'double'});
+                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe',    'sse',    'rmse',   'BootFitSetup', 'BootFitOptions', 'BootstatT'}, ...
+                 'VariableTypes', {'cell',      'cell',          'double',  'double',     'double', 'double', 'double', 'struct',       'struct',         'double'});
     
     AvailModes = numel(startpoint)/3;
     fout = ba_fit_setup(AvailModes);
@@ -48,14 +51,18 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 
     opts = ba_fitoptions(fitmethod);
     
-    NecessaryPointsN = fout.Nparams + 1;
+    NecessaryPointsN = fout.Nfreeterms + 1;
 
-    if numel(logforce_nN) > NecessaryPointsN
+    if numel(logforce_nN) >= NecessaryPointsN
 
         switch fitmethod
             case 'fit'
                 if Nmodes == 2
                     fout.fcn = @(p,Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))+(1-p(1))*erfc(((Fd)-p(5))/(sqrt(2)*p(6)))));
+                elseif Nmodes == 1
+                    fout.fcn = @(p,Fd)(1/2*(p(1)*erfc(((Fd)-p(2))/(sqrt(2)*p(3)))));
+                else
+                    logentry('poop.');
                 end
                 [result, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, weights, fout, opts);
             case {'lsqcurvefit', 'lsqnonlin', 'fminunc'}
@@ -78,8 +85,8 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
         T.sse = NaN;
         T.rmse = NaN;
         T.redchisq = NaN;
-        T.FitSetup = fout;
-        T.FitOptions = opts;
+        T.BootFitSetup = fout;
+        T.BootFitOptions = opts;
         T.BootstatT = {[]};
         return
 %         TableOut.FitObject = {''};
@@ -98,8 +105,8 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
     T.sse  = result.sse;
     T.rmse = result.rmse;
     T.redchisq = result.redchisq;
-    T.FitSetup = fout;
-    T.FitOptions = opts;
+    T.BootFitSetup = fout;
+    T.BootFitOptions = opts;
     T.BootstatT = {BootstatT};
 end
 
