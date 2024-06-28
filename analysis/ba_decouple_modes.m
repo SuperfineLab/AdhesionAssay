@@ -1,6 +1,8 @@
 function outs = ba_decouple_modes(ForceFitTable, groupvars)
 % BA_DECOUPLE_MODES outputs fit parameters decoupled mode-by-mode from full fit equation
 %
+% YOU MUST USE ALL GROUPING VARS HERE FOR YOUR STUDY OR UNSTACK WILL DO STATS ON YOUR
+% PARAMETERS
 %
 
 % The goal here is to output a new table that contains fit parameters 
@@ -13,15 +15,15 @@ Ngroupvars = numel(groupvars);
 % for the new table
 T = ForceFitTable(:, [groupvars, 'FitParams', 'confFitParams']);
 
-% % Weirdness in code somewhere that embeds parameter list into a secondary
-% % level cell class/type. Until I dig it out, this will extract the
-% % parameters from the secondary level.
-% for k = 1:height(T)
-%     if contains(class(T.FitParams{k}), 'cell')
-%         T.FitParams{k} = T.FitParams{k}{1}; 
-%         T.confFitParams{k} = T.confFitParams{k}{1};
-%     end
-% end
+% Weirdness in code somewhere that embeds parameter list into a secondary
+% level cell class/type. Until I dig it out, this will extract the
+% parameters from the secondary level.
+for k = 1:height(T)
+    if contains(class(T.FitParams{k}), 'cell')
+        T.FitParams{k} = T.FitParams{k}{1}; 
+        T.confFitParams{k} = T.confFitParams{k}{1};
+    end
+end
 
 % Declare and copy class types for the new table
 Nvars = size(T,2);
@@ -83,7 +85,7 @@ ParamDataTable = renamevars(ParamDataTable, oldnames, newnames);
 
 % XXX @jeremy TODO Fix this function according to note below:
 %%%%%% EVERYTHING BELOW HERE IS NO LONGER DECOUPLING ANYTHING. INSTEAD IT
-%%%%%% IS CALCULATING OTHER STUFF.
+%%%%%% IS CALCULATING/FILTERING FORCE STUFF.
 ParamDataTable.RelWidth = ba_relwidthCI(ParamDataTable.ModeForce, ParamDataTable.confModeForce);
 
 logForceThreshLow = -1.5;
