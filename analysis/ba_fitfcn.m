@@ -10,21 +10,27 @@ function fitfcn = ba_fitfcn(Nmodes)
 %    Nmodes is the number of modes for the standard erf fitting equation.
 %
 
-
     if Nmodes == 0
-        fitfcn = '@(x)(0)';
+        fitfcn = '@(p,Fd)(0)';
         return
     end
 
     Nparams = Nmodes*3;
     plist = reshape(1:Nparams,3,[])';
     
+    eqstr = cell(1,Nmodes);
     for k = 1:Nmodes
        eqstr{1,k} = compose('p(%d)*erfc((Fd-p(%d))/(sqrt(2)*p(%d)))',plist(k,:));
     end
 
     eqstr = join(string(eqstr), ' + ');
+
+    if Nmodes == 1 
+        eqstr = strrep(eqstr,"p(1)","1");
+    end
+    
     fitfcn = str2func(['@(p,Fd)(1/2*(', char(eqstr), '))']);
+
 
 end
 
