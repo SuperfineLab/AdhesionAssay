@@ -68,17 +68,32 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
     threshold_force = 0.014;
     RelevantData.IncludeInFit(RelevantData.Force < threshold_force) = false;
 
+    % % 3a. Find and exclude datasets with less than three points    
+    % % XXX @jeremy TODO: Add in filter for removing datasets with fewer than some number of points Npoints>3?
+    %                     Maybe it would look something like this...
+    % MinNpoints = 3;
+    % [g, tmpT] = findgroups(RelevantData(:, agglist));
+    % ExcludeList = splitapply(@(x1)sa_excludeLowNcurves(x1,MinNpoints), RelevantData.IncludeInFit, g);
+    % tmpT = horzcat(tmpT, ExcludeList);
+    % RelevantData = innerjoin(RelevantData, tmpT);
+
+    % 3b. Determine the Number of modes to fit to each curve, with a
+    % maximum set as the "common" value.
+    DefaultNmodes = 2;
+    [g, tmpT] = findgroups(RelevantData(:, agglist));
+    ModeList = splitapply(@(x1)sa_calcNmodes(x1,DefaultNmodes), RelevantData.IncludeInFit, g);
+    tmpT = horzcat(tmpT, ModeList);
+    RelevantData = innerjoin(RelevantData, tmpT);
 
     % 4. Optimize starting points according to number of modes
-    Nmodes = 2;
+
     [g, tmpT] = findgroups(RelevantData(:, agglist));
-%     [g, grpT] = findgroups(RelevantData(:, unique(['PlateID', groupvars])));
-    optstartT = splitapply(@(x1,x2,x3,x4,x5)sa_optimize_start(x1,x2,x3,x4,x5,Nmodes), ...
+    optstartT = splitapply(@(x1,x2,x3,x4,x5)sa_optimize_start(x1,x2,x3,x4,x5), ...
                                                          log10(RelevantData.Force), ...
-                                                         log10(RelevantData.ForceInterval), ...
                                                          RelevantData.FractionLeft, ...
                                                          RelevantData.Weights, ...
                                                          RelevantData.IncludeInFit, ...
+                                                         RelevantData.Nmodes, ...
                                                          g);
     optstartT = horzcat(tmpT, optstartT);
     RelevantData = innerjoin(RelevantData, optstartT);
@@ -111,11 +126,12 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
 %     TableOut = horzcat(TableOut, optstartT(:, {''}));
 
     % 7. Do the final fits and bootstrapping for stats collection
-    fitT = splitapply(@(x1,x2,x3,x4)ba_fit_erf(x1,x2,x3,x4,Nmodes,fitmethod), ...
+    fitT = splitapply(@(x1,x2,x3,x4,x5)ba_fit_erf(x1,x2,x3,x4,x5,fitmethod), ...
                                       log10(RelevantData.Force), ...                                                  
                                       RelevantData.FractionLeft, ...
                                       RelevantData.Weights, ...
                                       RelevantData.OptimizedStartParameters, ...
+                                      RelevantData.Nmodes, ...
                                       g);     
     TableOut = horzcat(TableOut, fitT);
     TableOut = movevars(TableOut, 'PlateID', "Before", 1);
@@ -126,21 +142,12 @@ end
 %
 % Support Functions
 %
-function OptStartT = sa_optimize_start(logforce_nN, logforceinterval, fractionleft, weights, includetf, nmodes)
+function OptStartT = sa_optimize_start(logforce_nN, fractionleft, weights, includetf, nmodes)
 
-    Npoints = numel(logforce_nN);
-    highestNmodes = floor((Npoints-1)/3);
-    
-    if highestNmodes < nmodes
-        nmodes = highestNmodes;
-        logentry(['Demoting Nmodes to ', num2str(nmodes), ' mode(s).']);
-    end
-
-    OptStartT = ba_optimize_startpoint(logforce_nN(includetf), ...
-                                       logforceinterval(includetf,:), ...
+    OptStartT = ba_optimize_startpoint(logforce_nN(includetf), ...                                     logforceinterval(includetf,:), ...
                                        fractionleft(includetf), ...
                                        weights(includetf), ...
-                                       nmodes);
+                                       nmodes(1));
 end
 
 
@@ -148,4 +155,27 @@ function outs = sa_assemble_rawdata(force, force_relwidth, force_interval, fract
     outs = table(force, force_relwidth, force_interval, fractionleft, weights, includetf);
     outs.Properties.VariableNames = {'Force', 'ForceRelWidth', 'ForceInterval', 'FractionLeft', 'Weights', 'IncludeInFit'};
     outs.Properties.VariableUnits = {'[nN]',  '[nN]',          '[nN]',          '[]',           '[]',      '[]'};
+end
+
+
+function NmodesOutT = sa_calcNmodes(includetf, nmodes)
+
+    Npoints = sum(includetf);
+    highestNmodes = floor((Npoints-1)/3);
+
+    % hacking this in because the amplitudes which sum to one, i.e.,
+    % a+b+c=1, are reduced to "a" alone, which must equal one. This reduces
+    % the number of unknowns in the equation to 2 ("am" and "as").
+    if Npoints == 3
+        highestNmodes = 1;
+    end
+
+    if highestNmodes < nmodes
+        NmodesOut = highestNmodes;
+        logentry(['Demoting Nmodes to ', num2str(highestNmodes), ' mode(s).']);
+    else
+        NmodesOut = nmodes;
+    end
+
+    NmodesOutT = table(NmodesOut,'VariableNames',{'Nmodes'});
 end
