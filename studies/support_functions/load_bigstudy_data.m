@@ -1,4 +1,4 @@
-function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsTF, savedatafilesTF)
+    function BigStudy = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF)
 
     % all-data-path
     if nargin < 1 || isempty(adp)
@@ -18,8 +18,8 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
                      };
     end
 
-    if nargin < 3 || isempty(aggvar)
-        aggvar = {'PlateColumn', 'BeadChemistry', 'PlateChemistry'};
+    if nargin < 3 || isempty(groupvars)
+        groupvars = {'PlateColumn', 'BeadChemistry', 'PlateChemistry'};
     end
 
     if nargin < 4 || isempty(savedatafilesTF)
@@ -28,7 +28,7 @@ function BigStudy = load_bigstudy_data(adp, DataSetDirs, aggvar, improveBadFitsT
 
     weightmethod = 'quantile';
     for k = 1:length(DataSetDirs)
-        q = ba_process_expt([adp, DataSetDirs{k}, filesep], aggvar, weightmethod, improveBadFitsTF, savedatafilesTF);
+        q = ba_process_expt([adp, DataSetDirs{k}, filesep], groupvars, weightmethod, improveBadFitsTF, savedatafilesTF);
         BigFileT{k,1} = q.FileTable;
         BigTimeHeightVidStatsT{k,1} = q.TimeHeightVidStatsTable;
         BigTrackingT{k,1} = q.TrackingTable;

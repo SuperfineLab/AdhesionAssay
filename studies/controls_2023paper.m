@@ -14,6 +14,7 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 improveBadFitsTF = true;
 savedatafilesTF = true;
+% recalculateTF = true;
 
 % groupvars = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
 %              'Media', 'pH'};
@@ -43,12 +44,14 @@ rootdir = pwd;
 %
 % ** The load_bigstudy_data function is at the very bottom of this file. **
 if ~exist('Broot', 'var')       
-    Broot = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF );    
+    Broot = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF);    
+
+    % Improve fits based on all fits statistics...
+    [Broot.ForceFitTable, Broot.OptimizedStartTable] = ba_improve_bad_fits(B.ForceFitTable, B.OptimizedStartTable, groupvars);    
+    Broot.DetachForceTable = ba_decouple_modes(Broot.ForceFitTable, groupvars);
 end
 B = clean_bigstudy_data(Broot);
 
-% Improve fits based on all fits statistics...
-[NewForceFitTable, NewOptimizedStartTable] = ba_improve_bad_fits(B.ForceFitTable, B.OptimizedStartTable, groupvars);
 
 %
 % % Clean out the PWM and SNA
