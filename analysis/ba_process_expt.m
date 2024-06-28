@@ -93,8 +93,8 @@ end
 
 % weightmethod = 'quantile';
 % weightmethod = 'unweighted';
-fitmethod = 'fit';
 
+fitmethod = 'fit';
 [tmpForceFitTable, tmpOptstartT] = ba_force_curve_fits(Data, groupvars, fitmethod, weightmethod);
 
 % default case, i.e., when there's no-improvement of fits, the output's
@@ -116,7 +116,8 @@ end
 % SELECTING THE DETACHMENT FORCE FROM THE LIST OF FORCES GARNERED BY THE
 % FITS, OR HOW DO WE FILTER OUT FORCES THAT DON'T (OR SHOULDN'T) MATTER?
 % 
-warning("You still have work to do here."); 
+Data.DetachForceTable = ba_decouple_modes(Data.ForceFitTable, groupvars);
+
 
 %
 % Wrapping up the output and saving (if desired)
