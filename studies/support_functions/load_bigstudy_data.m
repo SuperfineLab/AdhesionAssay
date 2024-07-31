@@ -10,16 +10,20 @@
     end
 
     if nargin < 2 || isempty(DataSetDirs)
-        DataSetDirs = { ...
-                     '2024.01.25__COOHslide_COOHbeads_noint'; ...
-                     '2024.01.26__mPEGslide_mPEGbeads_noint'; ...
-                     '2024.01.29__HBEslide_HBEbeads_noint'; ...
-                     '2024.01.30__HBEslide2_HBEbeads_noint'; ...
-                     };
+        error('Cannot load an empty dataset. Check all-data-path (adp) for datasets.')
+        
+        % DataSetDirs = { ...
+        %      '2024.01.25__COOHslide_COOHbeads_noint'; ...
+        %      '2024.01.26__mPEGslide_mPEGbeads_noint'; ...
+        %      '2024.01.29__HBEslide_HBEbeads_noint'; ...
+        %      '2024.01.30__HBEslide2_HBEbeads_noint'; ...
+        %      };
+
     end
 
     if nargin < 3 || isempty(groupvars)
-        groupvars = {'PlateColumn', 'BeadChemistry', 'PlateChemistry'};
+        error('Must define grouping variables before loading data.')
+        % groupvars = {'PlateColumn', 'BeadChemistry', 'PlateChemistry'};
     end
 
     if nargin < 4 || isempty(savedatafilesTF)
@@ -34,8 +38,8 @@
         BigTrackingT{k,1} = q.TrackingTable;
         BigBeadInfoT{k,1} = q.BeadInfoTable;
         BigForceT{k,1} = q.BeadForceTable;
-        BigForceFitT{k,1} = q.ForceFitTable;
-        BigOptStartTable{k,1} = q.OptimizedStartTable;
+        % BigForceFitT{k,1} = q.ForceFitTable;
+        % BigOptStartTable{k,1} = q.OptimizedStartTable;
     end
 
     BigStudy.FileTable = vertcat(BigFileT{:});
@@ -43,7 +47,7 @@
     BigStudy.BeadInfoTable = vertcat(BigBeadInfoT{:});
     BigStudy.TrackingTable = vertcat(BigTrackingT{:});
     BigStudy.BeadForceTable = vertcat(BigForceT{:});
-    BigStudy.OptimizedStartTable = vertcat(BigOptStartTable{:});
+    % BigStudy.OptimizedStartTable = vertcat(BigOptStartTable{:});
 
     % This stupid try-catch block (and what comes in as contingency clean-up
     % in the catch block) is necessary because, for whatever reason, matlab 
