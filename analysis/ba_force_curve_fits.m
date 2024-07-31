@@ -14,26 +14,28 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
     
     Data = ba_process_data;
 
-    % "Fraction Left" plot is always going to be plotting the Fraction of beads
-    % left to detach vs the force at which they detach. SO, that means all we
-    % need are the aggregating variables AND those relevant columns    
+    % "Fraction Left" plot is always going to be plotting the fraction of 
+    % beads left to detach vs the force at which they detach. SO, that 
+    % means we need the grouping variables AND those relevant columns.
     FileTableVars = unique([{'PlateID', 'Fid', 'Well', ...
                              'PlateRow', 'PlateColumn', 'FirstFrameBeadCount', 'LastFrameBeadCount'}, ...
                              groupvars(:)'], 'stable');
     BeadForceTableVars = {'Fid', 'SpotID', 'Force', ...
-                      'ForceInterval', 'ForceRelWidth', 'Weights'};
+                          'ForceInterval', 'ForceRelWidth', 'Weights'};
 
     RelevantData = innerjoin(Data.BeadForceTable(:,BeadForceTableVars), ...
                              Data.FileTable(:, FileTableVars), ...
                              'Keys', {'Fid'});         
 
+    % Expand the grouping variables to include PlateID here. Further
+    % grouping between plates can happen later.
+    expnd_glist(1,:) = unique(['PlateID' groupvars(:)'], 'stable');
+    Np = numel(expnd_glist);
+
     %
     % Calculate fraction left according to aggregation parameters
     %
-    agglist(1,:) = unique(['PlateID' groupvars(:)'], 'stable');
-    Np = numel(agglist);
-
-    [g, ~] = findgroups(RelevantData(:, agglist));
+    [g, ~] = findgroups(RelevantData(:, expnd_glist));
     tmp = splitapply(@(x1,x2,x3,x4){ba_fracleft(x1,x2,x3,x4)}, ...
                                     RelevantData.Fid, ...
                                     RelevantData.SpotID, ...
@@ -47,7 +49,9 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
 
     %
     % Sort the DataTable to present FractionLeft in decending order
-    RelevantData = sortrows(RelevantData, [agglist "FractionLeft"], [repmat("ascend", 1, Np) "descend"]);
+    %
+    RelevantData = sortrows(RelevantData, [expnd_glist "FractionLeft"], ...
+                                          [repmat("ascend", 1, Np) "descend"]);
 
 
     % 0. Tack on the "IncludeinFit" Variable so we can filter some out later
@@ -57,13 +61,7 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
     RelevantData.Force = RelevantData.Force * 1e9;
     RelevantData.ForceInterval = RelevantData.ForceInterval * 1e9;
 
-% % %     % 2. Evaluate weights by input choice (if no weights on input, then all
-% % %     %    are weighted equally as 1.
-% % %     if ~weightmethod
-% % %         RelevantData.Weights = ones(height(RelevantData),1);
-% % %     end  
-
-    % 3. Tag forces that extend below a lower threshold force (bead
+    % 2. Tag forces that extend below a lower threshold force (bead
     %    force_gravity - buoyancy force = 0.014 nN.
     threshold_force = 0.014;
     RelevantData.IncludeInFit(RelevantData.Force < threshold_force) = false;
@@ -80,14 +78,13 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
     % 3b. Determine the Number of modes to fit to each curve, with a
     % maximum set as the "common" value.
     DefaultNmodes = 2;
-    [g, tmpT] = findgroups(RelevantData(:, agglist));
+    [g, tmpT] = findgroups(RelevantData(:, expnd_glist));
     ModeList = splitapply(@(x1)sa_calcNmodes(x1,DefaultNmodes), RelevantData.IncludeInFit, g);
     tmpT = horzcat(tmpT, ModeList);
     RelevantData = innerjoin(RelevantData, tmpT);
 
     % 4. Optimize starting points according to number of modes
-
-    [g, tmpT] = findgroups(RelevantData(:, agglist));
+    [g, tmpT] = findgroups(RelevantData(:, expnd_glist));
     optstartT = splitapply(@(x1,x2,x3,x4,x5)sa_optimize_start(x1,x2,x3,x4,x5), ...
                                                          log10(RelevantData.Force), ...
                                                          RelevantData.FractionLeft, ...
@@ -103,12 +100,12 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
     % and will move to constructing the output data table.
     %
 
-    % 4b. After joining the two previous tables, the groups need re-defining 
+    % 5. After joining the two previous tables, the groups need re-defining 
     %     because of possible re-sorting.
-    [g, TableOut] = findgroups(RelevantData(:, agglist));
+    [g, TableOut] = findgroups(RelevantData(:, expnd_glist));
 
 
-    % 5. Assemble RawData tables for each condition, which breaks the 
+    % 6. Assemble RawData tables for each condition, which breaks the 
     %    Tidy Data edict, but this is only for convenient plotting later.
     TableOut.RawData = splitapply(@(x1,x2,x3,x4,x5,x6){sa_assemble_rawdata(x1,x2,x3,x4,x5,x6)}, ...
                                RelevantData.Force, ...
@@ -120,12 +117,10 @@ function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars,
                                g);
 
 
-    % 6. Add in "include" variable for each FULL curve.
+    % 7. Add in "include" variable FOR EACH FULL CURVE.
     TableOut.IncludeCurve = true(height(TableOut),1);
 
-%     TableOut = horzcat(TableOut, optstartT(:, {''}));
-
-    % 7. Do the final fits and bootstrapping for stats collection
+    % 8. Do the final fits and bootstrapping for stats collection
     fitT = splitapply(@(x1,x2,x3,x4,x5)ba_fit_erf(x1,x2,x3,x4,x5,fitmethod), ...
                                       log10(RelevantData.Force), ...                                                  
                                       RelevantData.FractionLeft, ...
