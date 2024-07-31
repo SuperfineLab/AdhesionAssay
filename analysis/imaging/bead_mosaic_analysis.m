@@ -1,6 +1,10 @@
-function stack = bead_mosaic_analysis(stack, threshold, kernel, radiuslowhi, overfill_factor)
+function stack = bead_mosaic_analysis(stack, threshold, kernel, radiuslowhi, overfill_factor, ringmaskTF)
 
-    if nargin < 5  || isempty(overfill_factor)
+    if nargin < 6 || isempty(ringmaskTF)
+        ringmaskTF = false;
+    end
+
+    if nargin < 5 || isempty(overfill_factor)
         overfill_factor = 1;
     end
     
@@ -21,7 +25,7 @@ function stack = bead_mosaic_analysis(stack, threshold, kernel, radiuslowhi, ove
     [stack.BeadLocations, ...
      stack.BeadRadii] = cellfun(@(x1)imfindcircles(x1,radiuslowhi), stack.BinaryImage, 'UniformOutput', false);
     
-    stack.BeadMask = cellfun(@(x1,x2,x3)calcBeadMask(x1,x2,x3,overfill_factor), stack.CorrectedImage, stack.BeadLocations, stack.BeadRadii, 'UniformOutput',false);
+    stack.BeadMask = cellfun(@(x1,x2,x3)calcBeadMask(x1,x2,x3,overfill_factor,ringmaskTF), stack.CorrectedImage, stack.BeadLocations, stack.BeadRadii, 'UniformOutput',false);
     
     stack.Nbeads = cellfun(@(x)size(x,1), stack.BeadLocations, 'UniformOutput',false);  
     
@@ -46,15 +50,12 @@ function imout = clean_beadimage(im_in, threshold, kernel)
     
 end
 
-function sigout = pullbeadpixels(cleanimage, beadmask)
 
-    sigout = NaN(size(cleanimage));
-    sigout(beadmask) = cleanimage(beadmask);
-    sigout = sigout(:);    
-    sigout = sigout( ~isnan(sigout));
-end
+function beadmask = calcBeadMask(imagein, beadlocs, beadradii, overfill_factor, ringmaskTF)
 
-function beadmask = calcBeadMask(imagein, beadlocs, beadradii, overfill_factor)
+    if nargin < 5 || isempty(ringmaskTF)
+        ringmaskTF = false;
+    end
 
     if nargin < 4 || isempty(overfill_factor)
         overfill_factor = 1;
@@ -64,12 +65,25 @@ function beadmask = calcBeadMask(imagein, beadlocs, beadradii, overfill_factor)
         
     if isempty(beadlocs)
         beadmask = logical(zeros(size(imagein)));
+    elseif ringmaskTF
+        discmask = createCirclesMask(imagein, beadlocs, beadradii*overfill_factor);
+        annulusmask = createCirclesMask(imagein, beadlocs, beadradii*0.33);
+        beadmask = logical(discmask - annulusmask);
     else
         beadmask = createCirclesMask(imagein, beadlocs, beadradii*overfill_factor);
     end
 
 %     beadim = imagein(mask);
 
+end
+
+
+function sigout = pullbeadpixels(cleanimage, beadmask)
+
+    sigout = NaN(size(cleanimage));
+    sigout(beadmask) = cleanimage(beadmask);
+    sigout = sigout(:);    
+    sigout = sigout( ~isnan(sigout));
 end
 
 
