@@ -72,7 +72,7 @@ for t = 1:height(T)
 
     newRows = repmat(myRow,Nmodes*3,1);
 
-    newRows.ModeIndex = mode_index(:);
+    newRows.ModeIndex  = mode_index(:);
     newRows.ParamIndex = param_index(:);
     newRows.ParamValue = myParams;
     newRows.confParamValue = myconfParams;
@@ -84,6 +84,7 @@ end
 % as "Scale", "Force", and "Spread", where each parameter is defined in the 
 % AdhesionAssay standard fit function form, i.e., 
 % [ ModeScale * erfc( (Fd-ModeForce)/(sqrt(2)*ModeSpread))  ]
+warning('*** Ignore the upcoming warning about variable names. It is an idiosyncracy of use here for "unstack" function***');
 ParamDataTable = unstack(ParamListTable, {'ParamValue', 'confParamValue'}, 'ParamIndex');
 
 % Rename auto-generated table variable names

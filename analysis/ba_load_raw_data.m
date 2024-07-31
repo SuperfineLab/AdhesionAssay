@@ -30,7 +30,7 @@ for k = 1:length(evtfilelist)
    basename = strrep(evtname, '.evt.mat', '');
    origfname = [basename '.csv'];
    metafname = [basename '.meta.mat'];
-   
+      
    % Load data from metadata file. Ultimately, use this as indexing file 
    % when combining data for an entire experiment
    metadata = load(metafname);
@@ -71,13 +71,13 @@ for k = 1:length(evtfilelist)
    TrackingTable{k} = load_evtfile(evtname);
    TrackingTable{k}.Fid = repmat(Fid, height(TrackingTable{k}), 1);
 
-   
-   % Number of stuck beads is equal to the starting number of beads minus
-   % the number of Force approximations we made during our tracking
-   % clean-up for the velocity calculation.
-   % FileTable{k}.LastFrameBeadCount = FirstFrameBeadCount - height(BeadForceTable{k});   
 
-% 
+   % % Debug figure
+   % figure;
+   % plot(origtracks.Frame, origtracks.Z, '.');
+   % title(['Ztracks- ', origfname], 'Interpreter','none');
+   % xlabel('frame'); ylabel('z-disp [um]');
+ 
 end
 
 % 
@@ -98,6 +98,7 @@ outs.TrackingTable = TrackingTable;
 
 cd(rootdir);
 end
+
 
 function sm = shorten_metadata(metadata)
     sm.PlateID = metadata.PlateID;
