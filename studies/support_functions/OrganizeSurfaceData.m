@@ -1,8 +1,8 @@
 function outs = OrganizeSurfaceData(sz, VisRow, VisCol, data)
-% Organizes data from a table into the appropriate 2D heatmap. Matlabe
+% Organizes data from a table into the appropriate 2D heatmap. Matlab
 % probably has a snazzier way to do this, so this may be superfluous.
 % 
-% XXX TODO: Look into using Matlab's HEATMAP function to replace this
+% XXX TODO: @jeremy Look into using Matlab's HEATMAP function to replace this
 %
 
 
