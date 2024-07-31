@@ -13,7 +13,7 @@ function BeadInfoTable = ba_match_VST_and_MAT_tracks(BeadInfoTable, VSTfirstfram
     VSTid_list = VSTfirstframe.ID;
 
     BeadInfoTable.SpotID = NaN(height(BeadInfoTable),1);
-    BeadInfoTable.VSTxy = NaN(height(BeadInfoTable),2);
+    BeadInfoTable.VSTxyz = NaN(height(BeadInfoTable),3);
     BeadInfoTable.MatchDist = NaN(height(BeadInfoTable),1);
 
     for k = 1:length(VSTid_list)
@@ -30,14 +30,14 @@ function BeadInfoTable = ba_match_VST_and_MAT_tracks(BeadInfoTable, VSTfirstfram
         % If the nearest object is too far away, then it's not a real match (NaN output)
         if neardist < pixeldist_threshold
             BeadInfoTable.SpotID(matidx) = VSTid_list(k);
-            BeadInfoTable.VSTxy(matidx,:) = [VSTfirstframe.X(k) VSTfirstframe.Y(k)]; 
+            BeadInfoTable.VSTxyz(matidx,:) = [VSTfirstframe.X(k) VSTfirstframe.Y(k) VSTfirstframe.Z(k)]; 
             BeadInfoTable.VSTarea(matidx,:) = VSTfirstframe.RegionSize(k);
         end
         BeadInfoTable.MatchDist(matidx,:) = neardist;
         
     end    
 
-    BeadInfoTable = movevars(BeadInfoTable, "VSTxy", "After", "BeadPosition");
+    BeadInfoTable = movevars(BeadInfoTable, "VSTxyz", "After", "BeadPosition");
     BeadInfoTable = movevars(BeadInfoTable, "SpotID", "Before", "BeadPosition");
 
 %     figure; 
