@@ -48,33 +48,7 @@ B = clean_bigstudy_data(Broot);
 % % Clean out the PWM and SNA
 %
 BeadChemsToKeep = {'PEG', 'WGA', 'HBE'};
-idxFile = ismember(B.FileTable.BeadChemistry, BeadChemsToKeep);
-
-FiltData.FileTable = B.FileTable(idxFile,:);
-FiltData.FileTable.BeadChemistry = removecats(FiltData.FileTable.BeadChemistry);
-FiltData.FileTable.BeadChemistry = reordercats(FiltData.FileTable.BeadChemistry, BeadChemsToKeep);
-
-FidToKeep = FiltData.FileTable.Fid;
-
-idxTime     = ismember(B.TimeHeightVidStatsTable.Fid, FidToKeep);
-idxBead     = ismember(B.BeadInfoTable.Fid, FidToKeep);
-idxTracking = ismember(B.TrackingTable.Fid, FidToKeep);
-idxForce    = ismember(B.BeadForceTable.Fid, FidToKeep);
-idxForceFit = ismember(B.ForceFitTable.BeadChemistry, BeadChemsToKeep);
-idxDetach   = ismember(B.DetachForceTable.BeadChemistry, BeadChemsToKeep);
-
-FiltData.TimeHeightVidStatsTable = B.TimeHeightVidStatsTable(idxTime,:);
-FiltData.BeadInfoTable = B.BeadInfoTable(idxBead,:);
-FiltData.TrackingTable = B.TrackingTable(idxTracking,:);
-FiltData.BeadForceTable    = B.BeadForceTable(idxForce,:);
-FiltData.ForceFitTable = B.ForceFitTable(idxForceFit,:);
-FiltData.ForceFitTable.BeadChemistry = removecats(FiltData.ForceFitTable.BeadChemistry);
-FiltData.DetachForceTable = B.DetachForceTable(idxDetach,:);
-FiltData.DetachForceTable.BeadChemistry = removecats(FiltData.DetachForceTable.BeadChemistry);
-
-OrigData = B;
-B = FiltData;
-
+Bclean = ba_clean_beadchem(B, BeadChemsToKeep);
 
 % Load in the control plate data...
 if ~exist('Bcontrol', 'var')
@@ -86,11 +60,11 @@ end
 % combine both control and big datasets
 q = vertcat(Bcontrol.DetachForceTable, B.DetachForceTable);
 
-fscatter = plot_scatterforces(q);
+% fscatter = plot_scatterforces(q);
 
 plateNames(:,1) = unique(B.FileTable.PlateID);
 
-% I first want to calculate some basic statistics on the repeat
+% I first want to calculate some **BASIC** statistics on the repeat
 % measurements within a plate. The protocol right now is to run each
 % condition in triplicate. This aggregates each set of replicates into a
 % single dataset/sample in each plate for each test condition.
@@ -101,7 +75,7 @@ PlateStatsT.LastBeads  = splitapply(@sum, B.FileTable.LastFrameBeadCount, g);
 PlateStatsT.StuckPercent = PlateStatsT.LastBeads ./ PlateStatsT.FirstBeads * 100;        
 PlateStatsT.VisCol = grp2idx(PlateStatsT.BeadChemistry);        
 PlateStatsT.VisRow = grp2idx(PlateStatsT.PlateID);
-% PlateStatsT.VisRow = grp2idx(reordercats(PlateStatsT.PlateID, plateNames'));
+
 
 % This section just creates a set of xaxis and yaxis labels consistent with
 % categorical values within the constructed tables. In other words, here,
@@ -120,16 +94,14 @@ Forces = innerjoin(Forces, BeadColorTable);
 
 SummaryDataT = innerjoin(Forces, PlateStatsT);
 sz = [max(SummaryDataT.VisRow), max(SummaryDataT.VisCol)];
-fmat = OrganizeSurfaceData(sz, SummaryDataT.VisRow, SummaryDataT.VisCol, 10.^(SummaryDataT.ModeForce));
-
-plot_FuncSurface(fmat, pinefresh(1000), '50% Pulloff Force [nN]', xstrings, ystrings);
-clim([0 50]);
-
+pmat = OrganizeSurfaceData(sz, SummaryDataT.VisRow, SummaryDataT.VisCol, SummaryDataT.StuckPercent);
+plot_FuncSurface(pmat, seabreeze(50), 'Percent Stuck Beads', xstrings, ystrings);
+clim([0 100])
 
 % %
 %   Average repeated plates
 % %
-[g3, AvgPlatesT] = findgroups(SummaryDataT(:,{'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'}));
+[g3, AvgPlatesT] = findgroups(SummaryDataT(:,groupvars));
 
 AvgPlatesT.Nvideos    = splitapply(@(x)sum(x, 'omitnan'), SummaryDataT.Nvideos, g3);
 AvgPlatesT.FirstBeads = splitapply(@(x)sum(x, 'omitnan'), SummaryDataT.FirstBeads, g3);
@@ -149,9 +121,10 @@ AvgPlatesT.BeadChemistry = reordercats(AvgPlatesT.BeadChemistry, {'PEG', 'WGA', 
 AvgPlatesT.yLabel = join([string(AvgPlatesT.SubstrateChemistry), string(AvgPlatesT.Media), string(AvgPlatesT.pH)], ', ');
 
 
-figure; 
-h = heatmap(AvgPlatesT, 'BeadChemistry', 'yLabel', 'ColorVariable', 'MeanForce');
-
+% figure; 
+% h = heatmap(AvgPlatesT, 'BeadChemistry', 'yLabel', 'ColorVariable', 'StuckPercent', 'CellLabelFormat','%3.0f','ColorMethod','none');
+% h.YDisplayData = flipud(h.YDisplayData);  % equivalent to 'YDir', 'Reverse'
+% clim([0 100]);
 
 caseorder = {...             
              'PEG_NoInt_7', ...
@@ -173,20 +146,9 @@ AvgPlatesT.VisCol = grp2idx(AvgPlatesT.BeadChemistry);
 xstrings = string(table2array(g3xT));
 
 sz = [max(AvgPlatesT.VisRow), max(AvgPlatesT.VisCol)];
-% pmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StuckPercent);
-% nmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.NForces);
-% gmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.MedianForce);
-% dmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.MadForce);
-mmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.MeanForce);
-% smat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StdForce);
-% zmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StdErrForce);
-
-% % Plotting the data for the averaged plates.
-% % plot_FuncSurface(pmat, seabreeze(10), 'Percent Stuck Beads', xstrings, ystrings);
-% % plot_FuncSurface(10.^gmat, seabreeze(10), 'Median Pulloff Force [nN]', xstrings, ystrings);
-plot_FuncSurface(mmat, pinefresh(255), 'Mean Pulloff Force [nN] across plates', xstrings, ystrings);
-% plot_FuncSurface(bmat, pinefresh(25), 'Bootstrap Mean Pulloff Force, main mode [nN]', xstrings, ystrings);
-
+pmat = OrganizeSurfaceData(sz, AvgPlatesT.VisRow, AvgPlatesT.VisCol, AvgPlatesT.StuckPercent);
+plot_FuncSurface(pmat, seabreeze(25), 'Percent Stuck Beads', xstrings, ystrings);
+clim([0 100])
 
 
 % % % % 
@@ -209,11 +171,16 @@ plot_FuncSurface(mmat, pinefresh(255), 'Mean Pulloff Force [nN] across plates', 
 % %
 %   Plotting Functions
 % %
+
+
+% % %
+% %   OLD Plotting Functions
+% % %
 function plot_FuncSurface(data, clrmap, titlestring, xstrings, ystrings)
     if nargin < 5 || isempty(ystrings)
         ystrings = 1:size(data,1);
     end
-    
+
     if nargin < 4 || isempty(xstrings)
         xstrings = 1:size(data,2);
     end
@@ -235,12 +202,8 @@ function plot_FuncSurface(data, clrmap, titlestring, xstrings, ystrings)
     ax.TickLength = [0 0];
     drawnow;
 end
-
-
-
-
-
-
+% 
+% 
 % function boxplot2(C, varargin)
 %     fun = @(I)I*ones(numel(C{I}),1);
 %     A = cell2mat(cellfun(col,col(C),'uni',0));
