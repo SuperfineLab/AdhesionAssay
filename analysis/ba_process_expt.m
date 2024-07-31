@@ -52,6 +52,8 @@ switch class(filepath)
             cd(filepath);
             logentry(['Moved to: ' filepath]);
 
+            %
+            % load in fresh data
             Data = ba_load_raw_data(filepath);
         else
             error('Filepath is either empty or does not exist.');
@@ -91,7 +93,7 @@ if ~isfield(Data, 'BeadForceTable')
     Data.BeadForceTable = TmpTable;
 end
 
-% weightmethod = 'quantile';
+% % weightmethod = 'quantile';
 % weightmethod = 'unweighted';
 
 fitmethod = 'fit';
