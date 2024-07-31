@@ -12,15 +12,20 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 % close all
 
+rootdir = pwd;
+
 improveBadFitsTF = true;
 savedatafilesTF = true;
 % recalculateTF = true;
 
-% groupvars = {'PlateColumn', 'SubstrateChemistry', 'BeadChemistry', ...
-%              'Media', 'pH'};
+% grouping variable for the STUDY (not when loading the data)
+groupvars = {'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'};
 
-groupvars = {'PlateID', 'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'};
+% Loading the data and computing the plate-level stats and force curves
+% requires that "PlateID" be a "grouping variable." After that, the
+loaddata_groupvars = unique(['PlateID', groupvars], 'stable');
 
+DataSetDirs = get_dataset_list;
 
 % all-data-path
 if ismac
@@ -29,26 +34,24 @@ else
     adp = 'K:\expts\AdhesionAssay\datasets_NOTvideo\';
 end
 
-DataSetDirs = { ...
-                '2024.01.25__COOHslide_COOHbeads_noint'; ...
-                '2024.01.26__mPEGslide_mPEGbeads_noint'; ...
-%               '2022.06.23__HBEbeads_HBEplate_homogeneity_test'; ...
-                '2024.01.29__HBEslide_HBEbeads_noint'; ...
-                '2024.01.30__HBEslide2_HBEbeads_noint'; ...
-              };
-
-rootdir = pwd;
-
 % Load the data sources (one source per plate), attach the PlateID, and then 
 % concatenate into one big table.
 %
 % ** The load_bigstudy_data function is at the very bottom of this file. **
-if ~exist('Broot', 'var')       
-    Broot = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF);    
+if ~exist('Broot', 'var')
+    Broot = load_bigstudy_data(adp, DataSetDirs, loaddata_groupvars, improveBadFitsTF, savedatafilesTF );   
+end
 
-    % Improve fits based on all fits statistics...
-    [Broot.ForceFitTable, Broot.OptimizedStartTable] = ba_improve_bad_fits(B.ForceFitTable, B.OptimizedStartTable, groupvars);    
-    Broot.DetachForceTable = ba_decouple_modes(Broot.ForceFitTable, groupvars);
+% Improve poorly-discovered force curve fits, if necessary
+if improveBadFitsTF
+    [Broot.ForceFitTable, ...
+     Broot.OptimizedStartTable] = ba_improve_bad_fits(Broot.ForceFitTable, ...
+                                                      Broot.OptimizedStartTable, ...
+                                                      loaddata_groupvars);    
+end
+
+if ~isfield(Broot,'DetachForceTable')
+    Broot.DetachForceTable = ba_decouple_modes(Broot.ForceFitTable, loaddata_groupvars);
 end
 B = clean_bigstudy_data(Broot);
 
@@ -152,3 +155,14 @@ function plot_FuncSurface(data, clrmap, titlestring, xstrings, ystrings)
     drawnow;
 end
 
+
+
+function DataSetDirs = get_dataset_list
+    DataSetDirs = { ...
+                    '2024.01.25__COOHslide_COOHbeads_noint'; ...
+                    '2024.01.26__mPEGslide_mPEGbeads_noint'; ...
+    %               '2022.06.23__HBEbeads_HBEplate_homogeneity_test'; ...
+                    '2024.01.29__HBEslide_HBEbeads_noint'; ...
+                    '2024.01.30__HBEslide2_HBEbeads_noint'; ...
+                  };
+end
