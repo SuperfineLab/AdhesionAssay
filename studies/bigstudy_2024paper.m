@@ -15,7 +15,7 @@ addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 startdir = pwd;
 
-improveBadFitsTF = false;
+improveBadFitsTF = true;
 savedatafilesTF = true;
 
 % grouping variable for the STUDY (not when loading the data)

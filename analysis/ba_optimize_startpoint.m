@@ -57,7 +57,7 @@ function gafitT = optimize_ga(fout, logforce_nN, fractionLeft, weights)
     end
 
     % *** header for ga-specific options (tweaked for the input data) ***
-    max_generations = 3500;
+    max_generations = 350;
     popsize = floor(Ns/2)-1;
     elitecount = ceil(popsize * 0.3);
     FuncTol = 2e-10; 

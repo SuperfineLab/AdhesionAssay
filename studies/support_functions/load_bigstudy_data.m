@@ -38,8 +38,8 @@
         BigTrackingT{k,1} = q.TrackingTable;
         BigBeadInfoT{k,1} = q.BeadInfoTable;
         BigForceT{k,1} = q.BeadForceTable;
-        % BigForceFitT{k,1} = q.ForceFitTable;
-        % BigOptStartTable{k,1} = q.OptimizedStartTable;
+        BigForceFitT{k,1} = q.ForceFitTable;
+        BigOptStartTable{k,1} = q.OptimizedStartTable;
     end
 
     BigStudy.FileTable = vertcat(BigFileT{:});
@@ -47,11 +47,11 @@
     BigStudy.BeadInfoTable = vertcat(BigBeadInfoT{:});
     BigStudy.TrackingTable = vertcat(BigTrackingT{:});
     BigStudy.BeadForceTable = vertcat(BigForceT{:});
-    % BigStudy.OptimizedStartTable = vertcat(BigOptStartTable{:});
+    BigStudy.OptimizedStartTable = vertcat(BigOptStartTable{:});
 
     % This stupid try-catch block (and what comes in as contingency clean-up
     % in the catch block) is necessary because, for whatever reason, matlab 
-    % refuses to concatenate several single row table when
+    % refuses to concatenate several single row tables when
     % they contain a single fit-object.
     try
         BigStudy.ForceFitTable = vertcat(BigForceFitT{:});
