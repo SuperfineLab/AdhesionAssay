@@ -112,7 +112,7 @@ ParamDataTable.IncludeTF = InBoundsForces;
 
 
 DataCollectEfficiency = sum(ParamDataTable.IncludeTF) ./ height(ParamDataTable);
-logentry(['Fraction of data passing thresholds: ', num2str(DataCollectEfficiency, '%3.2f')]);
+logentry(['Fraction of data passing force and confidence thresholds: ', num2str(DataCollectEfficiency, '%3.2f')]);
 
 % figure; 
 % plot(ParamDataTable.ModeForce(~ParamDataTable.IncludeTF), ParamDataTable.ModeSpread(~ParamDataTable.IncludeTF), 'rx', ...
