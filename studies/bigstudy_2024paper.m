@@ -12,11 +12,14 @@ addpath(genpath([path_for_genpath, filesep, '3dfmAnalysis']));
 addpath(genpath([path_for_genpath, filesep, 'AdhesionAssay']));
 
 % close all
-
+mylinecolor = lines(7);
+    
 startdir = pwd;
 
-improveBadFitsTF = true;
-savedatafilesTF = true;
+% set these to true when running an analysis the first time and to false
+% thereafter
+improveBadFitsTF = false;
+savedatafilesTF = false;
 
 % grouping variable for the STUDY (not when loading the data)
 groupvars = {'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'};
@@ -66,7 +69,7 @@ Bclean = ba_clean_beadchem(Bclean, BeadChemsToKeep);
 
 % Load in the control plate data...
 if ~exist('Bcontrol', 'var')
-    Bcontrol = load('K:\expts\AdhesionAssay\AdhesionAssay_2024ControlStudy\2024.07.16_cerium_Broot_CONTROLstudy_repairedBeadInfo.mat');
+    Bcontrol = load('K:\expts\AdhesionAssay\AdhesionAssay_2024ControlStudy\2024.08.03_cerium_Broot_CONTROLstudy_repairedBeadInfo.mat');
     Bcontrol = Bcontrol.Broot;
     Bcontrol.DetachForceTable = ba_decouple_modes(Bcontrol.ForceFitTable, loaddata_groupvars);
 end
@@ -76,10 +79,87 @@ Bcontrol = clean_bigstudy_data(Bcontrol);
 
 % combine both control and big datasets
 B = ba_combine_runs(Bcontrol, Bclean);
-Fall = B.DetachForceTable;
+
+fscatter = plot_scatterforces(B.DetachForceTable);
+
+%% Running stats on the distilled data after manual optimization
+% % After manually optimizing the force fit curves for one or two modes...
+% % Set up the distilled results for running statistics.
+
+AttachedThreshold = mean([-1.16 -0.2496]); % two COOH ModeForces
+AttachedThreshold = -0.65;
+DetachForceTable.AttachedTF = (DetachForceTable.ModeForce > AttachedThreshold);
+detachgroupvars = [groupvars, 'AttachedTF'];
+[g, gT] = findgroups(DetachForceTable(:,detachgroupvars));
+gT.MeanForce = splitapply(@mean, DetachForceTable.ModeForce, g);
+gT.MedianForce = splitapply(@median, DetachForceTable.ModeForce, g);
+gT.StdForce = splitapply(@std, DetachForceTable.ModeForce, g);
+gT.N = splitapply(@numel, DetachForceTable.ModeForce, g);
+groupnames = join(string(table2cell(gT(:,detachgroupvars))),'_');
+idx = DetachForceTable.AttachedTF;
+
+figure; 
+boxchart(g(idx), DetachForceTable.ModeForce(idx), 'Notch', 'on');
+
+grpidx = unique(g(idx));
+
+% DetachForceTable.SubstrateChemistry == "PEG" & ...
+subgroup = (DetachForceTable.Media == 'Int5xPBS' & ...
+            DetachForceTable.pH == "7" & ...
+            DetachForceTable.AttachedTF);
+subT = DetachForceTable(subgroup, :);
+subT.BeadChemistry = categorical(subT.BeadChemistry, ["COOH", "PEG", "WGA", "HBE"], 'Ordinal', true);
+subT.SubstrateChemistry = categorical(subT.SubstrateChemistry, ["COOH", "PEG", "HBE"], 'Ordinal', true);
+subT = sortrows(subT, {'SubstrateChemistry','BeadChemistry'}, {'ascend','ascend'});
+[gs, gsT] = findgroups(subT(:,{'SubstrateChemistry', 'BeadChemistry'}));
+mylabels = join(string(table2cell(fliplr(gsT))),':');
+
+figure;
+hold on
+boxchart(gs,subT.ModeForce, 'Notch','off', 'BoxFaceColor', mylinecolor(2,:));
+swarmchart(gs, subT.ModeForce, 12, [0.8 0.8 0.2], 'filled');
+ax = gca;
+ax.XTick = [1:numel(mylabels)]';
+ax.XTickLabel = mylabels;
+ax.TickLabelInterpreter = 'none';
+ax.YLim = [-2 2.5];
+grid
+
+ax.XLabel.Rotation = deg2rad(30);
+%%
+ax = gca;
+ax.XTick = [1:30];
+ax.XTickLabel = [1:30];
+ax = gca;
+ax.XTick = [1:30];
+ax.XTickLabel = groupnames(grpidx)';
+ax.TickLabelInterpreter = 'none';
+
+% 
+% Anova code
+%
+AnovaT = DetachForceTable;
+niT = AnovaT( AnovaT.SubstrateChemistry == "COOH" | ...
+              AnovaT.SubstrateChemistry == 'PEG' | ...
+              AnovaT.SubstrateChemistry == 'HBE', :);
+niT = niT( niT.Media == "NoInt" & ...
+           niT.pH == "7" & ...
+           niT.AttachedTF == true, :);
+
+% if iscategorical(hbeT.MediumNANAConc)
+%     nanatmp = arrayfun(@str2num,string(hbeT.MediumNANAConc));
+% else
+%     nanatmp = gnanaT.MediumNANAConc;
+% end
+niT.groupname = join([string(niT.BeadChemistry), string(niT.SubstrateChemistry)], ':');
+niT.BeadChemistry = categorical(niT.BeadChemistry, ["COOH", "PEG", "WGA", "HBE"], 'Ordinal', true);
+niT.SubstrateChemistry = categorical(niT.SubstrateChemistry, ["COOH", "PEG", "HBE"], 'Ordinal', true);
+
+[ag, agT] = findgroups(niT(:,{'SubstrateChemistry', 'BeadChemistry'}));
+foo = anova1(niT.ModeForce, ag);
+an = anovan(hbeT.Force, {hbeT.BeadChemistry, hbeT.MediaAll}, 'model', 2, 'varnames', {'Bead Chemistry', 'Medium'});
 
 
-fscatter = plot_scatterforces(Fall);
 
 
 
@@ -88,6 +168,22 @@ fscatter = plot_scatterforces(Fall);
 
 
 
+
+% if ~isfield(B, 'BeadRollingTable')
+%     B.BeadRollingTable = ba_simple_check_for_rolling(B);
+% end
+% RollingForceTable = innerjoin(B.BeadForceTable,B.BeadRollingTable,'Keys','Fid');
+% 
+% figure; 
+% histogram(B.BeadRollingTable.MaxRxy(~isnan(B.BeadRollingTable.MaxRxy))*0.692,[0:24:30*24]);
+% xlabel('Maximum radial disp before detachment [\mum]');
+% ylabel('count');
+% 
+% figure;
+% plot(RollingForceTable.MaxRxy*0.692,RollingForceTable.Force*1e9,'.');
+% xlabel('Maximum radial disp before detachment [\mum]')
+% ylabel('Force [nN]');
+% ax.XScale = 'log';
 
 
 
