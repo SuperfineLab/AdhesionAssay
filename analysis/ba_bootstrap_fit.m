@@ -53,23 +53,26 @@ function [StatOutT, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, wei
 
     BootstatT.FitParams = tmp;
 
-    StatOutT = table('Size', [1 8], ...
-                     'VariableTypes', ["cell", "cell", repmat("double",1,6)], ...
-                     'VariableNames', ["p", "pconf", "sse", "rsquare", "adjrsquare", "dfe", "rmse", "redchisq"]);
+    StatOutT = table('Size', [1 9], ...
+                     'VariableTypes', ["cell", "cell", repmat("double",1,7)], ...
+                     'VariableNames', ["p", "pconf", "sse", "rsquare", "adjrsquare", "dfe", "rmse", "redchisq", "sumrelwidth"]);
 
+    outp = median(bootstat(:,1:Nparams),1,'omitnan');
+    outpconf = bci(:,1:Nparams);
     % XXX @jeremy TODO: Fix the outputs starting from sse and ending with
     % redchisq because right now they are reporting the median of
     % everything outputted from the Bootstat table, which is mathetically
     % nonsensical. Instead, use the median parameters to compute the difference 
     % between data and fout.fiteq(data) and derive further values from there.    
-    StatOutT.p{1} = median(bootstat(:,1:Nparams),1,'omitnan');
-    StatOutT.pconf{1} = bci(:,1:Nparams);
+    StatOutT.p{1} = outp;
+    StatOutT.pconf{1} = outpconf;
     StatOutT.sse = median(bootstat(:,Nparams+1),1,'omitnan');
     StatOutT.rsquare = median(bootstat(:,Nparams+2),1,'omitnan');
     StatOutT.dfe = median(bootstat(:,Nparams+3),1,'omitnan');
     StatOutT.adjrsquare = median(bootstat(:,Nparams+4),1,'omitnan');
     StatOutT.rmse = median(bootstat(:,Nparams+5),1,'omitnan');
     StatOutT.redchisq = median(bootstat(:,Nparams+6), 1, 'omitnan');
+    StatOutT.sumrelwidth = sum(ba_relwidthCI(outp, outpconf),"all");
 
 end
 
