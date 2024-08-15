@@ -41,9 +41,9 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 
     [logforce_nN, fractionLeft, weights] = prepareCurveData( logforce_nN, fractionLeft, weights );
     
-    T = table('Size', [1 10], ...
-                 'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe',    'sse',    'rmse',   'BootFitSetup', 'BootFitOptions', 'BootstatT'}, ...
-                 'VariableTypes', {'cell',      'cell',          'double',  'double',     'double', 'double', 'double', 'struct',       'struct',         'double'});
+    T = table('Size', [1 12], ...
+              'VariableNames', {'FitParams', 'confFitParams', 'rsquare', 'adjrsquare', 'dfe',    'sse',    'rmse',   'redchisq', 'SumRelWidth', 'BootFitSetup', 'BootFitOptions', 'BootstatT'}, ...
+              'VariableTypes', {'cell',      'cell',          'double',  'double',     'double', 'double', 'double', 'double',   'double',      'struct',       'struct',         'double'});
     
     AvailModes = numel(startpoint)/3;
     fout = ba_fit_setup(AvailModes);
@@ -65,12 +65,12 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
                     logentry('poop.');
                 end
                 [result, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, weights, fout, opts);
-            case {'lsqcurvefit', 'lsqnonlin', 'fminunc'}
-                result = use_unconstrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
-                BootstatT = {[]};
-            case {'fmincon'}
-                result = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
-                BootstatT = {[]};
+            % case {'lsqcurvefit', 'lsqnonlin', 'fminunc'}
+            %     result = use_unconstrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
+            %     BootstatT = {[]};
+            % case {'fmincon'}
+            %     result = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
+            %     BootstatT = {[]};
             otherwise
                 error('Fit method not implemented.');
         end
@@ -85,6 +85,7 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
         T.sse = NaN;
         T.rmse = NaN;
         T.redchisq = NaN;
+        T.SumRelWidth = NaN;
         T.BootFitSetup = fout;
         T.BootFitOptions = opts;
         T.BootstatT = {[]};
@@ -104,6 +105,7 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
     T.dfe  = result.dfe;
     T.sse  = result.sse;
     T.rmse = result.rmse;
+    T.SumRelWidth = result.sumrelwidth;
     T.redchisq = result.redchisq;
     T.BootFitSetup = fout;
     T.BootFitOptions = opts;
