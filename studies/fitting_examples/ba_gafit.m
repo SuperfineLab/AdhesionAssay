@@ -22,19 +22,7 @@ if nargin < 2 || isempty(plotTF)
     plotTF = false;
 end
 
-% if ~exist('ga_summary', 'var')
-%     ga_summary = table('Size', [0 11], ...
-%                        'VariableTypes', {'categorical', 'double', 'double', 'double', ...
-%                                          'double', 'double', 'double', 'double', 'double', ...
-%                                          'double', 'double'}, ...
-%                        'VariableNames', {'PlateID', 'SolveTime', 'OptimizedStartParameters', 'TotalError', ...
-%                                          'RedChiSq', 'ExitFlag', 'GenerationSolveCount', 'MaxGenerations', 'PopulationSize', ...
-%                                          'FinalPop','FinalScore'});
-% end
-
 DataOut = dftable;
-
-Nmodes = 2;
 
 % for plotting
 stdclr = lines(7);
@@ -61,15 +49,6 @@ for m = 1:height(DataOut)
     ga_opts = DataOut.gaOpts(m);
     fout = DataOut.gaFitSetup(m);
     
-
-    % *** ga-specific options ***
-    % popsize = floor(Ns/2)-2;
-%     elitecount = ceil(popsize * 0.28);
-%     if elitecount >= popsize, elitecount = popsize-1; end
-%     if sum(weights) == numel(weights), ga_opts.FunctionTolerance = 3e-8; end    
-    % ga_opts.PopulationSize = popsize;   
-%     ga_opts.EliteCount = elitecount; 
-    % ga_opts.MaxGenerations = 3500;
 
     % set up the earlier run if there is one...
     if isTableCol(DataOut, 'FinalPop') && ~isempty(DataOut.FinalPop) 
