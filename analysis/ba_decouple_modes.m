@@ -94,6 +94,9 @@ newnames = {'ModeScale', 'ModeForce', 'ModeSpread', ...
             'confModeScale', 'confModeForce', 'confModeSpread'};
 ParamDataTable = renamevars(ParamDataTable, oldnames, newnames);
 
+ParamDataTable = determine_dominant_mode(ParamDataTable, groupvars);
+
+
 % XXX @jeremy TODO Fix this function according to note below:
 %%%%%% EVERYTHING BELOW HERE IS NO LONGER DECOUPLING ANYTHING. INSTEAD IT
 %%%%%% IS CALCULATING/FILTERING FORCE STUFF.
@@ -127,3 +130,29 @@ logentry(['Fraction of data passing force and confidence thresholds: ', num2str(
 % grid on
 
 ParamTable = ParamDataTable;
+
+end
+
+
+function ParamDataTableOut = determine_dominant_mode(ParamDataTable, groupvars)
+    p = ParamDataTable;
+    [g, gT] = findgroups(p(:,groupvars));
+
+    % find max mode
+    gT.DomScale = splitapply(@(x1,x2)sa_maxidx(x1,x2), p.ModeIndex, ...
+                                                       p.ModeScale, ...
+                                                       g);
+
+    outs = innerjoin(p, gT, 'Keys', groupvars);
+    outs.DomModeTF = ~logical(abs(outs.ModeIndex - outs.DomScale));
+
+    outs = movevars(outs, 'DomModeTF', 'After', 'ModeIndex');
+
+    ParamDataTableOut = outs;
+end
+
+function domscale = sa_maxidx(modeindex, modescale)
+    [maxscale, maxidx] = max(modescale);
+
+    domscale = modeindex(maxidx);
+end
