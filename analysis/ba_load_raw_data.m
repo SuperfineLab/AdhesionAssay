@@ -101,10 +101,16 @@ end
 
 
 function sm = shorten_metadata(metadata)
+
+    tocat = @(x)categorical(x);
+
+    w = metadata.File.Well;
+    [r,c] = ba_wellnum2rc(w);
+
     sm.PlateID = metadata.PlateID;
     sm.Fid = metadata.File.Fid;
-    sm.Well = metadata.File.Well;
-    [sm.PlateRow, sm.PlateColumn] = ba_wellnum2rc(sm.Well);
+    sm.Well = tocat(w);
+    [sm.PlateRow, sm.PlateColumn] = deal(tocat(r), tocat(c));
     sm.FullFilename = string(fullfile(metadata.File.Binpath, metadata.File.Binfile));
     sm.StartTime = metadata.Results.TimeHeightVidStatsTable.Time(1);
     sm.MeanFps  = 1 ./ mean(diff(metadata.Results.TimeHeightVidStatsTable.Time*86400));
