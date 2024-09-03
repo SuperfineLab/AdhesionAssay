@@ -25,7 +25,9 @@ savedatafilesTF = false;
 groupvars = {'SubstrateChemistry', 'BeadChemistry', 'Media', 'pH'};
 
 % Loading the data and computing the plate-level stats and force curves
-% requires that "PlateID" be a "grouping variable." After that, the
+% requires that "PlateID" (and possibly 'PlateColumn') be 
+% a "grouping variable."
+% loaddata_groupvars = unique(['PlateID', 'PlateColumn', groupvars], 'stable');
 loaddata_groupvars = unique(['PlateID', groupvars], 'stable');
 
 % all-data-path
@@ -85,7 +87,6 @@ fscatter = plot_scatterforces(B.DetachForceTable);
 %% Running stats on the distilled data after manual optimization
 % % After manually optimizing the force fit curves for one or two modes...
 % % Set up the distilled results for running statistics.
-
 AttachedThreshold = mean([-1.16 -0.2496]); % two COOH ModeForces
 AttachedThreshold = -0.65;
 DetachForceTable.AttachedTF = (DetachForceTable.ModeForce > AttachedThreshold);
@@ -138,27 +139,43 @@ ax.TickLabelInterpreter = 'none';
 % 
 % Anova code
 %
-AnovaT = DetachForceTable;
-niT = AnovaT( AnovaT.SubstrateChemistry == "COOH" | ...
-              AnovaT.SubstrateChemistry == 'PEG' | ...
-              AnovaT.SubstrateChemistry == 'HBE', :);
-niT = niT( niT.Media == "NoInt" & ...
-           niT.pH == "7" & ...
-           niT.AttachedTF == true, :);
+testconditions{1} = (DetachForceTable.SubstrateChemistry == 'PEG' | ...
+                     DetachForceTable.SubstrateChemistry == 'HBE' && ...
+                     DetachForceTable.Media == "NoInt" && ...
+                     DetachForceTable.pH = "");
+for k = 1:numel(testconditions)
+    AnovaT = DetachForceTable;
+    AnovaT = AnovaT( mygroup(k), :);
 
-% if iscategorical(hbeT.MediumNANAConc)
-%     nanatmp = arrayfun(@str2num,string(hbeT.MediumNANAConc));
-% else
-%     nanatmp = gnanaT.MediumNANAConc;
-% end
+    [ag, agT] = findgroups(AnovaT(:,{'SubstrateChemistry', 'BeadChemistry'}));
+
 niT.groupname = join([string(niT.BeadChemistry), string(niT.SubstrateChemistry)], ':');
 niT.BeadChemistry = categorical(niT.BeadChemistry, ["COOH", "PEG", "WGA", "HBE"], 'Ordinal', true);
 niT.SubstrateChemistry = categorical(niT.SubstrateChemistry, ["COOH", "PEG", "HBE"], 'Ordinal', true);
 
 [ag, agT] = findgroups(niT(:,{'SubstrateChemistry', 'BeadChemistry'}));
-foo = anova1(niT.ModeForce, ag);
-an = anovan(hbeT.Force, {hbeT.BeadChemistry, hbeT.MediaAll}, 'model', 2, 'varnames', {'Bead Chemistry', 'Medium'});
+agT_groupNames = join(fliplr(string(table2cell(agT))),':');
+agNames = agT_groupNames(ag);
 
+%% Bartlett test for equal variances. If sample-data fails this (p<0.05),
+%  then the standard anova1 (manova?) does not work. 
+bartTest = vartestn(DetachForceTable.ModeForce, factorNames(gd));
+if bartTest > 0.05
+    logentry('Equal variances test has passed. Standard ANOVA applies.');
+    an = anova1(DetachForceTable.ModeForce, factorNames(gd));
+else
+    % Move on to Kruskel-Wallis test
+    logentry('Variances between groups are statistically different. Will use Kruskal-Wallis.');
+    [kw.p, kw.tbl, kw.stats] = kruskalwallis(DetachForceTable.ModeForce, factorNames(gd));
+    figure; [mc.c, mc.m, mc.h, mc.gnames] = multcompare(kw.stats);
+end
+
+
+end
+
+%% Multi-variate anova (manova)
+maov = manova(factorNames(gd), DetachForceTable.ModeForce);
+m = multcompare(maov, 'CriticalValueType', 'bonferroni')
 
 
 
