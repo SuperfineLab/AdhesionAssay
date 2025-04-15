@@ -40,9 +40,9 @@ DetachForceTable.SubstrateChemistry = categorical(DetachForceTable.SubstrateChem
 DetachForceTable.Media = categorical(DetachForceTable.Media, ["NoInt", "IntLowpH", "IntNP40", "Int5xPBS"], 'Ordinal', true);
 
 %% Plot Force vs Scale for fits matching (BeadChemistry, SubstrateChemistry, Media)
-plot_ForceVsScale(DetachForceTable, "PEG", "PEG", "NoInt", false);
-plot_ForceVsScale(DetachForceTable, "COOH", "COOH", "NoInt", false);
-plot_ForceVsScale(DetachForceTable, "WGA", "HBE", "NoInt", false);
+% plot_ForceVsScale(DetachForceTable, "PEG", "PEG", "NoInt", false);
+% plot_ForceVsScale(DetachForceTable, "COOH", "COOH", "NoInt", false);
+% plot_ForceVsScale(DetachForceTable, "WGA", "HBE", "NoInt", false);
 
 
 %% check for outliers
@@ -50,18 +50,18 @@ FiltDetachTable = filterForces(DetachForceTable, "COOH", "COOH", "NoInt");
 outliertest = isoutlier(FiltDetachTable.ModeForce,'quartiles');
 
 
-%% Looking at COOH:COOH interaction across different plates/columns
-subgroup = (DetachForceTable.BeadChemistry == "COOH" & ...
-            DetachForceTable.SubstrateChemistry == "COOH");
-subgrouping_vars = ["PlateID", "PlateColumn", "AttachedTF"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the COOH:COOH interaction');
+% % %% Looking at COOH:COOH interaction across different plates/columns
+% % subgroup = (DetachForceTable.BeadChemistry == "COOH" & ...
+% %             DetachForceTable.SubstrateChemistry == "COOH");
+% % subgrouping_vars = ["PlateID", "PlateColumn", "AttachedTF"];
+% % run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the COOH:COOH interaction');
 
 
-%% Looking at PEG:PEG interaction across different plates/columns
-subgroup = (DetachForceTable.BeadChemistry == "PEG" & ...
-            DetachForceTable.SubstrateChemistry == "PEG");
-subgrouping_vars = ["PlateID", "PlateColumn"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the COOH:COOH interaction');
+% % %% Looking at PEG:PEG interaction across different plates/columns
+% % subgroup = (DetachForceTable.BeadChemistry == "PEG" & ...
+% %             DetachForceTable.SubstrateChemistry == "PEG");
+% % subgrouping_vars = ["PlateID", "PlateColumn"];
+% % run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the COOH:COOH interaction');
 
 
 % % %% Looking at HBE:HBE interaction across different plates
@@ -75,48 +75,62 @@ run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the CO
 
 % Bead:Substrate/ni cross-checks, HBE:PEG/ni, PEG:HBE/ni. 
 
-%% Looking at HBE:HBE interaction across different plates
-subgroup = (DetachForceTable.BeadChemistry == "HBE" & ...
-            DetachForceTable.SubstrateChemistry == "HBE");
-subgrouping_vars = ["PlateID", "PlateColumn"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
+% %% Looking at HBE:HBE interaction across different plates
+% subgroup = (DetachForceTable.BeadChemistry == "HBE" & ...
+%             DetachForceTable.SubstrateChemistry == "HBE");
+% subgrouping_vars = ["PlateID", "PlateColumn"];
+% run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
 
 
 %% Looking at PEG:HBE interaction in differing media conditions
 subgroup = (DetachForceTable.BeadChemistry == "PEG" & ...
             DetachForceTable.SubstrateChemistry == "HBE");
 subgrouping_vars = ["Media"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the PEG:HBE interaction');
+[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the PEG:HBE interaction');
 
+f.Position(3:4) = [155*2 210];
+ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
+ax.Position([2,4]) = [0.20,0.75];
+ax.XLim = [0.5 4.5];
 
 %% Looking at WGA:HBE interaction in differing media conditions
 subgroup = (DetachForceTable.BeadChemistry == "WGA" & ...
             DetachForceTable.SubstrateChemistry == "HBE");
 subgrouping_vars = ["Media"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the WGA:HBE interaction');
+[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the WGA:HBE interaction');
 
+f.Position(3:4) = [155*2 210];
+ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
+ax.Position([2,4]) = [0.20,0.75];
+ax.XLim = [0.5 4.5];
 
 %% Looking at HBE:HBE interaction in differing media conditions
 subgroup = (DetachForceTable.BeadChemistry == "HBE" & ...
             DetachForceTable.SubstrateChemistry == "HBE");
 subgrouping_vars = ["Media"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
+[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
 
-
-
+f.Position(3:4) = [155*2 210];
+ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
+ax.Position([2,4]) = [0.20,0.75];
+ax.XLim = [0.5 4.5];
 
 %% Looking at non-interfering medium for PEG slides
 subgroup = (DetachForceTable.Media == "NoInt" & ...
             DetachForceTable.SubstrateChemistry == "PEG");
 subgrouping_vars = ["BeadChemistry"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering, PEG slide');
-
+[f, ax, m] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering, PEG slide');
+fixBoxPlot_xticks(ax, {"PEG","WGA","HBE"},{"PEG","PEG","PEG"});
+f.Position(3:4) = [155*3/2 210];
+ax.Position([2,4]) = [0.20,0.75];
 
 %% Looking at non-interfering medium for HBE slides
 subgroup = (DetachForceTable.Media == "NoInt" & ...
             DetachForceTable.SubstrateChemistry == "HBE");
 subgrouping_vars = ["BeadChemistry"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering, HBE slide');
+[f, ax, m] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering, HBE slide');
+fixBoxPlot_xticks(ax, {"PEG","WGA","HBE"},{"HBE","HBE","HBE"});
+f.Position(3:4) = [155*3/2 210];
 
 
 %% Looking at non-interfering medium for PEG and HBE beads on PEG and HBE slides
@@ -126,7 +140,31 @@ subgroup = (DetachForceTable.Media == "NoInt" & ...
             (DetachForceTable.SubstrateChemistry == "PEG" | ...
              DetachForceTable.SubstrateChemistry == "HBE") );
 subgrouping_vars = ["BeadChemistry", "SubstrateChemistry"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
+[f, ax, m] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
+fixBoxPlot_xticks(ax, {"PEG","PEG","HBE","HBE"},{"PEG","HBE","PEG","HBE"});
+f.Position(3:4) = [155*2 210];
+ax.Position([2,4]) = [0.20,0.75];
+
+% Looking at non-interfering medium for WGA beads on PEG and HBE slides. Use PEG:PEG as a comparison
+logentry('Looking at non-interfering medium for WGA beads on PEG and HBE slides.'); 
+subgroupPEG = (DetachForceTable.Media == "NoInt" & ...
+               (DetachForceTable.BeadChemistry == "PEG" & ...
+                DetachForceTable.SubstrateChemistry == "PEG") );
+
+subgroupWGA = (DetachForceTable.Media == "NoInt" & ...
+            (DetachForceTable.BeadChemistry == "WGA") & ...
+            (DetachForceTable.SubstrateChemistry == "PEG" | ...
+             DetachForceTable.SubstrateChemistry == "HBE") );
+
+% combine the PEG and WGA subgroups
+subgroup = subgroupPEG | subgroupWGA;
+clear subgroupPEG subgroupWGA
+
+subgrouping_vars = ["BeadChemistry", "SubstrateChemistry"];
+[f,ax,m] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
+fixBoxPlot_xticks(ax, {"PEG","WGA","WGA"},{"PEG","PEG","HBE"});
+f.Position(3:4) = [155 210];
+ax.Position([2,4]) = [0.20,0.75];
 
 
 %% Looking at non-interfering medium for PEG, WGA, and HBE beads on PEG and HBE slides
@@ -137,18 +175,9 @@ subgroup = (DetachForceTable.Media == "NoInt" & ...
             (DetachForceTable.SubstrateChemistry == "PEG" | ...
              DetachForceTable.SubstrateChemistry == "HBE") );
 subgrouping_vars = ["SubstrateChemistry","BeadChemistry"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
-
-
-%% Looking at non-interfering medium for WGA beads on PEG and HBE slides
-subgroup = (DetachForceTable.Media == "NoInt" & ...
-            (DetachForceTable.BeadChemistry == "WGA") & ...
-            (DetachForceTable.SubstrateChemistry == "PEG" | ...
-             DetachForceTable.SubstrateChemistry == "HBE") );
-subgrouping_vars = ["BeadChemistry", "SubstrateChemistry"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
-
-
+[f, ax, m] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
+fixBoxPlot_xticks(ax, {"PEG","WGA","HBE","PEG","WGA","HBE"},{"PEG","PEG","PEG","HBE","HBE","HBE"});
+f.Position(3:4) = [155*3 210];
 
 %% Looking at surfactant
 subgroup = (DetachForceTable.Media == "IntNP40");
@@ -176,7 +205,7 @@ run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'everything');
 %% 
 
 % subfunctions
-function q = run_comparison(subDetachForceTable, subgrouping_vars, titlestring)
+function [f,ax,m,factorNames] = run_comparison(subDetachForceTable, subgrouping_vars, titlestring)
     
     ascendme = repmat("ascend", 1, numel(subgrouping_vars));
     subDetachForceTable = sortrows(subDetachForceTable, subgrouping_vars, ascendme);
@@ -201,31 +230,56 @@ function q = run_comparison(subDetachForceTable, subgrouping_vars, titlestring)
         logentry('Variances between groups are statistically different. Will use Kruskal-Wallis.');
         [kw.p, kw.tbl, kw.stats] = kruskalwallis(subDetachForceTable.ModeForce, factorNames(subg),"off");        
         figure;
-        [mc.c, mc.m, mc.h, mc.gnames] = multcompare(kw.stats);
+        [m.c, m.m, m.h, m.gnames] = multcompare(kw.stats);
         set(gca, 'TickLabelInterpreter', 'none');        
         title(titlestring);
     end
     
     fprintf('\n\n');
 
-    q = 0;
+    
 
     mylinecolor = lines(7);
+    % XJitterWidth = 0.9 * min(diff(unique(x)));
 
     f = figure;
     hold on
-    boxchart(subg, subDetachForceTable.ModeForce, 'Notch','off', 'BoxFaceColor', mylinecolor(1,:));
-    swarmchart(subg, subDetachForceTable.ModeForce, 12, [0.2 0.8 0.2], 'filled');
+    b = boxchart(subg, subDetachForceTable.ModeForce, ...
+                 'Notch','off', 'BoxFaceColor', mylinecolor(1,:));
+    b.JitterOutliers = "off";
+    b.MarkerStyle = 'x'; % outlier markers
+    b.MarkerColor = 'r'; 
+    b.MarkerSize = 3;
+    b.WhiskerLineColor = mylinecolor(1,:);
+
+    good = cell2mat(vertcat(splitapply(@(x){~isoutlier(x, 'quartiles')}, subDetachForceTable.ModeForce, subg)));
+
+    s = swarmchart(subg(good), subDetachForceTable.ModeForce(good), ...
+        'Marker', 'o', 'SizeData', 4, ...
+        'MarkerFaceColor', [0 0.4470 0.7410], ...
+        'MarkerFaceAlpha', 0.5, ...
+        'MarkerEdgeColor', [0 0.4470 0.7410],  ...
+        'MarkerEdgeAlpha', 0.5, ...
+        'XJitter','rand', 'XJitterWidth', 0.33);
+        % 12, [1 0.41 0.16], 'filled', ...
+
     hold off
     title(titlestring);
     ax = gca;
+    ax.Box = 'on';
+    ax.YLim = [-1.65,2.65];
+    ax.YLabel.String = "log_{10}(Force) [nN]";
+    ax.TickLabelInterpreter = 'tex';
     ax.XTick = (1:numel(factorNames));
     ax.XTickLabel = factorNames;
-    ax.TickLabelInterpreter = 'none';
-    ax.YLim = [-2 2.5];
-    ax.YLabel.String = "log_{10}(Force) [nN]";
+    ax.YTick = [-1.5:0.5:2.5];
+    ax.YTickLabel = arrayfun(@(x)num2str(x,'%1.1f'),ax.YTick,'UniformOutput',false);
+    ax.FontSize = 10;
     grid
-    if exist('m','var'); add_sigstar(m, f); end
+    
+    if contains(class(m),'table') && isTableCol(m,'pValue') 
+        add_sigstar(m, f); 
+    end
 
 end
 
@@ -236,6 +290,8 @@ function factorNames = mkfactorNames(subgrouping_vars)
 
         subgrouping_vars = movevars(subgrouping_vars, ...
                                     "BeadChemistry", "Before","SubstrateChemistry");
+
+
     end
 
     [~, c] = size(subgrouping_vars);
@@ -252,12 +308,14 @@ function out = add_sigstar(m, fig)
     m = m(m.pValue < 0.05, :);
 
     if ~isempty(m)
-        ComparedNames = table2cell(m(:,{'Group1','Group2'}));
-        ComparedNames = cellfun( @(x1,x2){char(x1),char(x2)}, ComparedNames(:,1), ComparedNames(:,2), 'UniformOutput', false);
-    
+        CompareNames = table2cell(m(:,{'Group1','Group2'}));
+        CompareNames = cellfun( @(x1,x2){char(x1),char(x2)}, CompareNames(:,1), CompareNames(:,2), 'UniformOutput', false);
+        % CompareNames = string([m.Group1, m.Group2]);
+        % CompareNamesTrimmed(1,:) = mat2cell(CompareNames, ones(size(CompareNames,1),1), size(CompareNames,2));
+   
     
         figure(fig);
-        sigstar(ComparedNames, m.pValue);
+        sigstar(CompareNames, m.pValue);
     end
 
     out = 0;
@@ -316,55 +374,6 @@ function q = plot_ForceVsScale(DetachForceTable, BeadChemistry, SubstrateChemist
                      'CapSize', 3, ...
                      'Color', mylinecolor(1,:) );
         end
-        % % regular mode errorbar(x,y,yneg,ypos,xneg,xpos)
-        % errorbar(q.ModeForce(~idx), ...
-        %          q.ModeScale(~idx), ...
-        %          scale_errn(~idx), ...
-        %          scale_errp(~idx), ...
-        %          force_errn(~idx), ...
-        %          force_errp(~idx), ...
-        %          'Marker', 'o', ...
-        %          'LineStyle', 'none', ...
-        %          'LineWidth', 1, ...
-        %          'CapSize', 6, ...
-        %          'Color', mylinecolor(1,:) );
-        % 
-        % % regular mode with spread {errorbar(x,y,err,ornt)}
-        % errorbar(q.ModeForce(~idx), ...
-        %          q.ModeScale(~idx), ...
-        %          forcespreadn(~idx), ...
-        %          forcespreadp(~idx), ...
-        %          "horizontal", ...
-        %          'Marker', 'none', ...
-        %          'LineStyle', 'none', ...
-        %          'LineWidth', 1, ...
-        %          'CapSize', 3, ...
-        %          'Color', mylinecolor(1,:) );
-        % 
-        % % dom mode errorbar
-        % errorbar(q.ModeForce(idx), ...
-        %          q.ModeScale(idx), ...
-        %          scale_errn(idx), ...
-        %          scale_errp(idx), ...
-        %          force_errn(idx), ...
-        %          force_errp(idx), ...
-        %          'Marker', 'o', ...
-        %          'LineStyle', 'none', ...
-        %          'LineWidth', 1, ...
-        %          'CapSize', 6, ...
-        %          'Color', mylinecolor(2,:) );
-        % 
-        % % dom mode with spread {errorbar(x,y,err,ornt)}
-        % errorbar(q.ModeForce(idx), ...
-        %          q.ModeScale(idx), ...
-        %          forcespreadn(idx), ...
-        %          forcespreadp(idx), ...
-        %          "horizontal", ...
-        %          'Marker', 'none', ...
-        %          'LineStyle', 'none', ...
-        %          'LineWidth', 1, ...
-        %          'CapSize', 3, ...
-        %          'Color', mylinecolor(2,:) );
 
 
     hold off
@@ -397,3 +406,16 @@ function q = filterForces(DetachForceTable, BeadChemistry, SubstrateChemistry, M
         q = q(q.Media == med,:);
     end
 end
+
+
+function fixBoxPlot_xticks(ax, BeadChemistry,SubstrateChemistry)
+    labelArray = [BeadChemistry;SubstrateChemistry];
+    tickLabels = strtrim(sprintf('%s\\newline%s\n', labelArray{:}));
+    ax.XTickLabel = tickLabels;
+    ax.TickLabelInterpreter = "tex";
+end
+
+
+
+
+
