@@ -10,11 +10,11 @@ function TableColTF = isTableCol(TableIn, ColName)
 % (*) required inputs
 %
 
-if nargin<2 || isempty(ColName)
+if nargin < 2 || isempty(ColName)
     error('Column Name is not defined.');
 end
 
-if nargin<1 || isempty(TableIn)
+if nargin < 1 || isempty(TableIn)
     error('Table input not defined.');
 end
 
