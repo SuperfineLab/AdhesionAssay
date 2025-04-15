@@ -1,7 +1,11 @@
-function [x_center, y_center, x_disp, y_disp] = image_center_find(im, x_start, y_start)
+function [x_center, y_center, x_disp, y_disp] = image_center_find(im, x_start, y_start, plotTF)
 % IMAGE_CENTER_FIND locates the center of each fiducial mark and determines 
 % the ludl coordinates that the stage would need to be in such that the 
 % center of each fiducial mark would be at the center of the image
+
+if nargin < 4 || isempty(plotTF)
+    plotTF = true;
+end
 
 cameraname = 'Grasshopper3';
 switch lower(cameraname)
@@ -43,11 +47,12 @@ x_center = x_start + x_disp;
 y_center = y_start + y_disp;
 
 % Debug plot (comment out later)
-figure; 
-imshow(test)
-hold on
-    plot(x, y, 'or');
-    plot(x_center, y_center, 'xg');   
-hold off
-legend('center of mass', 'center of field');
-
+if plotTF
+    figure; 
+    imshow(test)
+    hold on
+        plot(x, y, 'or');
+        plot(x_center, y_center, 'xg');   
+    hold off
+    legend('center of mass', 'center of field');
+end
