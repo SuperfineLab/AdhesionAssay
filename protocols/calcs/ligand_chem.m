@@ -1,3 +1,5 @@
+NA = 6.022e23;
+
 % GlcNAC-PEG12-Azide (or GalNAc)
 GalNAc_PEG3_Azide.MolWt_gmol = 654.7;
 GalNAc_PEG3_Azide.MolesPerWell = Well.COOHSites / NA;
