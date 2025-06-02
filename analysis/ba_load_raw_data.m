@@ -1,5 +1,5 @@
 function outs = ba_load_raw_data(filepath)
-% BA_PROCESS_EXPT analyzes the output of a bead adhesion experiment.
+% BA_LOAD_RAW_DATA pulls in and combines a plate's metadata 
 %
 % outs = ba_load_raw_data(filepath)
 %
@@ -80,7 +80,6 @@ for k = 1:length(evtfilelist)
  
 end
 
-% 
 FileTable = vertcat(FileTable{:});
 FileTable.PlateID = categorical(string(FileTable.PlateID));
 FileTable = movevars(FileTable, 'PlateID', 'before', 'Fid');
@@ -97,6 +96,7 @@ outs.BeadInfoTable = BeadInfoTable;
 outs.TrackingTable = TrackingTable;
 
 cd(rootdir);
+
 end
 
 

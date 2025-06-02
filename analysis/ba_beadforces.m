@@ -1,6 +1,9 @@
 function BeadForceTable = ba_beadforces(Data, weightstyle)
 % BA_BEADFORCES computes bead-level forces based on z-velocity
 %
+% Adhesion Assay
+% Analysis
+%
 %   BeadForceTable = ba_beadforces(Data, weightstyle)
 %
 % Outputs:
@@ -8,7 +11,7 @@ function BeadForceTable = ba_beadforces(Data, weightstyle)
 %
 % Inputs:
 %    Data - standard Table outputted from ba_process_expt/ba_load_raw_data
-%    weightstyle - 
+%    weightstyle - follows from other documented functions in the project
 %
 
     if nargin < 2 || isempty(weightstyle)

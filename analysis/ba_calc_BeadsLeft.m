@@ -1,6 +1,9 @@
 function newFileTable = ba_calc_BeadsLeft(Data)
-% XXX @stephensnare Add documentation for this function.
-
+% BA_CALC_BEADSLEFT calculates remaining beads during video pull-offs
+%
+% Adhesion Assay
+% Analysis
+%
 % Number of stuck beads is equal to the starting number of beads minus
 % the number of Force approximations we made during our tracking
 % clean-up for the velocity calculation.

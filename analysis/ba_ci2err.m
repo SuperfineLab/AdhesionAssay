@@ -1,4 +1,8 @@
 function outs = ba_ci2err(ForceIn, confint, spacein, spaceout)
+%
+% Adhesion Assay
+% Analysis
+%
 
 if nargin < 3 || isempty(spacein)
     spacein = 'log';

@@ -1,6 +1,10 @@
 function fitfcn = ba_fitfcn(Nmodes)
 % BA_FITFCN returns the fitting function for the requested number of modes.
 %
+% This function generates a fitting function object for the "standard form"
+% detached bead percentage as a function of detachment force. It works for
+% 1 to Nmodes.
+%
 % fitfcn = ba_fitfcn(Nmodes)
 %
 % Output:
@@ -34,9 +38,4 @@ function fitfcn = ba_fitfcn(Nmodes)
 
 end
 
-%     % old form
-%     fitfcn{1} = @(p, Fd)(1/2*(  p(1) *erfc(((Fd)-p(2))/(sqrt(2)*p(3)))));
-%     fitfcn{2} = @(p, Fd)(1/2*(  p(1) *erfc(((Fd)-p(2))/(sqrt(2)*p(3))) + ...
-%                              (1-p(1))*erfc(((Fd)-p(4))/(sqrt(2)*p(5)))));
-% 
 

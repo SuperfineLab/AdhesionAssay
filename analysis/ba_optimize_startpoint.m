@@ -12,6 +12,7 @@ fout = ba_fit_setup(Nmodes);
 
 startfitT = optimize_ga(fout, logforce_nN, fractionLeft, weights);
 
+% % Debug figure
 % figure;
 % hold on
 %     plot( logforce_nN, fractionLeft, 'Color', 'r', 'Marker', '.', 'LineStyle', 'none');

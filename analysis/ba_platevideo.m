@@ -1,5 +1,8 @@
 function ba_platevideo(outfile, filelist)
-
+% BA_PLATEVIDEO generates a synched video for all 15 wells of an experiment
+%
+% ba_platevideo(outfile, filelist)
+%
 
 if nargin < 2 || isempty(infilestring)
     filelist = dir('well*.mp4');

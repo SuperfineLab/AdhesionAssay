@@ -1,5 +1,6 @@
 function outs = ba_force_analysis(ba_process_data, diameter_range)
-
+% XXX @jeremy This is likely a old, defunct function. Need to survey for 
+% connectedness, test without it and see if it can be removed
 
     FileTableVars = {'PlateID', 'Fid', 'MeanFps', 'Media', 'SampleName', ...
                      'BeadChemistry', 'SubstrateChemistry', 'MagnetGeometry', ...

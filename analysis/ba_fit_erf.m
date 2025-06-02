@@ -1,8 +1,25 @@
 function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, fitmethod)
-% XXX @jeremy TODO: Add documentation text
+% BA_FIT_ERF fits collected forces to an error function (erf) style fit
 %
- 
+% Adhesion Assay
+% Analysis
 %
+% This function directs the fitting of a collection of forces to an error
+% function model for bead detachment (similar to dissociation constants,
+% i.e., K_d)
+%
+% T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, fitmethod)
+%
+% Outputs:
+%   T - output table containing fitting results
+%
+% Inputs:
+%   logforce_nN - 
+%   fractionLeft -  
+%   weights - 
+%   startpoint - 
+%   Nmodes - 
+%   fitmethod - 
 %
 % NOTE: Starting points are tuned to the log10(force_in_nN). The units must
 % match exactly in order for the fitting function to operate in an expected
@@ -19,6 +36,7 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
 % end
 % 
 % disp(['Nrun = ', num2str(Nrun)]);
+
     if numel(Nmodes) > 1
         Nmodes = Nmodes(1);
     end
@@ -65,12 +83,6 @@ function T = ba_fit_erf(logforce_nN, fractionLeft, weights, startpoint, Nmodes, 
                     logentry('poop.');
                 end
                 [result, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, weights, fout, opts);
-            % case {'lsqcurvefit', 'lsqnonlin', 'fminunc'}
-            %     result = use_unconstrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
-            %     BootstatT = {[]};
-            % case {'fmincon'}
-            %     result = use_constrained_method(logforce_nN, fractionLeft, weights, fout, opts, fitmethod);
-            %     BootstatT = {[]};
             otherwise
                 error('Fit method not implemented.');
         end
