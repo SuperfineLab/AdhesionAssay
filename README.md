@@ -54,7 +54,7 @@ The AdhesionAssay codebase is categorized into subdirectories as follows:
 
 ## Typical MATLAB Workflow
 
-- Prepare microscope for data collection: `ba_config`, `ba_calibrate_plate`
+- Prepare microscope for data collection: `ba_config`, `ba_mkdatadir`, `ba_calibrate_plate`
 - Preview video: `ba_impreview`
 - Collect video data: `ba_pulloff`
 - Video meta-analysis: `ba_workflow`, which converts binary videofile into image stack, generates a mini-video for later reference, tracks bead displacments in XYZ, and compresses video
