@@ -1,5 +1,14 @@
 function DataOut = ba_combine_runs(DataInA, DataInB)
-% BA_COMBINE_RUNS concatenates bead-adhesion assay datasets.
+% BA_COMBINE_RUNS concatenates bead-adhesion assay datasets
+%
+%   DataOut = ba_combine_runs(DataInA, DataInB)
+% 
+% Input: 
+%   DataInA is the first bead adhesion dataset (outputted by ba_process_expt)
+%   DataInB is the second bead adhesion dataset
+%
+% Output:
+%   DataOut is the concatenated adhesion dataset
 %
 
 repeatFID = intersect(DataInA.FileTable.Fid, DataInB.FileTable.Fid);

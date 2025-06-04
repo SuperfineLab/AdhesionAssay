@@ -1,5 +1,40 @@
 function ba_minivideo(stack_folder, destination_folder, outfile, opts)
-% BA_MINIVIDEO creates a compressed and annotated mp4 for an image stack
+% BA_MINIVIDEO Creates a compressed and annotated MP4 from an image stack
+%
+% Adhesion Assay
+% **util**
+%
+%   BA_MINIVIDEO(stack_folder, destination_folder, outfile, opts) generates
+%   a downsampled, optionally tagged video from a stack of images in
+%   stack_folder. The resulting video is saved as an .mp4 file using the
+%   MPEG-4 codec. Annotation tags can include metadata such as frame number,
+%   time, height, FOV, and more.
+%
+% Inputs:
+%   stack_folder       - String, path to folder containing frame*.pgm images
+%   destination_folder - (Optional) Output directory for the video file.
+%                        Defaults to the parent of stack_folder.
+%   outfile            - (Optional) Full path to the output .mp4 file.
+%                        Defaults to [destination_folder / stackname].mp4
+%   opts               - (Optional) Struct of video options with fields:
+%       .stride        - Integer, frame stride for downsampling (default: 4)
+%       .scale         - Scalar, image resize factor (default: 0.5)
+%       .pmip          - Logical, enable progressive maximum intensity projection
+%       .tag           - Struct of booleans controlling tag overlays:
+%           .datetime  - Show acquisition time
+%           .frame     - Show frame number
+%           .height    - Show z-height (if available)
+%           .name      - Show folder name
+%           .fov       - Extract FOV from folder name
+%           .angle     - Extract angle from folder name
+%           .nana      - Extract NANA concentration from folder name
+%
+% Outputs:
+%   (none)
+%
+% Example:
+%   opts.stride = 5; opts.scale = 0.3; opts.tag.frame = true;
+%   ba_minivideo('exp1_stack', 'videos', 'exp1_stack.mp4', opts);
 %
 
 if nargin < 1 || isempty(stack_folder)

@@ -1,5 +1,25 @@
 function outs = ba_unpack_tiff(tif_filename, stack_path)
-% BA_UNPACK_TIFF converts a multi-page tiff into an image stack
+% BA_UNPACK_TIFF Converts a multi-page TIFF into an image stack
+%
+% Adhesion Assay
+% util
+%
+%   outs = BA_UNPACK_TIFF(tif_filename, stack_path) reads a multi-page
+%   .tif file and writes each frame as a separate .pgm file in the
+%   specified output directory.
+%
+% Inputs:
+%   tif_filename - String, path to the input .tif file (must end in '.tif')
+%   stack_path   - Optional string, name of output directory to save the
+%                  unpacked image stack. Defaults to tif_filename name
+%                  without '.tif' extension.
+%
+% Outputs:
+%   outs - (Currently unused) Placeholder for future return values or
+%          function extension. Presently returns nothing.
+%
+% Example:
+%   ba_unpack_tiff('experiment01_stack.tif');
 %
 
 

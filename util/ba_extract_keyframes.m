@@ -1,5 +1,27 @@
 function ba_extract_keyframes(stackdir, destination_folder, outfile)
-% BA_EXTRACT_KEYFRAMES pulls selected images from the image stacks
+% BA_EXTRACT_KEYFRAMES Pulls selected images from an image stack
+%
+% Adhesion Assay
+% **util**
+%
+%   BA_EXTRACT_KEYFRAMES(stackdir, destination_folder, outfile) copies the
+%   first and last frames from a stack of images in stackdir into the
+%   specified destination. If no output filename is provided, default
+%   names are generated based on stackdir.
+%
+% Inputs:
+%   stackdir           - String, path to the folder containing frame*.pgm images
+%   destination_folder - (Optional) String, folder where extracted keyframes
+%                        will be copied. Defaults to parent of stackdir
+%   outfile            - (Optional) String, name of the output file for
+%                        the first frame. The last frame is saved with a
+%                        fixed suffix '.07625.pgm'
+%
+% Outputs:
+%   (none)
+%
+% Example:
+%   ba_extract_keyframes('run02/frames', 'run02/keyframes', 'run02/start.pgm');
 %
 
 if nargin < 1 || isempty(stackdir)

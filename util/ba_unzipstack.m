@@ -1,5 +1,24 @@
 function ba_unzipstack(zipfile, destination_folder)
-% UR_ZIPSTACK compresses a stack of images into a zipfile for archiving.
+% BA_UNZIPSTACK Extracts a stack of images from a ZIP archive
+%
+% Adhesion Assay
+% **util**
+%
+%   BA_UNZIPSTACK(zipfile, destination_folder) extracts a .zip archive
+%   into a new folder. The ZIP file should contain image stack files
+%   (e.g., frame*.pgm). If destination_folder is not provided, it is
+%   inferred from the ZIP file name.
+%
+% Inputs:
+%   zipfile            - String, path to the .zip archive to extract
+%   destination_folder - (Optional) String, path to the output folder.
+%                        Defaults to [zipfile name without extension].
+%
+% Outputs:
+%   (none)
+%
+% Example:
+%   ba_unzipstack('experiment01_stack.zip');
 %
 
 startdir = pwd;

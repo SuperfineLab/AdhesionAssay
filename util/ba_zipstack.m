@@ -1,5 +1,26 @@
 function ba_zipstack(stack_folder, destination_folder, outfile)
-% UR_ZIPSTACK compresses a stack of images into a zipfile for archiving.
+% BA_ZIPSTACK Compresses a stack of images into a ZIP file for archiving
+%
+% Adhesion Assay
+% **util**
+%
+%   BA_ZIPSTACK(stack_folder, destination_folder, outfile) compresses all
+%   .pgm files in the specified stack_folder into a ZIP archive. If no
+%   destination_folder or outfile name is specified, default values are
+%   constructed from the input path.
+%
+% Inputs:
+%   stack_folder       - String, path to folder containing frame*.pgm files
+%   destination_folder - (Optional) String, directory where the ZIP file
+%                        will be created. Defaults to parent of stack_folder
+%   outfile            - (Optional) String, full path to output ZIP file.
+%                        Defaults to [destination_folder / stack_folder].zip
+%
+% Outputs:
+%   (none)
+%
+% Example:
+%   ba_zipstack('myStackFolder');
 %
 
 if nargin < 1 || isempty(stack_folder)
@@ -36,7 +57,7 @@ end
 filelistcell = {filelist.name};
 
 % Use below to use system zip software
-% XXX TODO implement for below code calling system zip software 
+% XXX TODO implement below code for calling system zip software 
 % XXX TODO Dont forget to check for system zip first
 zip7 = @(d,z) (['"C:\Program Files\7-Zip\7z.exe" a -mmt8 -mx4 -tzip -y -r "' z '" "' d '/*"']);
 
