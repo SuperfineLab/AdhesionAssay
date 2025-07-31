@@ -1,10 +1,10 @@
-function outpwd = ba_mkdatadir(foldername)
+function new_data_dir = ba_mkdatadir(foldername)
 % BA_MKDATADIR creates typical folder set for running an Adhesion assay.
-%
-% outs = ba_mkdatadir(foldername)
 %
 % This function creates a data directory and its typical subdirectories for
 % mosaics and eventual tracking and metadata backup files.
+%
+% new_data_dir = ba_mkdatadir(foldername)
 %
 
     mkdir(foldername);
@@ -15,6 +15,6 @@ function outpwd = ba_mkdatadir(foldername)
     mkdir('evt_backup');
     mkdir('metadata_backup');
 
-    outpwd = pwd;
+    new_data_dir = pwd;
 
 end

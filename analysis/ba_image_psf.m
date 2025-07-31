@@ -1,4 +1,6 @@
-function image_my_psf(stim, gaussSD, isovalue)
+function ba_image_psf(stim, gaussSD, isovalue)
+
+
 figure;
 stFilt = imgaussfilt3(stim,gaussSD);
 stFilt = double(stFilt);

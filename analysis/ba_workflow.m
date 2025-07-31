@@ -1,15 +1,22 @@
 function ba_workflow(filemask)
 % BA_WORKFLOW analyzes a suite of bead-adhesion videos in the experiment path.
 %
-% 
+% This function begins the analytical workflow on an adhesion
+% "experiment,", defined here as a directory containing videos collected 
+% for one 15-well slide. Given an experiment directory of bin files, this
+% workflow includes converting the bin files to image stacks, creating a 
+% small compressed video for quick reference, extracting first and last 
+% keyframes, tracking beads for each video, and zipping the final image
+% stack into a smaller form for archival purposes.
 %
-% Given an experiment directory of bin files, perform automated analysis
-% for a bead adhesion experimental protocol run on the Ixion tilting
-% microscope in the Superfine lab.
+%   ba_workflow(filemask)
 %
 % Inputs:
-%    exptdir- directory of bin files
+%    filemask- directory of bin files
 % 
+% Outputs:
+%    (none)
+%
 
 if nargin < 1 || isempty(filemask)
     error('No files to work on.');

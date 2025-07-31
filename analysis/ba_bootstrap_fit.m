@@ -5,6 +5,7 @@ function [StatOutT, BootstatT] = ba_bootstrap_fit(logforce_nN, fractionLeft, wei
 %
 % Outputs: StatOutT reports the aggregate statistic for the bootstrap run
 %          BootstatT contains the individual fitting runs for further analysis
+%
 % Inputs:  logforce_nN is the base-10 log of the force in nanoNewtons
 %          fractionLeft is the fraction of beads left on the substrate
 %          weights is the reported weight given the uncertainty in the force

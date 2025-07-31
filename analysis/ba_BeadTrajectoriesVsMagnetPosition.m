@@ -1,15 +1,23 @@
 function outs = ba_BeadTrajectoriesVsMagnetPosition(filepath, groupvars, calfit)
-% BA_PROCESS_EXPT analzes the output of a bead adhesion experiment.
+% BA_BEADTRAJECTORIESVSMAGNETPOSITION combines XYZ tracking with magnet pos
 %
-
-% This function begins the process of analyzing the output of the bead
-% adhesion experiment where the bead detaches from the surface and moves
-% through z while being tracked by vst. The position of the z-motor, i.e. 
-% the surface position of a calibrated magnet system is recorded as a
-% function of time/frame within each video collection. The idea here is to
-% pull the position data and match it to calibration data previously
-% collected, curated, and summarized into a curve as average and error 
-% force vs. distance from poletip surface.
+% Adhesion Assay
+% Analysis
+%
+% outs = ba_BeadTrajectoriesVsMagnetPosition(filepath, groupvars, calfit)
+%
+% This function tries to analyzing bead adhesion forces using an aggregated
+% force "curve" from all previous detachments. This is a wild-eyed approach
+% to trying to use past data to generate a universal force vs magnet
+% distance curve. 
+%
+% The position of the z-motor, i.e. the surface position of a calibrated 
+% magnet system is recorded as a function of time/frame within each video 
+% collection. The idea here is to pull the position data and match it to 
+% calibration data previously collected, curated, and summarized into a 
+% curve as average and error force vs. distance from poletip surface.
+%
+% AT THIS TIME, THIS FUNCTION IS NOT USEFUL YET AND MAY NEVER BE.
 %
 
 rootdir = pwd;

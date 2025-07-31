@@ -1,4 +1,9 @@
-    function BigStudy = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF)
+function BigStudy = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF)
+% LOAD_BIGSTUDY_DATA loads a set of adhesion assay datasets for deeper study
+%
+% This function 
+% 
+% BigStudy = load_bigstudy_data(adp, DataSetDirs, groupvars, improveBadFitsTF, savedatafilesTF)
 
     % all-data-path
     if nargin < 1 || isempty(adp)

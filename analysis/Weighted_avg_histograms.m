@@ -1,7 +1,7 @@
 function outs = Weighted_avg_histograms(sim_data,master_curves)
-%master curves argument is the output from running resample_study(Broot,1,1,true)
-%sim_data is the output from resample_study()
-
+% master curves argument is the output from running resample_study(Broot,1,1,true)
+% sim_data is the output from resample_study()
+%
 
 
 

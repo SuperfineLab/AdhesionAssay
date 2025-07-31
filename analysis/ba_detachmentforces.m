@@ -1,12 +1,15 @@
 function [TableOut, optstartT] = ba_detachmentforces(ba_process_data, groupvars)
-% XXX @jeremy TODO: Add documentation for this function
+% BA_DETACHMENTFORCES computes  
 %
+% Adhesion Assay
+% Analysis
+%
+
     
     Data = ba_process_data;
 
 
     % Extract detachment forces and their relative certainty
-
 %     g = findgroups(RelevantData(:, unique(['PlateID', groupvars])));
 %     [tmpa, tmpb] = splitapply(@(x1,x2)calcdetachforce_CFTBXmethod(x1,x2), fitfoo.FitParams, fitfoo.confFitParams, g);
     filterTF = false;

@@ -1,6 +1,6 @@
-%%% attempting to figure out which fitting method is the best for our data.
 function lsqout = ba_lsqfit(dftable,startpoint)
-addpath('/Users/stevesnare/code/AdhesionAssay/analysis')
+%%% attempting to figure out which fitting method is the best for our data.
+
 Data = dftable ;
 
 fitname = 'erf-new';

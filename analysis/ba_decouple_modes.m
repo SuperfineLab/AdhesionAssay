@@ -1,18 +1,21 @@
 function ParamTable = ba_decouple_modes(ForceFitTable, groupvars)
 % BA_DECOUPLE_MODES outputs fit parameters decoupled mode-by-mode from full fit equation
 %
+% Adhesion Assay
+% Analysis
+%
 % ParamTable = ba_decouple_modes(ForceFitTable, groupvars)
 %
-% inputs:
+% Output:
+%   ParamTable - new table containing unstacked parameter values from fits
+%
+% Inputs:
 %   ForceFitTable - from the ba_process_expt output structure
 %   groupvars - grouping variables from the run, can also be found in
 %               ba_process_expt output structure.
 %
-% output:
-%   ParamTable - new table containing unstacked parameter values from fits
-%
 % Note: YOU MUST USE ALL GROUPING VARS HERE FOR YOUR STUDY OR UNSTACK WILL 
-%       DO STATS ON YOUR PARAMETERS!
+%       CALCULATE STATS ON YOUR PARAMETERS!
 %
 
 % The goal here is to output a new table that contains fit parameters 

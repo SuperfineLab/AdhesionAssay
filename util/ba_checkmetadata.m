@@ -1,6 +1,17 @@
 function mm = ba_checkmetadata(m)
 % BA_CHECKMETADATA ensures the metadata structure matches the specification.
 %
+%   mm = ba_checkmetadata(m)
+% 
+% Input: 
+%    m is the input metadata structure
+%
+% Output:
+%    mm is the output metadata structure.
+%
+% Note: This is designed to throw an error if the necessary information is
+% not available. (Not the best strategy).
+%
 
     % Order everything so it can be aggregated later
     mm = orderfields(m, {'PlateID', 'File', 'Bead', 'Substrate', 'Medium', 'Zmotor', 'Magnet', 'Scope', 'Video', 'Results'});

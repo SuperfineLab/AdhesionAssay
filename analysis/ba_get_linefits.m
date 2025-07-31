@@ -1,16 +1,24 @@
 function m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid, weightmethod)
 % BA_GET_LINEFITS calculates bead velocity and force from displacement line fits.
 %
+% This function uses displacement line fits to compute bead velocity and
+% outputs the results as an organized table containing the appropriate
+% metadata.
+%
 % m = ba_get_linefits(TrackingTable, calibum, visc_Pas, bead_diameter_um, Fid, weightmethod)
 %
 % Output:
 %   m - Table containing the results of the velocity computations
 %
 % Inputs:
-%   TrackingTable - Tracking data outputted by 
+%   TrackingTable - Tracking data outputed by ba_process_expt
+%   calibum - camera scale calibration (pixels -> microns)
+%   visc_Pas - visocsity of transit media in [Pa s].
+%   bead_diameter_um - bead diameter in microns.
+%   Fid - file id of tracking file.
 %   weightmethod - one from the below list of weighting computation options
 %        [ {unweighted}, inverseconf, scaled-inversebin, quantile ]
-% XXX @jeremy TODO: Add documentation for this function
+%   
 %
 
 if nargin < 6 || isempty(weightmethod)
@@ -59,20 +67,20 @@ m = fleshout_table_metadata(m);
 
 end
 
+
 function outs = get_startpos(x,y)
+% GET_STARTPOS gets the starting xy position for a bead trajectory
+%
     outs{1,1} = x(1);
     outs{1,2} = y(1);
 end
 
-% function outs = mylinfit(t,z,order)
-%     mb = polyfit(t,z,order);
-%     outs{1,1} = t(1);
-%     outs{1,2} = mean(t);
-%     outs{1,3} = mb;
-% end
 
 function outs = mylinfit(t,z,order)
-
+% MYLINFIT fits the xy position data to a line and extracts the slope 
+% which correcponds to the bead velocity. There's an "order" input for 
+% later expansion to nonlinear fitting (bead acceleration).
+%
     conflevel = 0.95;
 
     myfit = fit(t,z,'poly1');
@@ -88,7 +96,8 @@ end
 
 
 function m = fleshout_table_metadata(m)
-
+% FLESHOUT_TABLE_METADATA adds metadata to the output table
+%
     meta = {'Fid',           '',      'File ID (generated randomly)'; 
             'SpotID',        '',      'Spot ID (obtained from Spot Tracker)'; 
             'StartPosition', '[px]',  'Starting position of (cleaned) trajectory'; 

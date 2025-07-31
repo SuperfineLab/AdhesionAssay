@@ -1,6 +1,21 @@
 function ba_bin2stack(filename, stackpath, statTF, showTF)
 % BA_BIN2STACK converts bead-adhesion assay bin files into a stack of PGMs.
 %
+% This function marks the beginning of the adhesion assay analytical
+% workflow. It converts a binfile outputted by ba_pulloff into a stack of
+% PGM images.
+%
+% ba_bin2stack(filename, stackpath, statTF, showTF)
+%
+% Inputs: 
+%   filename is the full path and filename for the .bin file
+%   stackpath is the directory in which to place the stack of PGM images
+%   statTF computes stats on the images during conversino [true, {false}]
+%   showTF displays the frames as they are converted--SLOW [true, {false}]
+%
+% Output:
+%   (none, operates directly in file system)
+%
 
 % Check to see if a filename string was provided.
 if nargin < 1 || isempty(filename)

@@ -1,8 +1,26 @@
 function [cx,cy,sx,sy] = centerofmass(m)
-% CENTEROFMASS calculates the "center of mass" of each image based on the
-% value of each pixel
+% CENTEROFMASS Calculates the center of mass of an image
+%
+% Adhesion Assay
+% **util**
+%
+%   [cx, cy, sx, sy] = CENTEROFMASS(m) computes the center of mass (cx, cy)
+%   and standard deviation (sx, sy) along each axis of a 2D intensity matrix.
+%   Pixel intensities are treated as weights.
+%
+% Inputs:
+%   m  - 2D matrix (image), where pixel values represent intensity or weight
+%
+% Outputs:
+%   cx - X-coordinate of the center of mass
+%   cy - Y-coordinate of the center of mass
+%   sx - Standard deviation in X-direction (spread)
+%   sy - Standard deviation in Y-direction (spread)
+%
+% Example:
+%   [cx, cy, sx, sy] = centerofmass(im);
 
-% PURPOSE: find c of m of distribution
+% PURPOSE: find c of m for distribution
 
 [sizey sizex] = size(m);
 
