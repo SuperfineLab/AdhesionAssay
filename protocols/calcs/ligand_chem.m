@@ -147,7 +147,7 @@ SurfaceTable = [struct2table(Gly);
                 struct2table(BSA);
                 struct2table(IgG);
                 struct2table(ProtG);
-                ]
+                ];
 
 
 function Molecule = polyphys(Molecule)

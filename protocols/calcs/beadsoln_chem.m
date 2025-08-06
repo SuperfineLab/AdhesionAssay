@@ -10,9 +10,11 @@ function x = beadsoln_chem(Bead, stockpercent, dilution_factor)
     
     % In aqueous solutions, 1 mL = 1 cm^3
     count_per_cm3 = x.count_per_mL;
-    meanfreepath_cm = 1 ./ (count_per_cm3 .^ 0.3333);
-    x.meanfreepath_um = meanfreepath_cm * (1e6/1e2);
-    x.N_beaddiameters = x.meanfreepath_um ./ Bead.Diameter_um - 1; 
+    x.meanfreepath_cm = count_per_cm3 .^ -0.3333;
+    x.meanfreepath_um = x.meanfreepath_cm * (1e6/1e2);
+    
+    % Below, the "-1" takes off two bead radii that cannot occupy the same space
+    x.N_beaddiameters = (x.meanfreepath_um ./ Bead.Diameter_um) - 1; 
 
 end
 
