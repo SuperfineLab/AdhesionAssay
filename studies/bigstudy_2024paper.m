@@ -1,4 +1,8 @@
-
+% This script outlines the analytical path through data collected for a
+% large swath of plates that survey multiple layers of metadata: bead
+% functionalization, substrate functionalization, media conditions, etc.
+% This specific script targets data analyzed for a paper transcript.
+%
 
 % This sets the path for addpath/genpath for Stephen's mac or Jeremy's 
 % pc depending on who is running the code

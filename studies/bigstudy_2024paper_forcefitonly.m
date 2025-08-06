@@ -50,11 +50,11 @@ FiltDetachTable = filterForces(DetachForceTable, "COOH", "COOH", "NoInt");
 outliertest = isoutlier(FiltDetachTable.ModeForce,'quartiles');
 
 
-% % %% Looking at COOH:COOH interaction across different plates/columns
-% % subgroup = (DetachForceTable.BeadChemistry == "COOH" & ...
-% %             DetachForceTable.SubstrateChemistry == "COOH");
-% % subgrouping_vars = ["PlateID", "PlateColumn", "AttachedTF"];
-% % run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the COOH:COOH interaction');
+% %% Looking at COOH:COOH interaction across different plates/columns
+% subgroup = (DetachForceTable.BeadChemistry == "COOH" & ...
+%             DetachForceTable.SubstrateChemistry == "COOH");
+% subgrouping_vars = ["PlateID", "PlateColumn", "AttachedTF"];
+% run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the COOH:COOH interaction');
 
 
 % % %% Looking at PEG:PEG interaction across different plates/columns
@@ -82,39 +82,6 @@ outliertest = isoutlier(FiltDetachTable.ModeForce,'quartiles');
 % run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
 
 
-%% Looking at PEG:HBE interaction in differing media conditions
-subgroup = (DetachForceTable.BeadChemistry == "PEG" & ...
-            DetachForceTable.SubstrateChemistry == "HBE");
-subgrouping_vars = ["Media"];
-[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the PEG:HBE interaction');
-
-f.Position(3:4) = [155*2 210];
-ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
-ax.Position([2,4]) = [0.20,0.75];
-ax.XLim = [0.5 4.5];
-
-%% Looking at WGA:HBE interaction in differing media conditions
-subgroup = (DetachForceTable.BeadChemistry == "WGA" & ...
-            DetachForceTable.SubstrateChemistry == "HBE");
-subgrouping_vars = ["Media"];
-[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the WGA:HBE interaction');
-
-f.Position(3:4) = [155*2 210];
-ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
-ax.Position([2,4]) = [0.20,0.75];
-ax.XLim = [0.5 4.5];
-
-%% Looking at HBE:HBE interaction in differing media conditions
-subgroup = (DetachForceTable.BeadChemistry == "HBE" & ...
-            DetachForceTable.SubstrateChemistry == "HBE");
-subgrouping_vars = ["Media"];
-[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
-
-f.Position(3:4) = [155*2 210];
-ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
-ax.Position([2,4]) = [0.20,0.75];
-ax.XLim = [0.5 4.5];
-
 %% Looking at non-interfering medium for PEG slides
 subgroup = (DetachForceTable.Media == "NoInt" & ...
             DetachForceTable.SubstrateChemistry == "PEG");
@@ -135,13 +102,13 @@ f.Position(3:4) = [155*3/2 210];
 
 %% Looking at non-interfering medium for PEG and HBE beads on PEG and HBE slides
 subgroup = (DetachForceTable.Media == "NoInt" & ...
-            (DetachForceTable.BeadChemistry == "PEG" | ...
-             DetachForceTable.BeadChemistry == "HBE") & ...
             (DetachForceTable.SubstrateChemistry == "PEG" | ...
-             DetachForceTable.SubstrateChemistry == "HBE") );
-subgrouping_vars = ["BeadChemistry", "SubstrateChemistry"];
+             DetachForceTable.SubstrateChemistry == "HBE") & ...
+            (DetachForceTable.BeadChemistry == "PEG" | ...
+             DetachForceTable.BeadChemistry == "HBE") );
+subgrouping_vars = ["SubstrateChemistry", "BeadChemistry"];
 [f, ax, m] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: non-interfering');
-fixBoxPlot_xticks(ax, {"PEG","PEG","HBE","HBE"},{"PEG","HBE","PEG","HBE"});
+fixBoxPlot_xticks(ax, {"PEG","HBE","PEG","HBE"},{"PEG","PEG","HBE","HBE"});
 f.Position(3:4) = [155*2 210];
 ax.Position([2,4]) = [0.20,0.75];
 
@@ -179,30 +146,87 @@ subgrouping_vars = ["SubstrateChemistry","BeadChemistry"];
 fixBoxPlot_xticks(ax, {"PEG","WGA","HBE","PEG","WGA","HBE"},{"PEG","PEG","PEG","HBE","HBE","HBE"});
 f.Position(3:4) = [155*3 210];
 
-%% Looking at surfactant
-subgroup = (DetachForceTable.Media == "IntNP40");
-subgrouping_vars = ["BeadChemistry","SubstrateChemistry"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: NP40 surfactant');
+%% Looking at PEG:HBE interaction in differing media conditions
+subgroup = (DetachForceTable.BeadChemistry == "PEG" & ...
+            DetachForceTable.SubstrateChemistry == "HBE");
+subgrouping_vars = ["Media"];
+[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the PEG:HBE interaction');
 
+f.Position(3:4) = [155*2 210];
+ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
+ax.Position([2,4]) = [0.20,0.75];
+ax.XLim = [0.5 4.5];
+
+%% Looking at WGA:HBE interaction in differing media conditions
+subgroup = (DetachForceTable.BeadChemistry == "WGA" & ...
+            DetachForceTable.SubstrateChemistry == "HBE");
+subgrouping_vars = ["Media"];
+[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the WGA:HBE interaction');
+
+f.Position(3:4) = [155*2 210];
+ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
+ax.Position([2,4]) = [0.20,0.75];
+ax.XLim = [0.5 4.5];
+
+%% Looking at HBE:HBE interaction in differing media conditions
+subgroup = (DetachForceTable.BeadChemistry == "HBE" & ...
+            DetachForceTable.SubstrateChemistry == "HBE");
+subgrouping_vars = ["Media"];
+[f,ax,m,factorNames] = run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'Exploring the HBE:HBE interaction');
+
+f.Position(3:4) = [155*2 210];
+ax.XTickLabel = {"Ctrl", "LowpH", "NP40", "5xPBS"};
+ax.Position([2,4]) = [0.20,0.75];
+ax.XLim = [0.5 4.5];
 
 %% Looking at low pH
-subgroup = (DetachForceTable.Media == "IntLowpH");
-subgrouping_vars = ["BeadChemistry","SubstrateChemistry"];
+subgroup = (DetachForceTable.Media == "IntLowpH" | ...
+            (DetachForceTable.Media == "NoInt" & ...
+             DetachForceTable.BeadChemistry == "PEG" & ...
+             DetachForceTable.SubstrateChemistry == "HBE") );
+subgrouping_vars = ["BeadChemistry","SubstrateChemistry","Media"];
 run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: low pH');
 
 %% Looking at 5xPBS (high salt)
-subgroup = (DetachForceTable.Media == "Int5xPBS");
-subgrouping_vars = ["BeadChemistry","SubstrateChemistry"];
+subgroup = (DetachForceTable.Media == "Int5xPBS" | ...
+            (DetachForceTable.Media == "NoInt" & ...
+             DetachForceTable.BeadChemistry == "PEG" & ...
+             DetachForceTable.SubstrateChemistry == "HBE") );
+subgrouping_vars = ["BeadChemistry","SubstrateChemistry","Media"];
 run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: Int5xPBS');
+
+%% Looking at surfactant
+subgroup = (DetachForceTable.Media == "IntNP40" | ...
+            (DetachForceTable.Media == "NoInt" & ...
+             DetachForceTable.BeadChemistry == "PEG" & ...
+             DetachForceTable.SubstrateChemistry == "HBE") );
+subgrouping_vars = ["BeadChemistry","SubstrateChemistry","Media"];
+run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'media: NP40 surfactant');
+
 
 
 %% looking at everything that's attached
-subgroup = (DetachForceTable.AttachedTF);
-subgrouping_vars = ["SubstrateChemistry", "BeadChemistry", "Media"];
-run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'everything');
+% subgroup = (DetachForceTable.AttachedTF);
+% subgrouping_vars = ["SubstrateChemistry", "BeadChemistry", "Media"];
+% run_comparison(DetachForceTable(subgroup,:), subgrouping_vars, 'everything');
 
 
-%% 
+%% Two way Anova
+tmpidx = DetachForceTable.SubstrateChemistry == "COOH" | ...
+DetachForceTable.SubstrateChemistry == "PEG";
+D = DetachForceTable(~tmpidx,:);
+D.SubstrateChemistry = removecats(D.SubstrateChemistry);
+D.BeadChemistry = removecats(D.BeadChemistry);
+D.BeadChemistry = categorical(D.BeadChemistry, {'PEG', 'WGA', 'HBE'}, 'Ordinal', true);
+D.Media = removecats(D.Media);
+D.Media = categorical(D.Media, {'NoInt', 'IntLowpH', 'IntNP40', 'Int5xPBS'}, 'Ordinal', true);
+[foo, bar, stats] = anovan(D.ModeForce, {D.BeadChemistry, D.Media}, ...
+'model', 2 , 'varnames', {'BeadChemistry', 'Media'});
+multcompare(stats, 'Dimension', 1, 'CriticalValueType','dunnett')
+multcompare(stats, 'Dimension', 2, 'CriticalValueType','dunnett')
+[c, chi2, p, labels] = crosstab(D.BeadChemistry, D.Media)
+
+
 
 % subfunctions
 function [f,ax,m,factorNames] = run_comparison(subDetachForceTable, subgrouping_vars, titlestring)
@@ -210,6 +234,9 @@ function [f,ax,m,factorNames] = run_comparison(subDetachForceTable, subgrouping_
     ascendme = repmat("ascend", 1, numel(subgrouping_vars));
     subDetachForceTable = sortrows(subDetachForceTable, subgrouping_vars, ascendme);
     
+    figure(777);   
+    hm = gca;
+
     [subg, subgT] = findgroups(subDetachForceTable(:,subgrouping_vars));
     factorNames = mkfactorNames(subgT);
     
@@ -221,28 +248,30 @@ function [f,ax,m,factorNames] = run_comparison(subDetachForceTable, subgrouping_
     if bartTest > 0.05
         logentry('Equal variances test has passed. Standard ANOVA applies.');
         % % Multi-variate anova (manova)
-        maov = manova(factorNames(subg), subDetachForceTable.ModeForce);
-        m = multcompare(maov, 'CriticalValueType', 'bonferroni');
-        disp(m)
-        % an = anova1(subDetachForceTable.ModeForce, factorNames(subg));
+        % maov = manova(factorNames(subg), subDetachForceTable.ModeForce);
+        % m = multcompare(maov, 'CriticalValueType', 'bonferroni'); % check comparisons between all samples to each other
+        % Single factor anova
+        [pvalue, celltbl, stats] = anova1(subDetachForceTable.ModeForce, factorNames(subg),'off');
+        % m = multcompare(hm, stats, "CriticalValueType", "dunnett", "ControlGroup", 1);
+        m = multcompare(hm, stats, "CriticalValueType", "bonferroni");
+        if isnumeric(m); m = mk_compare_table(m, stats); end
+        disp(m)        
     else
         % Move on to Kruskel-Wallis test
         logentry('Variances between groups are statistically different. Will use Kruskal-Wallis.');
         [kw.p, kw.tbl, kw.stats] = kruskalwallis(subDetachForceTable.ModeForce, factorNames(subg),"off");        
         figure;
-        [m.c, m.m, m.h, m.gnames] = multcompare(kw.stats);
+        [m.c, m.m, m.h, m.gnames] = multcompare(hm, kw.stats);
         set(gca, 'TickLabelInterpreter', 'none');        
         title(titlestring);
     end
     
     fprintf('\n\n');
 
-    
-
     mylinecolor = lines(7);
     % XJitterWidth = 0.9 * min(diff(unique(x)));
 
-    f = figure;
+    f = figure; 
     hold on
     b = boxchart(subg, subDetachForceTable.ModeForce, ...
                  'Notch','off', 'BoxFaceColor', mylinecolor(1,:));
@@ -265,7 +294,8 @@ function [f,ax,m,factorNames] = run_comparison(subDetachForceTable, subgrouping_
 
     hold off
     title(titlestring);
-    ax = gca;
+    ax = gca; 
+    ax.PositionConstraint = "outerposition";    
     ax.Box = 'on';
     ax.YLim = [-1.65,2.65];
     ax.YLabel.String = "log_{10}(Force) [nN]";
@@ -274,14 +304,15 @@ function [f,ax,m,factorNames] = run_comparison(subDetachForceTable, subgrouping_
     ax.XTickLabel = factorNames;
     ax.YTick = [-1.5:0.5:2.5];
     ax.YTickLabel = arrayfun(@(x)num2str(x,'%1.1f'),ax.YTick,'UniformOutput',false);
-    ax.FontSize = 10;
+    ax.FontSize = 10;    
     grid
     
     if contains(class(m),'table') && isTableCol(m,'pValue') 
         add_sigstar(m, f); 
     end
-
+    ax.Position = [ 0.1891    0.1286    0.7191    0.7500];
 end
+
 
 function factorNames = mkfactorNames(subgrouping_vars)
 
@@ -415,7 +446,15 @@ function fixBoxPlot_xticks(ax, BeadChemistry,SubstrateChemistry)
     ax.TickLabelInterpreter = "tex";
 end
 
+function outs = mk_compare_table(m, stats)
+    gnames = string(stats.gnames);
+    grp1(:,1) = gnames(m(:,1));
+    grp2(:,1) = gnames(m(:,2));
 
+    outs = array2table(m, 'VariableNames', {'Group1','Group2','MeanDifference','Lower','Upper','pValue'});
+    outs.Group1 = categorical(grp1);
+    outs.Group2 = categorical(grp2);
+end
 
 
 

@@ -1,3 +1,8 @@
+% This script outlines the analytical path through CONTROL data collected 
+% for CONGTROL plates specifically. Primary axes of analysis here are largely 
+% constrained to bead and substrate functionalization, where the data are 
+% analyzed for a paper transcript.
+%
 
 % This sets the path for addpath/genpath for Stephen's mac or Jeremy's 
 % pc depending on who is running the code
