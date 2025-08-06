@@ -1,5 +1,36 @@
 function [TableOut, optstartT] = ba_force_curve_fits(ba_process_data, groupvars, fitmethod, weightmethod)
-% XXX @jeremy TODO: Add documentation for this function
+% BA_FORCE_CURVE_FITS Fits force-detachment curves across grouped bead datasets
+%
+% Adhesion Assay
+% **util**
+%
+%   [TableOut, optstartT] = BA_FORCE_CURVE_FITS(ba_process_data, groupvars, ...
+%                                               fitmethod, weightmethod)
+%   processes force detachment data grouped by specified variables, computes
+%   the fraction of beads remaining attached at each force, and fits one or
+%   more error function (erf) modes to the resulting force-response curves.
+%   Outputs include curve fit results, grouping metadata, and raw data
+%   formatted for downstream plotting or statistics.
+%
+% Inputs:
+%   ba_process_data - Struct containing:
+%       .BeadForceTable - Table with spot-level force and weight data
+%       .FileTable      - Table with experiment-level metadata
+%   groupvars        - Cell array of strings specifying grouping variables
+%                      (e.g., {'BeadChemistry', 'Condition'})
+%   fitmethod        - String indicating fitting method (e.g., 'fit', 'boot')
+%                      Default is 'fit'
+%   weightmethod     - String specifying how to weight fits (e.g., 'unweighted')
+%                      Default is 'unweighted'
+%
+% Outputs:
+%   TableOut  - Table of grouped curve fit results and assembled raw data
+%               Each row corresponds to a unique combination of groupvars
+%   optstartT - Table of optimized starting parameters for each fit group
+%
+% Example:
+%   [results, startparams] = ba_force_curve_fits(processedData, ...
+%                       {'BeadChemistry', 'Media'}, 'fit', 'unweighted');
 %
 
 % function [TableOut, fr] = ba_force_curve_fits(ba_process_data, groupvars, modeltype, weightTF, plotTF)

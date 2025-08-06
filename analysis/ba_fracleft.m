@@ -10,8 +10,7 @@ function outs = ba_fracleft(fileid, spotid, force, startCount)
     
     force = force(:);
     
-    % I do not really understand how this determines "rank" of force, but
-    % it does and outputs the fraction left attached
+    % This determines "rank" of force and outputs the fraction left attached
     [~,Fidx] = sort(force, 'ascend');
     [~,Frank] = sort(Fidx, 'ascend');    
     
