@@ -1,7 +1,7 @@
-function varargout = ba_findfocus(scope, lohifocus, stepsize, exptime)
+function varargout = ba_findfocus(scope, lohifocus, stepsize, exptime, saveimagesTF)
 % BA_TESTAUTOFOCUS 
 %
-% [maxfocus, focustable] = ba_findfocus(scope, lohifocus, stepsize, exptime)
+% [maxfocus, focustable] = ba_findfocus(scope, lohifocus, stepsize, exptime, saveimagesTF)
 % first output argument is maximum focus value (no peak modeling yet)
 % second output argment is
 
@@ -26,6 +26,10 @@ end
 
 if nargin < 4 || isempty(exptime)
     exptime = 8; % [ms]
+end
+
+if nargin < 5 || isempty(saveimagesTF)
+    saveimagesTF = false;
 end
 
 % Camera Setup
@@ -83,7 +87,9 @@ for k = 1:N
     
     im{k,1} = p.CData;
     outfile = ['focus', num2str(k, '%03i'), '.png'];
-%     imwrite(im{k,1}, outfile);
+    if saveimagesTF
+        imwrite(im{k,1}, outfile);
+    end
     logentry(['Frame grabbed to ' outfile '.']);
     
     focus_score(k,1) = fmeasure(im{k,1}, 'GDER');
