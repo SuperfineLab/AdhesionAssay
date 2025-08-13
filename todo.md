@@ -46,5 +46,5 @@
     - [x] number of bins, e.g. three bins, 1/3 .* [1 2 3], OR
     - [x] inverted bin number, e.g. three bins, 1./[1 2 3], OR
     - [x] based on quantile bin, such that each bin is quasi-equally sampled across the dataset
-- [ ] Update code documentation
+- [x] Update code documentation
 - [x] Update the ForceBrowser UI to use the new data structures.
